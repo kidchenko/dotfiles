@@ -1,2 +1,2 @@
 # dotfiles
-kidchenko's 🔧 .files 💻 macOS / Windows / Linux - including ~/.macos, git, etc.
+🔧💻  kidchenko's `.files` macOS / Windows - including ~/.macos, ~/.gitconfig, etc.
