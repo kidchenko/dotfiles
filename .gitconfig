@@ -149,6 +149,9 @@
   # checkout - update the working tree to match a branch or paths. [same as "o" for "out"]
   co = checkout
 
+  # checkout - create a new branch
+  cob = checkout -b
+
   ### cherry-pick ###
 
   # cherry-pick - apply the changes introduced by some existing commits; useful for moving small chunks of code between branches.
