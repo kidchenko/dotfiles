@@ -12,4 +12,6 @@ choco install nvm
 
 choco install python
 
+echo "ola"
+
 choco feature disable -n=allowGlobalConfirmation
