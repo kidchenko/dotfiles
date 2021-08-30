@@ -4,5 +4,3 @@
 # Install
 
 `sh -c "$(curl -fsSL https://raw.github.com/kidchenko/dotfiles/master/tools/install.sh)"`
-
-

@@ -1,3 +1,4 @@
+echo "Good morning Jose!"
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -69,7 +70,7 @@ ZSH_THEME="avit"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git zsh-autosuggestions node npm kubectl dotnet)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -109,8 +110,22 @@ export NVM_DIR="$HOME/.nvm"
 # uninstall by removing these lines
 [ -f ~/.config/tabtab/__tabtab.bash ] && . ~/.config/tabtab/__tabtab.bash || true
 
+source ~/.exports
 source ~/.aliases
+
+eval "$(direnv hook zsh)"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/josebarbosa/.sdkman"
 [[ -s "/Users/josebarbosa/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/josebarbosa/.sdkman/bin/sdkman-init.sh"
+
+export GOPATH=/usr/local/bin/go
+[[ /usr/local/bin/kubectl ]] && source <(kubectl completion zsh)
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+export PATH="$PATH:$HOME/.gem/ruby/2.7.0/bin"
+export PATH="/usr/local/opt/libpq/bin:$PATH"
