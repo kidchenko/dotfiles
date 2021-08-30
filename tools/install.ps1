@@ -1,3 +1,6 @@
-"hello world"
+function Main {
+	"hello world"
+	"installing..."
+}
 
-"installing..."
+Main
