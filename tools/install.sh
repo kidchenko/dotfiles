@@ -6,9 +6,9 @@ say() {
 }
 
 ask() {
-	echo
+	say
 	read -p "$*" -n 1 -r
-	echo
+	say
 }
 
 warn() {
@@ -37,7 +37,8 @@ checkdeps() {
 		warn $"The dependencies listed above are required to use $SCRIPTNAME"
 		ask $"Do you wanna to install?"
 		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			say "install the dependencies and then continue..."
+			say "install the dependencies and then try again..."
+			say "bye."
 			[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 # handle exits from shell or function but don't exit interactive shell
 		fi
 
