@@ -1,3 +1,6 @@
+function Say ([string]$message) {
+	Write-Host $message
+}
 function Warn([string]$message) {
 	Write-Warning $message
 }
@@ -8,7 +11,7 @@ function IsCommand([string]$cmd) {
 
 function CheckDeps([string[]]$deps) {
 	foreach ($cmd in $deps) {
-		Write-Host "checking if $cmd is installed"
+		Say "checking if $cmd is installed"
 		if (!(IsCommand $cmd)) {
 			Warn "$cmd is not found"
 		}
@@ -16,15 +19,15 @@ function CheckDeps([string[]]$deps) {
 }
 
 function InstallDeps ([string[]]$deps) {
-	"installing..."
+	Say "installing..."
 	foreach ($cmd in $deps) {
-		Write-Host "installing $cmd"
+		Say "installing $cmd"
 	}
 }
 
 function Main {
-	"hello world"
-	Write-Output "checking dependencies..."
+	Say "hello world"
+	Say "checking dependencies..."
 	CheckDeps git, choco, juca
 	InstallDeps choco, juca
 }
