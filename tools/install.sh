@@ -56,11 +56,24 @@ installdeps() {
 	done
 }
 
+clone() {
+	git clone https://github.com/kidchenko/dotfiles.git -c core.eol=lf -c core.autocrlf=false \
+    -c fsck.zeroPaddedFilemode=ignore \
+    -c fetch.fsck.zeroPaddedFilemode=ignore \
+    -c receive.fsck.zeroPaddedFilemode=ignore \
+    --depth=1 || {
+    say "git clone of dotfiles repo failed"
+    exit 1
+  }
+
+}
+
 main() {
 	say "hello world"
 
 	checkdeps git brew juca
 	installdeps juca brew
+	clone
 }
 
 main
