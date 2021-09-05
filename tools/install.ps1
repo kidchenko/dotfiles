@@ -47,11 +47,16 @@ function InstallDeps ([string[]]$deps) {
 	}
 }
 
+function Clone () {
+	git clone https://github.com/kidchenko/dotfiles.git
+}
+
 function Main {
 	Say "hello world"
 
 	CheckDeps git, choco, juca
 	InstallDeps choco, juca
+	Clone
 }
 
 Main
