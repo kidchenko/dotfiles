@@ -48,6 +48,7 @@ function InstallDeps ([string[]]$deps) {
 }
 
 function Clone () {
+	rm -rf dotfiles
 	git clone https://github.com/kidchenko/dotfiles.git
 }
 

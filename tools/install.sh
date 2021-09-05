@@ -57,6 +57,7 @@ installdeps() {
 }
 
 clone() {
+	rm -rf dotfiles
 	git clone https://github.com/kidchenko/dotfiles.git -c core.eol=lf -c core.autocrlf=false \
     -c fsck.zeroPaddedFilemode=ignore \
     -c fetch.fsck.zeroPaddedFilemode=ignore \
