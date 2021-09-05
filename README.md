@@ -17,11 +17,17 @@
 
 ## Setup
 
+## Mac
 ### Installed Programs for Mac
 
 - git
 - brew
 - brave
+
+## Windows
+
+- tls 1.2
+- long paths enabled
 
 ### Installed Programs for Windows
 
