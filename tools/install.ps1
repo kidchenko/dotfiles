@@ -15,6 +15,10 @@ function Warn([string]$message) {
 }
 
 function IsCommand([string]$cmd) {
+	if ($IsMacOS || $IsLinux) {
+		return which $cmd
+	}
+
 	return where.exe $cmd
 }
 
@@ -50,7 +54,10 @@ function InstallDeps ([string[]]$deps) {
 }
 
 function Clone () {
-	Remove-Item dotfiles -Recurse -Force
+	if (Test-Path dotfiles) {
+		Remove-Item dotfiles -Recurse -Force
+	}
+
 	git clone https://github.com/kidchenko/dotfiles.git
 }
 
