@@ -4,32 +4,29 @@ $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 function CopyProfile() {
-	@(
-		$Profile.AllUsersAllHosts,
-		$Profile.AllUsersCurrentHost,
-		$Profile.CurrentUserAllHosts,
-		$Profile.CurrentUserCurrentHost
-	) | % {
-		if (Test-Path $_) {
-			Write-Host "copy $_"
-			if (!(Test-Path $_)) {
-				New-Item -Path $_ -ItemType File -Force
-			}
-
-			$dest = Split-Path $_
-
-			Copy-Item ./profile.ps1 -Destination $_ -Force
-			Copy-Item ./modules.ps1 -Destination "$dest/modules.ps1" -Force
-			Copy-Item ./aliases.ps1 -Destination "$dest/aliases.ps1" -Force
-
-			Write-Output "Reload $_"
-			. $_
-		}
+	if (!(Test-Path $PROFILE)) {
+		Write-Host "creating $PROFILE"
 	}
+
+	New-Item -Path $PROFILE -ItemType File -Force
+
+	$dest = Split-Path $PROFILE
+
+	Copy-Item ./profile.ps1 -Destination $PROFILE -Force
+	Copy-Item ./modules.ps1 -Destination "$dest/modules.ps1" -Force
+	Copy-Item ./aliases.ps1 -Destination "$dest/aliases.ps1" -Force
+
+
+}
+
+function ReloadProfile {
+	Write-Output "Reload $PROFILE"
+	. $PROFILE
 }
 
 function Main () {
-    CopyProfile
+	CopyProfile
+	ReloadProfile
 }
 
 Main
