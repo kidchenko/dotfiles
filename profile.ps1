@@ -1,2 +1,5 @@
-Import-Module posh-git
-Import-Module oh-my-posh
+Write-Host "Good morning Jose!"
+
+. ./modules.ps1
+. ./aliases.ps1
+
