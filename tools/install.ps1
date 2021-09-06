@@ -15,7 +15,7 @@ function Warn([string]$message) {
 }
 
 function IsCommand([string]$cmd) {
-	if ($IsMacOS || $IsLinux) {
+	if ($IsMacOS -or $IsLinux) {
 		return which $cmd
 	}
 
