@@ -22,6 +22,39 @@ function Thoughtworks {
 	cd ~/thoughtworks
 }
 
+function Reload-Profile {
+	. Update-Profile
+}
+
+function Update-Profile {
+    @(
+        $Profile.AllUsersAllHosts,
+        $Profile.AllUsersCurrentHost,
+        $Profile.CurrentUserAllHosts,
+        $Profile.CurrentUserCurrentHost
+    ) | % {
+        if(Test-Path $_){
+            Write-Verbose "Running $_"
+            . $_
+        }
+    }
+}
+
+function Get-Profile {
+	@(
+        $Profile.AllUsersAllHosts,
+        $Profile.AllUsersCurrentHost,
+        $Profile.CurrentUserAllHosts,
+        $Profile.CurrentUserCurrentHost
+    ) | % {
+        if(Test-Path $_){
+            Write-Verbose "Running $_"
+			cat $_
+        }
+    }
+}
+
+
 # Easier navigation: ..
 Set-Alias -Force ".." GoTo
 
@@ -33,4 +66,5 @@ Set-Alias tw Thoughtworks
 # Set-Alias play Playground
 
 Set-Alias g git
-# Set-Alias profile="cat ~/.zshrc"
+Set-Alias reload Reload-Profile
+Set-Alias profile Get-Profile
