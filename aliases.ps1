@@ -34,7 +34,7 @@ function Update-Profile {
         $Profile.CurrentUserCurrentHost
     ) | % {
         if(Test-Path $_){
-            Write-Verbose "Running $_"
+            Write-Output "Running $_"
             . $_
         }
     }
@@ -48,7 +48,7 @@ function Get-Profile {
         $Profile.CurrentUserCurrentHost
     ) | % {
         if(Test-Path $_){
-            Write-Verbose "Running $_"
+            Write-Output "$_"
 			cat $_
         }
     }
