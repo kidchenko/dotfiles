@@ -1,3 +1,5 @@
+$ErrorActionPreference = "Stop"
+
 function Say ([string]$message) {
 	Write-Host $message
 }
@@ -13,7 +15,7 @@ function Warn([string]$message) {
 }
 
 function IsCommand([string]$cmd) {
-	return which $cmd
+	return where.exe $cmd
 }
 
 function CheckDeps([string[]]$deps) {
@@ -48,7 +50,7 @@ function InstallDeps ([string[]]$deps) {
 }
 
 function Clone () {
-	rm -rf dotfiles
+	Remove-Item dotfiles -Recurse -Force
 	git clone https://github.com/kidchenko/dotfiles.git
 }
 
