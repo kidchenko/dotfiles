@@ -1,5 +1,5 @@
 Write-Host "Good morning Jose!"
 
-. ./modules.ps1
-. ./aliases.ps1
+. $PSScriptRoot/modules.ps1
+. $PSScriptRoot/aliases.ps1
 

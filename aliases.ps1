@@ -1,29 +1,29 @@
 function GoTo {
-	cd ..
+    cd ..
 }
 
 function Cloud {
-	cd ~/Documents/Dropbox
+    cd ~/Documents/Dropbox
 }
 
 function Downloads {
-	cd ~/Downloads
+    cd ~/Downloads
 }
 
 function Kidchenko {
-	cd ~/kidchenko
+    cd ~/kidchenko
 }
 
 function Playground {
-	cd "~/kidchenko/playground"
+    cd "~/kidchenko/playground"
 }
 
 function Thoughtworks {
-	cd ~/thoughtworks
+    cd ~/thoughtworks
 }
 
 function Reload-Profile {
-	. Update-Profile
+    . Update-Profile
 }
 
 function Update-Profile {
@@ -33,7 +33,7 @@ function Update-Profile {
         $Profile.CurrentUserAllHosts,
         $Profile.CurrentUserCurrentHost
     ) | % {
-        if(Test-Path $_){
+        if (Test-Path $_) {
             Write-Output "Running $_"
             . $_
         }
@@ -41,17 +41,8 @@ function Update-Profile {
 }
 
 function Get-Profile {
-	@(
-        $Profile.AllUsersAllHosts,
-        $Profile.AllUsersCurrentHost,
-        $Profile.CurrentUserAllHosts,
-        $Profile.CurrentUserCurrentHost
-    ) | % {
-        if(Test-Path $_){
-            Write-Output "$_"
-			cat $_
-        }
-    }
+    Write-Output $PROFILE
+    cat $PROFILE
 }
 
 
