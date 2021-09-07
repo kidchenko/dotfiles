@@ -45,6 +45,34 @@ function Get-Profile {
     cat $PROFILE
 }
 
+function Find-Text {
+    Get-ChildItem -Recurse -Force | Select-String $args[0] -List
+}
+
+function List-All {
+	Get-ChildItem -Force
+}
+
+function List-Directory {
+	Get-ChildItem -Directory
+}
+
+function List-Hidden {
+	Get-ChildItem -Hidden
+}
+
+# WinMac compatibility
+
+# Find aliases
+##
+###
+if(!(Get-Command grep -ErrorAction SilentlyContinue)) {
+    Set-Alias grep Find-Text
+}
+
+###
+##
+# End of WinMac compatibility
 
 # Easier navigation:
 Set-Alias -Force ".." GoTo
@@ -54,13 +82,18 @@ Set-Alias dl Downloads
 Set-Alias ko Kidchenko
 Set-Alias tw Thoughtworks
 # Set-Alias play Playground
-
 Set-Alias g git
 Set-Alias reload Reload-Profile
 Set-Alias profile Get-Profile
 
+# List files
+Set-Alias l ls
+
 # List all files
-Set-Alias la Get-ChildItem -Force
+Set-Alias la List-All
 
-# todo find aliases
+# List only directories
+Set-Alias lsd List-Directory
 
+# List only hidden files
+Set-Alias lsh List-Hidden
