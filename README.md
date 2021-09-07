@@ -1,5 +1,5 @@
 # dotfiles
-🔧💻  kidchenko's `.files` macOS / Windows - including ~/.macos, ~/.gitconfig, etc.
+🔧💻  kidchenko's `.files` macOS / Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, etc.
 
 # Install
 
