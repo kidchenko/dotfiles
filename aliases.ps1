@@ -46,11 +46,10 @@ function Get-Profile {
 }
 
 
-# Easier navigation: ..
+# Easier navigation:
 Set-Alias -Force ".." GoTo
 
 # Shortcuts
-Set-Alias "d" Cloud
 Set-Alias dl Downloads
 Set-Alias ko Kidchenko
 Set-Alias tw Thoughtworks
@@ -59,3 +58,9 @@ Set-Alias tw Thoughtworks
 Set-Alias g git
 Set-Alias reload Reload-Profile
 Set-Alias profile Get-Profile
+
+# List all files
+Set-Alias la Get-ChildItem -Force
+
+# todo find aliases
+
