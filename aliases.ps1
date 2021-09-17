@@ -61,6 +61,10 @@ function List-Hidden {
 	Get-ChildItem -Hidden
 }
 
+function Get-Week {
+    Get-Date -UFormat %V
+}
+
 # WinMac compatibility
 
 # Find aliases
@@ -97,3 +101,6 @@ Set-Alias lsd List-Directory
 
 # List only hidden files
 Set-Alias lsh List-Hidden
+
+# Get week number
+Set-Alias week Get-Week
