@@ -111,6 +111,8 @@ Set-Alias lsh List-Hidden
 # Get week number
 Set-Alias week Get-Week
 
+# Get current date
 Set-Alias today Get-Date
 
+# Update Choco/Homebrew
 Set-Alias update Run-Update
