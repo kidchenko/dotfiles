@@ -13,6 +13,7 @@ function CopyProfile() {
 	Copy-Item ./modules.ps1 -Destination "$dest/modules.ps1" -Force
 	Copy-Item ./aliases.ps1 -Destination "$dest/aliases.ps1" -Force
 	Copy-Item ./base.ps1 -Destination "$dest/base.ps1" -Force
+    Copy-Item ./.gitconfig -Destination ~/.gitconfig -Force
 }
 
 function ReloadProfile {
