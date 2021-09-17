@@ -65,6 +65,12 @@ function Get-Week {
     Get-Date -UFormat %V
 }
 
+function Run-Update {
+    if (!($IsMacOS)) {
+        choco.exe upgrade all -y;
+    }
+}
+
 # WinMac compatibility
 
 # Find aliases
@@ -104,3 +110,7 @@ Set-Alias lsh List-Hidden
 
 # Get week number
 Set-Alias week Get-Week
+
+Set-Alias today Get-Date
+
+Set-Alias update Run-Update
