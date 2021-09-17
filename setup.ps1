@@ -15,8 +15,7 @@ function CopyProfile() {
 	Copy-Item ./profile.ps1 -Destination $PROFILE -Force
 	Copy-Item ./modules.ps1 -Destination "$dest/modules.ps1" -Force
 	Copy-Item ./aliases.ps1 -Destination "$dest/aliases.ps1" -Force
-
-
+	Copy-Item ./base.ps1 -Destination "$dest/base.ps1" -Force
 }
 
 function ReloadProfile {
