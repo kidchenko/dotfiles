@@ -134,3 +134,12 @@ if ($IsMacOS) {
     Set-Alias localip Get-LocalIp
     Set-Alias ip Get-LocalIp
 }
+
+# Path
+if ($IsMacOS) {
+    function Write-Path { $Env:PATH.Split(":") }
+    Set-Alias path Write-Path
+} else {
+    function Write-Path { $Env:PATH.Split(";") }
+    Set-Alias path Write-Path
+}
