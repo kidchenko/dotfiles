@@ -116,3 +116,10 @@ Set-Alias today Get-Date
 
 # Update Choco/Homebrew
 Set-Alias update Run-Update
+
+if ($IsMacOS) {
+    function Open-Brave { open -n '/Applications/Brave Browser.app' }
+    Set-Alias brave Open-Brave
+} else {
+    Set-Alias brave "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+}
