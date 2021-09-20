@@ -117,9 +117,20 @@ Set-Alias today Get-Date
 # Update Choco/Homebrew
 Set-Alias update Run-Update
 
+# Brave
 if ($IsMacOS) {
     function Open-Brave { open -n '/Applications/Brave Browser.app' }
     Set-Alias brave Open-Brave
 } else {
     Set-Alias brave "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+}
+
+# IP Aliases
+if ($IsMacOS) {
+    function Get-LocalIp { ipconfig getifaddr en0 }
+    Set-Alias localip Get-LocalIp
+} else {
+    function Get-LocalIp { (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias Ethernet*).IPAddress }
+    Set-Alias localip Get-LocalIp
+    Set-Alias ip Get-LocalIp
 }
