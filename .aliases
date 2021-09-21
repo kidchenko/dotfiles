@@ -84,6 +84,10 @@ command -v md5sum > /dev/null || alias md5sum="md5"
 command -v sha1sum > /dev/null || alias sha1sum="shasum"
 
 # JavaScriptCore REPL
+# Explanation of the bellow code
+# jscbin is seting a variable
+# [ -e "${jscbin}" ] + && is to verify if file exist and the && works as a if
+# unset jscbin; ins to clear the variable jscbin
 jscbin="/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Resources/jsc";
 [ -e "${jscbin}" ] && alias jsc="${jscbin}";
 unset jscbin;

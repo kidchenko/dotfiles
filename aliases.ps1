@@ -154,6 +154,14 @@ if(!(Get-Command sha1 -ErrorAction SilentlyContinue)) {
     Set-Alias sha1 Get-Sha1
 }
 
+# Alias to generate sha256 from string input
+if(!(Get-Command sha256 -ErrorAction SilentlyContinue)) {
+    function Get-Sha256($value) {
+        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA256CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","")
+      }
+    Set-Alias sha256 Get-Sha256
+}
+
 # PATH
 if ($IsMacOS) {
     function Write-Path { $Env:PATH.Split(":") }
