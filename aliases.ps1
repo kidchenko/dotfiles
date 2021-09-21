@@ -135,6 +135,15 @@ if ($IsMacOS) {
     Set-Alias ip Get-LocalIp
 }
 
+# todo flush / clean up
+
+if(!(Get-Command md5 -ErrorAction SilentlyContinue)) {
+    function Get-Md5($value) {
+        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","").ToLower()
+      }
+    Set-Alias md5 Get-Md5
+}
+
 # Path
 if ($IsMacOS) {
     function Write-Path { $Env:PATH.Split(":") }
