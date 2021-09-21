@@ -136,7 +136,9 @@ if ($IsMacOS) {
 }
 
 # todo flush / clean up
+# end todo
 
+# Alias to generate md5 from string input
 if(!(Get-Command md5 -ErrorAction SilentlyContinue)) {
     function Get-Md5($value) {
         ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","").ToLower()
@@ -144,7 +146,15 @@ if(!(Get-Command md5 -ErrorAction SilentlyContinue)) {
     Set-Alias md5 Get-Md5
 }
 
-# Path
+# Alias to generate sha1 from string input
+if(!(Get-Command sha1 -ErrorAction SilentlyContinue)) {
+    function Get-Sha1($value) {
+        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA1CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","")
+      }
+    Set-Alias sha1 Get-Sha1
+}
+
+# PATH
 if ($IsMacOS) {
     function Write-Path { $Env:PATH.Split(":") }
     Set-Alias path Write-Path
