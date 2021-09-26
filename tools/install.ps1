@@ -12,6 +12,7 @@ function Ask ([string] $message) {
 function Warn([string]$message) {
 	Say
 	Write-Warning $message
+    Say
 }
 
 function IsCommand([string]$cmd) {
@@ -25,21 +26,23 @@ function IsCommand([string]$cmd) {
 function CheckDeps([string[]]$deps) {
 	$notFound = 0
 	Say
-	Say "checking dependencies..."
+	Say "Checking dependencies..."
+    Say
 	foreach ($cmd in $deps) {
-		Say "checking if $cmd is installed"
+		Say "Checking if $cmd is installed."
 		if (!(IsCommand $cmd)) {
-			Warn "$cmd is not found"
+			warn "$cmd is required and is not found."
 			$notFound++
 		}
 	}
 	if ($notFound -gt 0) {
-		Warn "The dependencies listed above are required to use $SCRIPTNAME"
+		Warn "The dependencies listed above are required to install and use this project."
+        Say "I can install the required dependencies for you."
 		$reply = Ask "Do you wanna to install? [y/n]"
 		if (!($reply  -match "[yY]")) {
 			# Highway to the danger zone
-			Warn "install the dependencies and then try again..."
-			say "bye."
+			Warn "Install the dependencies and then try again..."
+			Say "bye."
 			exit
 		}
 	}
@@ -47,10 +50,12 @@ function CheckDeps([string[]]$deps) {
 
 function InstallDeps ([string[]]$deps) {
 	Say
-	Say "installing deps..."
-	foreach ($cmd in $deps) {
-		Say "installing $cmd"
+	Say "Installing dependencies..."
+    Say
+	foreach ($dep in $deps) {
+		Say "Installing dependency: $dep."
 	}
+    Say
 }
 
 function Clone () {
@@ -70,7 +75,7 @@ function Run-Setup () {
 }
 
 function Main {
-	Say "hello world"
+	Say "Installing dotfiles at ./dotfiles"
 
 	CheckDeps git, choco, juca
 	InstallDeps choco, juca

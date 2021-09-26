@@ -13,7 +13,6 @@ ask() {
 }
 
 warn() {
-	say
 	printf >&2 "WARNING $SCRIPTNAME: $*\n"
     say
 }
@@ -31,18 +30,18 @@ checkdeps() {
 	for cmd; do
 		say "Checking if $cmd is installed."
 		iscmd "$cmd" || {
-			warn $"$cmd is not found"
+			warn $"$cmd is required and is not found."
 			let not_found++
 		}
 	done
 	# same as if ()
 	((not_found == 0)) || {
-		warn $"The dependencies listed above are required to use $SCRIPTNAME"
+		warn "The dependencies listed above are required to install and use this project."
         say "I can install the required dependencies for you."
 		ask $"Do you wanna to install? [y/n]: "
 		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 			say "Install the required dependencies and then try again..."
-			say "bye."
+			say "Bye."
 			[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 # handle exits from shell or function but don't exit interactive shell
 		fi
 
@@ -51,12 +50,13 @@ checkdeps() {
 }
 
 installdeps() {
-	say
 	say "Installing dependencies..."
+    echo $PWD
+    say
 	# same as for var in "$@"
 	# https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
 	for dep; do
-		say "installing dependency $dep."
+		say "Installing dependency: $dep."
 	done
     say
 }
@@ -72,18 +72,21 @@ clone() {
     exit 1
   }
   say
+  echo $PWD
 }
 
 setup() {
-    say "Running setup"
+    say "Running setup."
+    echo $PWD
     pushd dotfiles > /dev/null
     source ./setup.sh
     popd > /dev/null
+    echo $PWD
 }
 
 main() {
     say
-	say "Installing dotfiles at ./dotfiles"
+	say "Installing dotfiles at ./dotfiles."
 
 	checkdeps git brew juca
 	installdeps juca
