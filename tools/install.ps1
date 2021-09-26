@@ -61,12 +61,21 @@ function Clone () {
 	git clone https://github.com/kidchenko/dotfiles.git
 }
 
+function Run-Setup () {
+    Say
+    Say "Running setup"
+    Push-Location ./dotfiles
+    & ./setup.ps1
+    Pop-Location
+}
+
 function Main {
 	Say "hello world"
 
 	CheckDeps git, choco, juca
 	InstallDeps choco, juca
 	Clone
+    Run-Setup
 }
 
 Main
