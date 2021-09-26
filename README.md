@@ -40,6 +40,10 @@
 
 `grep` => `Find-Text` on pwsh
 
+`alias cls="clear"` on zsh
+
+`alias ii="open"` on zsh
+
 ## Easier navigation
 
 `..` => `cd ..`

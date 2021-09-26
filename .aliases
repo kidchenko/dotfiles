@@ -4,6 +4,8 @@
 
 alias cls="clear"
 
+alias ii="open"
+
 # Easier navigation: .., ..., ...., ....., ~ and -
 alias ..="cd .."
 alias ...="cd ../.."
