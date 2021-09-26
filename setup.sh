@@ -20,7 +20,7 @@ reloadProfile() {
     echo "Reloading: ${SHELL}."
     echo "Loading user profile: ~/.zshrc"
     echo
-    reload
+    exec ${SHELL} -l
 }
 
 main() {
