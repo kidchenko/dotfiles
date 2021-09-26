@@ -1,3 +1,12 @@
 #!/bin/bash
 
-echo "hello world, I am setup"
+copyProfile() {
+    cp ./.aliases ~/.aliases
+}
+
+main() {
+    echo "hello world, I am setup"
+    copyProfile
+}
+
+main
