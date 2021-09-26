@@ -1,6 +1,7 @@
 #!/bin/bash
 
 copyProfile() {
+    echo "Copying profile files."
     cp ./.zshrc ~/.zshrc
     cp ./.zlogin ~/.zlogin
     cp ./.aliases ~/.aliases
@@ -12,12 +13,19 @@ copyProfile() {
     cp ./.tmux.conf ~/.tmux.conf
     cp ./.vimrc ~/.vimrc
     cp ./brew.sh ~/brew.sh
+    echo
+}
+
+reloadProfile() {
+    echo "Reloading: ${SHELL}."
+    echo "Loading user profile: ~/.zshrc"
+    echo
+    reload
 }
 
 main() {
-    echo "hello world, I am setup"
     copyProfile
-    reload
+    reloadProfile
 }
 
 main
