@@ -31,18 +31,18 @@ filetype off                  " required
 
 " Vundle
 " set the runtime path to include Vundle and initialize
-set rtp+=$HOME/.vim/bundle/Vundle.vim/
-call vundle#begin('$HOME/.vim/bundle/')
+"set rtp+=$HOME/.vim/bundle/Vundle.vim/
+" call vundle#begin('$HOME/.vim/bundle/')
 
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'tpope/vim-fugitive'
-Plugin 'git://git.wincent.com/command-t.git'
-Plugin 'rstacruz/sparkup', {'rtp': 'vim'}
-Plugin 'matchit.zip'
-Plugin 'chiel92/vim-autoformat'
-Plugin 'mattn/emmet-vim'
-Plugin 'tpope/vim-surround'
-call vundle#end()            " required
+" Plugin 'VundleVim/Vundle.vim'
+" Plugin 'tpope/vim-fugitive'
+" Plugin 'git://git.wincent.com/command-t.git'
+" Plugin 'rstacruz/sparkup', {'rtp': 'vim'}
+" Plugin 'matchit.zip'
+" Plugin 'chiel92/vim-autoformat'
+" Plugin 'mattn/emmet-vim'
+" Plugin 'tpope/vim-surround'
+" call vundle#end()            " required
 
 filetype plugin indent on    " required
 "standard vim options
