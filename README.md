@@ -58,9 +58,7 @@
 
 `g` => `git`
 
-`reload` => reload profile
 
-`profile` => `cat $PROFILE`
 
 ## List
 
@@ -103,3 +101,9 @@
 # Path
 
 `path` = Print $PATH
+
+# Profile
+
+`reload` = Reload profile
+
+`profile` = Print profile
