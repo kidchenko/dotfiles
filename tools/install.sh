@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Default settings
+REPO=${REPO:-kidchenko/dotfiles}
+DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
+REMOTE=${REMOTE:-https://github.com/${REPO}.git}
+BRANCH=${BRANCH:-master}
+
 SCRIPTNAME="${0##*/}"
 
 say() {
@@ -62,26 +68,24 @@ installdeps() {
 }
 
 clone() {
-	rm -rf dotfiles
-	git clone https://github.com/kidchenko/dotfiles.git -c core.eol=lf -c core.autocrlf=false \
-    -c fsck.zeroPaddedFilemode=ignore \
-    -c fetch.fsck.zeroPaddedFilemode=ignore \
-    -c receive.fsck.zeroPaddedFilemode=ignore \
-    --depth=1 || {
-    say "git clone of dotfiles repo failed"
+    say "Cloning dotfiles..."
+    say
+    # if [ -d "$DOTFILES_DIR"]; then
+    #     say "$DOTFILES_DIR already exists. Skipping"
+    #     # do something if the absolute directory exists
+    # fi
+	rm -rf $DOTFILES_DIR
+	git clone $REMOTE $DOTFILES_DIR || {
+    say "git clone failed."
     exit 1
   }
   say
-  echo $PWD
 }
 
 setup() {
     say "Running setup."
-    echo $PWD
-    pushd dotfiles > /dev/null
-    source ./setup.sh
-    popd > /dev/null
-    echo $PWD
+    say
+    source $DOTFILES_DIR/setup.sh
 }
 
 main() {
