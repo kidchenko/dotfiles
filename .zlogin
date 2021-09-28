@@ -1,3 +1,10 @@
+REPO=${REPO:-kidchenko/dotfiles}
+DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
+
+if test -f "$DOTFILES_DIR/tools/update.sh"; then
+    source $DOTFILES_DIR/tools/update.sh
+fi
+
 h=`date +%H`
 
 if [ $h -lt 12 ]; then
