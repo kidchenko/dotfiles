@@ -7,6 +7,7 @@ elif [ $h -lt 18 ]; then
 else
   echo Good Evening Jose!
 fi
+echo
 
 # [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
