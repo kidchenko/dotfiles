@@ -9,7 +9,7 @@ function CopyProfile() {
 
 	$dest = Split-Path $PROFILE
 
-    Copy-Item ./tools/update.ps1 -Destination ~/.kidchenko/dotfiles/tools/update.ps1 -Force
+    # Copy-Item ./tools/update.ps1 -Destination ~/.kidchenko/dotfiles/tools/update.ps1 -Force
 	Copy-Item ./profile.ps1 -Destination $PROFILE -Force
 	Copy-Item ./login.ps1 -Destination "$dest/login.ps1" -Force
 	Copy-Item ./modules.ps1 -Destination "$dest/modules.ps1" -Force

@@ -1,6 +1,11 @@
 $ErrorActionPreference = "Stop"
+if ($env:HOME) {
+    $BASE_DIR=$env:HOME
+} else {
+    $BASE_DIR=$env:HOMEPATH
+}
 $REPO="kidchenko/dotfiles"
-$DOTFILES_DIR="~/.$REPO"
+$DOTFILES_DIR="$BASE_DIR/.$REPO"
 $REMOTE="https://github.com/$REPO.git"
 
 function Say ([string]$message) {
