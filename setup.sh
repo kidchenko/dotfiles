@@ -2,6 +2,7 @@
 
 copyProfile() {
     echo "Copying profile files."
+    # cp ./tools/update.sh ~/.kidchenko/dotfiles/tools/update.sh
     cp ./.zshrc ~/.zshrc
     cp ./.zlogin ~/.zlogin
     cp ./.aliases ~/.aliases

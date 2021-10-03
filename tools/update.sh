@@ -1,31 +1,34 @@
-#!/bin/sh
-echo "i am update"
 # Default settings
 REPO=${REPO:-kidchenko/dotfiles}
 DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
-REMOTE=${REMOTE:-https://github.com/${REPO}.git}
-BRANCH=${BRANCH:-master}
+
+runUpdate() {
+    echo "[dotfiles] New version available."
+    read -p $"[dotfiles] Would you like to update? [y/n]: " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "[dotfiles] Updating..."
+        echo
+        git pull -r
+        source $DOTFILES_DIR/setup.sh
+    fi
+}
 
 main() {
     echo
-    pushd $DOTFILES_DIR > /dev/null
-
+    pushd $DOTFILES_DIR >/dev/null
     # check for updates
-    fetch=$(git fetch --dry-run 2>&1)
-
-    if !(test -z "$fetch"); then
-        echo "[dotfiles] New version available."
-        read -p $"[dotfiles] Would you like to update? [y/n]: " -n 1 -r
+    local fetch=$(git fetch --dry-run 2>&1)
+    if [ -z "$fetch" ]; then
+        # no updates
         echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo "[dotfiles] Updating..."
-            echo
-            git pull -r
-            source $DOTFILES_DIR/setup.sh
-        fi
+    else
+        runUpdate
     fi
 
-    popd > /dev/null
+    unset fetch
+
+    popd >/dev/null
 }
 
 main

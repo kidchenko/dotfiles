@@ -2,11 +2,11 @@ REPO=${REPO:-kidchenko/dotfiles}
 DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
 
 if [[ -f "$DOTFILES_DIR/tools/update.sh" ]]; then
-    echo "I will load update"
     {
-        source "$DOTFILES_DIR/tools/update.sh" &&
+        chmod a+x "$DOTFILES_DIR/tools/update.sh"
+        "$DOTFILES_DIR/tools/update.sh" &&
     } || {
-        echo "fail load update"
+        echo "fail to update..."
     }
 fi
 
