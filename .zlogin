@@ -1,18 +1,24 @@
 REPO=${REPO:-kidchenko/dotfiles}
 DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
 
-if test -f "$DOTFILES_DIR/tools/update.sh"; then
-    source $DOTFILES_DIR/tools/update.sh
+if [[ -f "$DOTFILES_DIR/tools/update.sh" ]]; then
+    echo "I will load update"
+    {
+        source "$DOTFILES_DIR/tools/update.sh" &&
+    } || {
+        echo "fail load update"
+    }
 fi
+
 
 h=`date +%H`
 
 if [ $h -lt 12 ]; then
-  echo Good Morning Jose!
+  echo "Good Morning Jose!"
 elif [ $h -lt 18 ]; then
-  echo Good Afternoon Jose!
+  echo "Good Afternoon Jose!"
 else
-  echo Good Evening Jose!
+  echo "Good Evening Jose!"
 fi
 echo
 

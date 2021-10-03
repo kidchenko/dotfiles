@@ -1,5 +1,5 @@
 #!/bin/sh
-
+echo "i am update"
 # Default settings
 REPO=${REPO:-kidchenko/dotfiles}
 DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
