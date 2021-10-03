@@ -57,7 +57,6 @@ checkdeps() {
 
 installdeps() {
 	say "Installing dependencies..."
-    echo $PWD
     say
 	# same as for var in "$@"
 	# https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
@@ -76,7 +75,7 @@ clone() {
     # fi
 	rm -rf $DOTFILES_DIR
 	git clone $REMOTE $DOTFILES_DIR || {
-    say "git clone failed."
+    say "Fail to clone dotfiles."
     exit 1
   }
   say
@@ -90,7 +89,7 @@ setup() {
 
 main() {
     say
-	say "Installing dotfiles at ./dotfiles."
+	say "Installing dotfiles at $DOTFILES_DIR"
 
 	checkdeps git brew juca
 	installdeps juca

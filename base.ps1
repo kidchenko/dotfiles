@@ -1,5 +1,5 @@
-REPO="kidchenko/dotfiles"
-DOTFILES_DIR=".$REPO"
+$REPO="kidchenko/dotfiles"
+$DOTFILES_DIR="~/.$REPO"
 
 if (Test-Path "$DOTFILES_DIR/tools/update.ps1") {
     . "$DOTFILES_DIR/tools/update.ps1"

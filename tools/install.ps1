@@ -1,4 +1,7 @@
 $ErrorActionPreference = "Stop"
+$REPO="kidchenko/dotfiles"
+$DOTFILES_DIR="~/.$REPO"
+$REMOTE="https://github.com/$REPO.git"
 
 function Say ([string]$message) {
 	Write-Host $message
@@ -41,7 +44,7 @@ function CheckDeps([string[]]$deps) {
 		$reply = Ask "Do you wanna to install? [y/n]"
 		if (!($reply  -match "[yY]")) {
 			# Highway to the danger zone
-			Warn "Install the dependencies and then try again..."
+			Warn "Install the required dependencies and then try again..."
 			Say "Bye."
 			exit
 		}
@@ -59,28 +62,33 @@ function InstallDeps ([string[]]$deps) {
 }
 
 function Clone () {
-	if (Test-Path dotfiles) {
-		Remove-Item dotfiles -Recurse -Force
+    Say "Cloning dotfiles..."
+    Say
+	if (Test-Path $DOTFILES_DIR) {
+		Remove-Item $DOTFILES_DIR -Recurse -Force
 	}
-
-	git clone https://github.com/kidchenko/dotfiles.git
+    try {
+    	git clone $REMOTE $DOTFILES_DIR
+        Say
+    }
+    catch {
+        Say "Fail to clone dotfiles."
+    }
 }
 
-function Run-Setup () {
+function Invoke-Setup () {
+    Say "Running setup."
     Say
-    Say "Running setup"
-    Push-Location ./dotfiles
-    & ./setup.ps1
-    Pop-Location
+    & "$DOTFILES_DIR/setup.ps1"
 }
 
 function Main {
-	Say "Installing dotfiles at ./dotfiles"
+	Say "Installing dotfiles at $DOTFILES_DIR"
 
 	CheckDeps git, choco, juca
 	InstallDeps choco, juca
 	Clone
-    Run-Setup
+    Invoke-Setup
 }
 
 Main
