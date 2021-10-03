@@ -5,6 +5,7 @@ if [[ -f "$DOTFILES_DIR/tools/update.sh" ]]; then
     {
         chmod a+x "$DOTFILES_DIR/tools/update.sh"
         "$DOTFILES_DIR/tools/update.sh" &&
+
     } || {
         echo "fail to update..."
     }

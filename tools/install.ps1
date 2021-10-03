@@ -42,7 +42,7 @@ function CheckDeps([string[]]$deps) {
 		if (!($reply  -match "[yY]")) {
 			# Highway to the danger zone
 			Warn "Install the dependencies and then try again..."
-			Say "bye."
+			Say "Bye."
 			exit
 		}
 	}

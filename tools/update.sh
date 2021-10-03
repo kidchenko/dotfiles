@@ -10,7 +10,10 @@ runUpdate() {
         echo "[dotfiles] Updating..."
         echo
         git pull -r
-        source $DOTFILES_DIR/setup.sh
+        popd >/dev/null
+        echo "Ready to go!"
+        echo
+        . "$DOTFILES_DIR/setup.sh" # script ends here
     fi
 }
 
@@ -21,14 +24,13 @@ main() {
     local fetch=$(git fetch --dry-run 2>&1)
     if [ -z "$fetch" ]; then
         # no updates
-        echo
+        echo "[dotfiles] Using last version."
     else
         runUpdate
     fi
 
     unset fetch
 
-    popd >/dev/null
 }
 
 main
