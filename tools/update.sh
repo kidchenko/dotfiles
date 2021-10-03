@@ -24,13 +24,13 @@ main() {
     local fetch=$(git fetch --dry-run 2>&1)
     if [ -z "$fetch" ]; then
         # no updates
+        popd >/dev/null
         echo "[dotfiles] Using last version."
+        echo
     else
-        runUpdate
+        unset fetch
+        runUpdate # warning, script finish here
     fi
-
-    unset fetch
-
 }
 
 main
