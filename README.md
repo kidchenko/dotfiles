@@ -1,5 +1,5 @@
 # dotfiles
-🔧💻  kidchenko's `.files` macOS / Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, etc.
+🔧💻  kidchenko's `.files` macOS / Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, `.vimrc`, `powershell profile`, etc.
 
 # Install
 
@@ -13,6 +13,15 @@
 `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072`
 
 `iwr -useb 'https://raw.githubusercontent.com/kidchenko/dotfiles/master/tools/install.ps1' | iex`
+
+
+# Features
+
+- `zsh` and `pwsh` support;
+- Smooth experience between mac and windows os;
+- Fabulous .gitconfig;
+- One-line installer;
+- Auto-update;
 
 # Setup
 
