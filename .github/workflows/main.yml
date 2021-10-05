@@ -27,4 +27,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install
-        run: tools/sh.install
+        run: sh -c "$(curl -fsSL https://raw.github.com/kidchenko/dotfiles/master/tools/install.sh)"
