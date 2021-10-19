@@ -1,5 +1,8 @@
 $ErrorActionPreference = "Stop"
 
+$REPO="kidchenko/dotfiles"
+$DOTFILES_DIR="~/.$REPO"
+
 function CopyProfile() {
 	if (!(Test-Path $PROFILE)) {
 		Write-Host "creating $PROFILE"
@@ -10,11 +13,11 @@ function CopyProfile() {
 	$dest = Split-Path $PROFILE
 
     # Copy-Item ./tools/update.ps1 -Destination ~/.kidchenko/dotfiles/tools/update.ps1 -Force
-	Copy-Item ./profile.ps1 -Destination $PROFILE -Force
-	Copy-Item ./login.ps1 -Destination "$dest/login.ps1" -Force
-	Copy-Item ./modules.ps1 -Destination "$dest/modules.ps1" -Force
-	Copy-Item ./aliases.ps1 -Destination "$dest/aliases.ps1" -Force
-    Copy-Item ./.gitconfig -Destination ~/.gitconfig -Force
+	Copy-Item $DOTFILES_DIR/profile.ps1 -Destination $PROFILE -Force
+	Copy-Item $DOTFILES_DIR/login.ps1 -Destination "$dest/login.ps1" -Force
+	Copy-Item $DOTFILES_DIR/modules.ps1 -Destination "$dest/modules.ps1" -Force
+	Copy-Item $DOTFILES_DIR/aliases.ps1 -Destination "$dest/aliases.ps1" -Force
+    Copy-Item $DOTFILES_DIR/.gitconfig -Destination ~/.gitconfig -Force
 }
 
 function ReloadProfile {
