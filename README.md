@@ -116,3 +116,5 @@
 `reload` = Reload profile
 
 `profile` = Print profile
+
+Built with <3 in Bangkok.
