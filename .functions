@@ -169,3 +169,29 @@ function o() {
 function tre() {
 	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
+
+
+function juca() {
+    echo "hello param: $1"
+
+    # go to folder
+    cd $1
+
+    echo "rm -rf .git"
+    # rm -rf .git
+
+    # go back
+    cd ..
+
+    # add in playground
+    echo "git add $1"
+    # git add $1
+
+    echo "git commit"
+    # git cm "Add $1"
+
+    echo "git push"
+    # git push
+
+    echo cwd
+}
