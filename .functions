@@ -195,23 +195,23 @@ function juca() {
     echo "Navigating back"
     # go back
 
-    popd $1 >/dev/null
+    popd >/dev/null
 
     echo ""
     sleep 1
 
-    # add in playground
-    echo "git: git add '$1'"
-    git add "$1"
+    # # add in playground
+    # echo "git: git add '$1'"
+    # git add "$1"
 
-    echo "git: git cm 'Add $1'"
-    git cm "Add $1"
+    # echo "git: git cm 'Add $1'"
+    # git cm "Add $1"
 
-    echo "git: git push"
-    git push
+    # echo "git: git push"
+    # git push
 
-    echo ""
-    sleep 1
+    # echo ""
+    # sleep 1
 
     echo ""
     echo "Push completed: $1 pushed to kidchenko/playground"
