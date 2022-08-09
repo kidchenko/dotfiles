@@ -172,7 +172,7 @@ function tre() {
 
 
 function juca() {
-    echo "hello param: $1"
+    # echo "hello param: $1"
 
     echo "navigate to $1"
     # go to folder
