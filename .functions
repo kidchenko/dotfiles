@@ -184,9 +184,10 @@ function juca() {
 
     echo "Removing sub-git repo in $1"
     echo ""
-    echo "bash: rm -rf .git"
+    echo "bash: rm -rf .git .DS_Store"
 
-    # rm -rf .git
+    rm -f .DS_Store
+    rm -rf .git
 
     echo ""
     sleep 1
@@ -201,10 +202,10 @@ function juca() {
 
     # add in playground
     echo "git: git add '$1'"
-    git add '$1'
+    git add "$1"
 
     echo "git: git cm 'Add $1'"
-    git cm 'Add $1'
+    git cm "Add $1"
 
     echo "git: git push"
     git push
