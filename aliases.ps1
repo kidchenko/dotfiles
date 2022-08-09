@@ -102,7 +102,7 @@ function GitPush {
 }
 
 # Gps in Pwershell is alias for GetProcess
-if (Get-Alias -Name gps) {
+if (Test-Path alias:gps) {
     Remove-Alias -Name gps -Force
 }
 
