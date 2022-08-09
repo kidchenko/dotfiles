@@ -185,7 +185,7 @@ function juca() {
     popd
 
     # add in playground
-    echo "git add $1"
+    echo "git add '$1'"
     # git add $1
 
     echo "git commit"
