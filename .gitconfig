@@ -2,8 +2,8 @@
 	email = kidchenko@gmail.com
 	name = kidchenko
 
-[credential]
-	helper = manager
+# [credential]
+# 	helper = manager
 
 ##################### GIT ALIASES #####################
 
