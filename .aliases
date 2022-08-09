@@ -164,3 +164,5 @@ alias path='echo -e ${PATH//:/\\n}'
 #alias cc="docker rm $(docker ps -aq) -f && docker volume prune -y"
 
 alias k="kubectl"
+
+alias gps="git push"
