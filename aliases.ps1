@@ -92,7 +92,17 @@ Set-Alias dl Downloads
 Set-Alias ko Kidchenko
 Set-Alias tw Thoughtworks
 # Set-Alias play Playground
+
+### Git aliases
+
+# G for git
 Set-Alias g git
+function GitPush {
+    git push
+}
+
+Set-Alias gps GitPush
+
 Set-Alias reload Reload-Profile
 Set-Alias profile Get-Profile
 
@@ -170,3 +180,5 @@ if ($IsMacOS) {
     function Write-Path { $Env:PATH.Split(";") }
     Set-Alias path Write-Path
 }
+
+
