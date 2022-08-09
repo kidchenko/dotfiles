@@ -174,24 +174,24 @@ function tre() {
 function juca() {
     echo "hello param: $1"
 
-    # # go to folder
-    # pushd $1
+    # go to folder
+    pushd $1
 
-    # echo "rm -rf .git"
-    # # rm -rf .git
+    echo "rm -rf .git"
+    # rm -rf .git
 
-    # # go back
-    # popd
+    # go back
+    popd
 
-    # # add in playground
-    # echo "git add $1"
-    # # git add $1
+    # add in playground
+    echo "git add $1"
+    # git add $1
 
-    # echo "git commit"
-    # # git cm "Add $1"
+    echo "git commit"
+    # git cm "Add $1"
 
-    # echo "git push"
-    # # git push
+    echo "git push"
+    # git push
 
-    # echo cwd
+    echo cwd
 }
