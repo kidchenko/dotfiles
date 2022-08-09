@@ -90,6 +90,7 @@
   m = merge
   o = checkout
   p = pull
+  ps = push
   r = remote
   s = status
   st = status
