@@ -1,6 +1,7 @@
 #!/bin/bash
-REPO=${REPO:-kidchenko/dotfiles}
-DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
+REPO=${REPO:-~/kidchenko/dotfiles}
+# DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
+DOTFILES_DIR=$REPO
 
 copyProfile() {
     echo "Copying profile files."
@@ -19,6 +20,21 @@ copyProfile() {
     echo
 }
 
+ensureFolders() {
+
+    [[ ! -s ~/jetabroad ]] && echo "~/jetabroad folder does not exist. Creating..." && mkdir ~/jetabroad
+    echo
+
+    [[ ! -s ~/lambda3 ]] && echo "~/lambda3 folder does not exist. Creating..." && mkdir ~/lambda3
+    echo
+
+    [[ ! -s ~/thoughtworks ]] && echo "~/thoughtworks folder does not exist. Creating..." && mkdir ~/thoughtworks
+    echo
+
+    [[ ! -s ~/isho ]] && echo "~/isho folder does not exist. Creating..." && mkdir ~/isho
+    echo
+}
+
 reloadProfile() {
     echo "Reloading: ${SHELL}."
     echo "Loading user profile: ~/.zshrc"
@@ -28,6 +44,7 @@ reloadProfile() {
 
 main() {
     copyProfile
+    ensureFolders
     reloadProfile
 }
 

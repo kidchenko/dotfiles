@@ -12,14 +12,26 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias ~="cd ~" # `cd` is probably faster to type though
+
+# hack: not sure why the -- after alias
 alias -- -="cd -"
 
 # Shortcuts
 alias d="cd ~/Documents/Dropbox"
 alias dl="cd ~/Downloads"
 alias dt="cd ~/Desktop"
+
+# Me and my businesses
 alias ko="cd ~/kidchenko"
+
+# Companies I own
+alias isho="cd ~/isho"
+
+# Companies I worked with
+alias l3="cd ~/lambda3"
+alias jeta="cd ~/jetabroad"
 alias tw="cd ~/thoughtworks"
+
 alias g="git"
 alias profile="cat ~/.zshrc"
 
