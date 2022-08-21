@@ -40,14 +40,14 @@ export NVM_DIR="$HOME/.nvm"
 [ "$(command -v direnv)" ] && eval "$(direnv hook zsh)"
 
 eval "$(ssh-agent -s)"
-[ -s  ~/.ssh/id_rsa ] && ssh-add ~/.ssh/id_ed25519
+[ -s  ~/.ssh/id_ed25519 ] && ssh-add ~/.ssh/id_ed25519
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/$USER/.sdkman"
 [[ -s "/Users/$USER/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/$USER/.sdkman/bin/sdkman-init.sh"
 
 export GOPATH=/usr/local/bin/go
-[[ /usr/local/bin/kubectl ]] && source <(kubectl completion zsh)
+[[ -s /usr/local/bin/kubectl ]] && source <(kubectl completion zsh)
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
