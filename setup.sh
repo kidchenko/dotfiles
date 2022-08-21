@@ -1,19 +1,21 @@
 #!/bin/bash
+REPO=${REPO:-kidchenko/dotfiles}
+DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
 
 copyProfile() {
     echo "Copying profile files."
     # cp ./tools/update.sh ~/.kidchenko/dotfiles/tools/update.sh
-    cp ./.zshrc ~/.zshrc
-    cp ./.zlogin ~/.zlogin
-    cp ./.aliases ~/.aliases
-    cp ./.exports ~/.exports
-    cp ./.functions ~/.functions
-    cp ./.gitconfig ~/.gitconfig
-    cp ./.gvimrc ~/.gvimrc
-    cp ./.hyper.js ~/.hyper.js
-    cp ./.tmux.conf ~/.tmux.conf
-    cp ./.vimrc ~/.vimrc
-    cp ./brew.sh ~/brew.sh
+    cp $DOTFILES_DIR/.zshrc ~/.zshrc
+    cp $DOTFILES_DIR/.zlogin ~/.zlogin
+    cp $DOTFILES_DIR/.aliases ~/.aliases
+    cp $DOTFILES_DIR/.exports ~/.exports
+    cp $DOTFILES_DIR/.functions ~/.functions
+    cp $DOTFILES_DIR/.gitconfig ~/.gitconfig
+    cp $DOTFILES_DIR/.gvimrc ~/.gvimrc
+    cp $DOTFILES_DIR/.hyper.js ~/.hyper.js
+    cp $DOTFILES_DIR/.tmux.conf ~/.tmux.conf
+    cp $DOTFILES_DIR/.vimrc ~/.vimrc
+    cp $DOTFILES_DIR/brew.sh ~/brew.sh
     echo
 }
 
