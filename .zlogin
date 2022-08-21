@@ -26,7 +26,7 @@ echo
 # [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
 fpath=(/usr/local/share/zsh-completions $fpath)
-. $(brew --prefix)/etc/profile.d/z.sh
+[ -s $(brew --prefix)/etc/profile.d/z.sh ] && . $(brew --prefix)/etc/profile.d/z.sh
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -36,14 +36,15 @@ export NVM_DIR="$HOME/.nvm"
 # uninstall by removing these lines
 [ -f ~/.config/tabtab/__tabtab.bash ] && . ~/.config/tabtab/__tabtab.bash || true
 
-eval "$(direnv hook zsh)"
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
+# check direnv
+[ "$(command -v direnv)" ] && eval "$(direnv hook zsh)"
 
+eval "$(ssh-agent -s)"
+[ -s  ~/.ssh/id_rsa ] && ssh-add ~/.ssh/id_ed25519
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/Users/josebarbosa/.sdkman"
-[[ -s "/Users/josebarbosa/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/josebarbosa/.sdkman/bin/sdkman-init.sh"
+export SDKMAN_DIR="/Users/$USER/.sdkman"
+[[ -s "/Users/$USER/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/$USER/.sdkman/bin/sdkman-init.sh"
 
 export GOPATH=/usr/local/bin/go
 [[ /usr/local/bin/kubectl ]] && source <(kubectl completion zsh)
