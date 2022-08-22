@@ -6,9 +6,8 @@ $DOTFILES_DIR="~/.$REPO"
 function CopyProfile() {
 	if (!(Test-Path $PROFILE)) {
 		Write-Host "creating $PROFILE"
+        New-Item -Path $PROFILE -ItemType File -Force
 	}
-
-	New-Item -Path $PROFILE -ItemType File -Force
 
 	$dest = Split-Path $PROFILE
 
