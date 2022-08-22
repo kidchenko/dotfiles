@@ -13,9 +13,9 @@ function CopyProfile() {
 
     # Copy-Item ./tools/update.ps1 -Destination ~/.kidchenko/dotfiles/tools/update.ps1 -Force
 	Copy-Item $DOTFILES_DIR/profile.ps1 -Destination $PROFILE -Force
-	Copy-Item $DOTFILES_DIR/login.ps1 -Destination "$dest/login.ps1" -Force
-	Copy-Item $DOTFILES_DIR/modules.ps1 -Destination "$dest/modules.ps1" -Force
-	Copy-Item $DOTFILES_DIR/aliases.ps1 -Destination "$dest/aliases.ps1" -Force
+	Copy-Item $DOTFILES_DIR/.login.ps1 -Destination "~/.login.ps1" -Force
+	Copy-Item $DOTFILES_DIR/.modules.ps1 -Destination "~/.modules.ps1" -Force
+	Copy-Item $DOTFILES_DIR/.aliases.ps1 -Destination "~/.aliases.ps1" -Force
     Copy-Item $DOTFILES_DIR/.gitconfig -Destination ~/.gitconfig -Force
 }
 

@@ -1,3 +1,3 @@
-. $PSScriptRoot/login.ps1
-. $PSScriptRoot/modules.ps1
-. $PSScriptRoot/aliases.ps1
+. ~/.login.ps1
+. ~/.modules.ps1
+. ~/.aliases.ps1

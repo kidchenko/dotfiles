@@ -29,4 +29,13 @@ done
 
 # Offline work
 
-Need improve
+Need improvements
+
+
+# Poweshell
+
+Loaded files on startup
+
+- `~/.login.ps1`
+- `~/.modules.ps1`
+- `~/.aliases.ps1`
