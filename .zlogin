@@ -42,14 +42,4 @@ export NVM_DIR="$HOME/.nvm"
 eval "$(ssh-agent -s)"
 [ -s  ~/.ssh/id_ed25519 ] && ssh-add ~/.ssh/id_ed25519
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/Users/$USER/.sdkman"
-[[ -s "/Users/$USER/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/$USER/.sdkman/bin/sdkman-init.sh"
-
-export GOPATH=/usr/local/bin/go
-[[ -s /usr/local/bin/kubectl ]] && source <(kubectl completion zsh)
-
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
-export PATH="$PATH:$HOME/.gem/ruby/2.7.0/bin"
-export PATH="/usr/local/opt/libpq/bin:$PATH"
+. /usr/local/etc/profile.d/z.sh
