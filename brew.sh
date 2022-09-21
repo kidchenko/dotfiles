@@ -102,6 +102,7 @@ brew install vbindiff
 brew install zopfli
 
 brew install z
+brew install nvm
 
 # Cask
 brew install --cask hyper
