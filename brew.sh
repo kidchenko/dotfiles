@@ -22,9 +22,13 @@ brew install moreutils
 brew install findutils
 # Install GNU `sed`, overwriting the built-in `sed`.
 brew install gnu-sed --with-default-names
+
 # Install a modern version of Bash.
 brew install bash
 brew install bash-completion2
+
+# Install zsh
+brew install zsh
 
 # Switch to using brew-installed bash as default shell
 if ! fgrep -q "${BREW_PREFIX}/bin/bash" /etc/shells; then
@@ -98,6 +102,16 @@ brew install vbindiff
 brew install zopfli
 
 brew install z
+
+# Cask
+brew install --cask hyper
+brew install --cask docker
+brew install --cask brave-browser
+brew install --cask flux
+brew install --cask rescuetime
+brew install --cask spotify
+brew install --cask visual-studio-code
+
 
 # Remove outdated versions from the cellar.
 brew cleanup
