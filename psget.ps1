@@ -1,6 +1,6 @@
 Install-Module -Name PowerShellGet -Force
 
-Install-Module -Name z
+Install-Module -Name z -AllowClobber
 
 Install-Module -Name posh-git
 
