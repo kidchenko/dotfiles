@@ -79,7 +79,6 @@ function Clone () {
     catch {
         Say "Fail to clone dotfiles."
         Read-Host 'Press Enter to exit…'
-        Exit 1
     }
 }
 
