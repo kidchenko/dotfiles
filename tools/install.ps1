@@ -78,6 +78,7 @@ function Clone () {
     }
     catch {
         Say "Fail to clone dotfiles."
+        Exit 1
     }
 }
 
