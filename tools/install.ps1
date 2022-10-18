@@ -61,9 +61,25 @@ function InstallDeps ([string[]]$deps) {
 	Say "Installing dependencies..."
     Say
 	foreach ($dep in $deps) {
-		Say "Installing dependency: $dep."
+		if ($dep = "choco") {
+			Install-Choco
+		} else {
+			Install-DotFileDependency($dep)
+		}
 	}
     Say
+}
+
+function Install-DotFileDependency([string $dep]) {
+	Say "Installing dependency: $dep."
+	choco install $dep
+}
+
+function Install-Choco(){
+	Say "Installing choco: https://chocolatey.org/install#individual"
+	Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+	Say "choco installed."
+	Say
 }
 
 function Clone () {
@@ -92,9 +108,11 @@ function Invoke-Setup () {
 function Main {
 	Say "Installing dotfiles at $DOTFILES_DIR"
 
-	CheckDeps git, choco, juca
-	InstallDeps choco, juca
+	CheckDeps choco, git, juca
+	InstallDeps choco, git, juca
+
 	Clone
+
     Invoke-Setup
 }
 
