@@ -12,4 +12,6 @@ choco install nvm
 
 choco install python
 
+choco install dotnet-sdk
+
 choco feature disable -n=allowGlobalConfirmation
