@@ -61,7 +61,7 @@ function InstallDeps ([string[]]$deps) {
 	Say "Installing dependencies..."
     Say
 	foreach ($dep in $deps) {
-		if ($dep == "choco") {
+		if ($dep -eq "choco") {
 			Install-Choco
 		} else {
 			Install-DotFileDependency($dep)
