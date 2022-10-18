@@ -77,6 +77,7 @@ function Clone () {
         Say
     }
     catch {
+        Say "Fail to clone the dotfiles, please check the dependencies and try again"
         throw "Error cloning dotfiles"
         Read-Host 'Press Enter to exit…'
     }
