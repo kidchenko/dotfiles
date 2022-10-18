@@ -77,7 +77,9 @@ function Install-DotFileDependency([string $dep]) {
 
 function Install-Choco(){
 	Say "Installing choco: https://chocolatey.org/install#individual"
+
 	Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+	
 	Say "choco installed."
 	Say
 }
@@ -85,6 +87,7 @@ function Install-Choco(){
 function Clone () {
     Say "Cloning dotfiles..."
     Say
+	
 	if (Test-Path $DOTFILES_DIR) {
 		Remove-Item $DOTFILES_DIR -Recurse -Force
 	}
