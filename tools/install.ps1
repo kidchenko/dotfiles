@@ -70,7 +70,7 @@ function InstallDeps ([string[]]$deps) {
     Say
 }
 
-function Install-DotFileDependency([string $dep]) {
+function Install-DotFileDependency([string] $dep) {
 	Say "Installing dependency: $dep."
 	choco install $dep
 }
