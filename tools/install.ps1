@@ -77,9 +77,8 @@ function Clone () {
         Say
     }
     catch {
-        Say "Fail to clone dotfiles."
-        Read-Host 'Press Enter to exit…'
         throw "Error cloning dotfiles"
+        Read-Host 'Press Enter to exit…'
     }
 }
 
