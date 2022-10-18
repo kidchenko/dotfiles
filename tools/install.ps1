@@ -108,11 +108,17 @@ function Invoke-Setup () {
     & "$DOTFILES_DIR/setup.ps1"
 }
 
+function Install-DotFilesPsGetModules () {
+	Say "> Running psget.ps1"
+	& "$DOTFILES_DIR/psget.ps1"
+}
+
 function Main {
 	Say "Installing dotfiles at $DOTFILES_DIR"
 
 	CheckDeps choco, git, juca
 	InstallDeps choco, git #, juca
+	Install-DotFilesPsGetModules
 
 	Clone
 

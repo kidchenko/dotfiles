@@ -24,6 +24,8 @@ function ReloadProfile {
 	. $PROFILE
 }
 
+
+
 function Main () {
 	CopyProfile
 	ReloadProfile
