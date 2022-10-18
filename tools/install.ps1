@@ -112,7 +112,7 @@ function Main {
 	Say "Installing dotfiles at $DOTFILES_DIR"
 
 	CheckDeps choco, git, juca
-	InstallDeps choco, git, juca
+	InstallDeps choco, git, #juca
 
 	Clone
 
