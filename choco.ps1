@@ -14,4 +14,6 @@ choco install python
 
 choco install dotnet-sdk
 
+choco install microsoft-windows-terminal
+
 choco feature disable -n=allowGlobalConfirmation
