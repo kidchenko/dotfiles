@@ -16,4 +16,8 @@ choco install dotnet-sdk
 
 choco install microsoft-windows-terminal
 
+choco install discord
+
+choco install spotify
+
 choco feature disable -n=allowGlobalConfirmation
