@@ -185,3 +185,5 @@ if ($IsMacOS) {
     function Write-Path { $Env:PATH.Split(";") }
     Set-Alias path Write-Path
 }
+
+Set-Alias nick "git"
