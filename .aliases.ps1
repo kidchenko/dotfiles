@@ -27,12 +27,15 @@ function Reload-Profile {
 }
 
 function Update-Profile {
-    @(
+    $profiles = @(
         $Profile.AllUsersAllHosts,
         $Profile.AllUsersCurrentHost,
         $Profile.CurrentUserAllHosts,
         $Profile.CurrentUserCurrentHost
-    ) | % {
+    )
+
+    $profiles | ForEach-Object
+     {
         if (Test-Path $_) {
             Write-Output "Running $_"
             . $_
@@ -97,13 +100,18 @@ Set-Alias tw Thoughtworks
 
 # G for git
 Set-Alias g git
+
 function GitPush {
     git push
 }
 
 # Gps in Pwershell is alias for GetProcess
 if (Test-Path alias:gps) {
-    Remove-Alias -Name gps -Force
+    if ($Host.Version.Major -gt 6) {
+        Remove-Alias -Name gps -Force
+    } else {
+        Remove-Item alias:gps
+    }
 }
 
 Set-Alias gps GitPush
