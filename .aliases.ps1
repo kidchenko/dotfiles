@@ -110,7 +110,7 @@ if (Test-Path alias:gps) {
     if ($Host.Version.Major -gt 6) {
         Remove-Alias -Name gps -Force
     } else {
-        Remove-Item alias:gps
+        Remove-Item alias:gps -Force
     }
 }
 
