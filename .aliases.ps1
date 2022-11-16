@@ -34,11 +34,10 @@ function Update-Profile {
         $Profile.CurrentUserCurrentHost
     )
 
-    $profiles | ForEach-Object
-     {
-        if (Test-Path $_) {
-            Write-Output "Running $_"
-            . $_
+    foreach ($profile in $profiles) {
+        if (Test-Path $profile) {
+            Write-Output "Running $profile"
+            . $profile
         }
     }
 }
