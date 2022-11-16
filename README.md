@@ -10,6 +10,8 @@
 
 ## Windows
 
+![Theme](./robbyrussel.png "Theme")
+
 `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072`
 
 `iwr -useb 'https://raw.githubusercontent.com/kidchenko/dotfiles/master/tools/install.ps1' | iex`
@@ -68,7 +70,6 @@
 `g` => `git`
 
 
-
 ## List
 
 `l` => `ls`
@@ -118,5 +119,3 @@
 `profile` = Print profile
 
 Built with <3 in Bangkok.
-
-test

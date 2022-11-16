@@ -117,6 +117,7 @@ if (Test-Path alias:gps) {
 Set-Alias gps GitPush
 
 Set-Alias reload Reload-Profile
+
 Set-Alias profile Get-Profile
 
 # List files

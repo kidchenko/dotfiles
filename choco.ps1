@@ -21,3 +21,5 @@ choco install discord
 choco install spotify
 
 choco feature disable -n=allowGlobalConfirmation
+
+choco install docker-desktop
