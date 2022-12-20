@@ -24,4 +24,6 @@ choco install docker-desktop
 
 # add new software
 
+# add more
+
 choco feature disable -n=allowGlobalConfirmation
