@@ -1,4 +1,4 @@
-Import-Module posh-git
+#Import-Module posh-git
 Import-Module PSColor
 
 if (Get-Module -ListAvailable -Name PSReadLine) {
