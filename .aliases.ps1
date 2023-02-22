@@ -195,3 +195,5 @@ if ($IsMacOS) {
 }
 
 Set-Alias open ii
+
+Set-Alias faraz echo "hola"
