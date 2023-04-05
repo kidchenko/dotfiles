@@ -104,6 +104,10 @@ function GitPush {
     git push
 }
 
+function GitPull {
+    git pull
+}
+
 # Gps in Pwershell is alias for GetProcess
 if (Test-Path alias:gps) {
     if ($Host.Version.Major -gt 6) {
@@ -114,6 +118,8 @@ if (Test-Path alias:gps) {
 }
 
 Set-Alias gps GitPush
+
+Set-Alias gpl GitPull
 
 Set-Alias reload Reload-Profile
 
@@ -196,4 +202,4 @@ if ($IsMacOS) {
 
 Set-Alias open ii
 
-Set-Alias jit git
+
