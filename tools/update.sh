@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Default settings
 REPO=kidchenko/dotfiles
 DOTFILES_DIR=~/.kidchenko/dotfiles
