@@ -19,8 +19,8 @@ choco install powertoys
 choco install python
 choco install screentogif
 choco install slack
-choco install sql-server-management-studio
 choco install spotify
+choco install sql-server-management-studio
 choco install vim
 choco install vscode
 
