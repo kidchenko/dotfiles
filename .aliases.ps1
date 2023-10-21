@@ -110,88 +110,75 @@ Set-Alias sps _Sevenpeaks
 
 ### Git aliases
 
-function _GitAliases {
-    function GitPush {
-        git push
-    }
-
-    function GitPull {
-        git pull
-    }
-
-    # G for git
-    Set-Alias g git
-
-
-
-    # gps in Ppwershell is alias for GetProcess
-    if (Test-Path alias:gps) {
-        if ($Host.Version.Major -lt 5) {
-            Remove-Alias -Name gps -Force
-        }
-        else {
-            Remove-Item alias:gps -Force
-        }
-    }
-
-    Set-Alias gps GitPush
-
-    Set-Alias gpl GitPull
+function GitPush {
+    git push
 }
 
-
-function _ProfileAliases {
-
-    function Reload-Profile {
-        . Update-Profile
-    }
-
-    function Update-Profile {
-        $profiles = @(
-            $Profile.AllUsersAllHosts,
-            $Profile.AllUsersCurrentHost,
-            $Profile.CurrentUserAllHosts,
-            $Profile.CurrentUserCurrentHost
-        )
-
-        foreach ($profile in $profiles) {
-            if (Test-Path $profile) {
-                Write-Output "Running $profile"
-                . $profile
-            }
-        }
-    }
-
-    function Get-Profile {
-        Write-Output $PROFILE
-        cat $PROFILE
-    }
-
-    Set-Alias reload Reload-Profile
-
-    Set-Alias profile Get-Profile
+function GitPull {
+    git pull -r
 }
 
+# G for git
+Set-Alias g git
+
+
+
+# gps in Ppwershell is alias for GetProcess
+if (Test-Path alias:gps) {
+    if ($Host.Version.Major -lt 5) {
+        Remove-Alias -Name gps -Force
+    }
+    else {
+        Remove-Item alias:gps -Force
+    }
+}
+
+Set-Alias gps GitPush
+
+Set-Alias gpl GitPull
+
+function Reload-Profile {
+    . Update-Profile
+}
+
+function Update-Profile {
+    $profiles = @(
+        $Profile.AllUsersAllHosts,
+        $Profile.AllUsersCurrentHost,
+        $Profile.CurrentUserAllHosts,
+        $Profile.CurrentUserCurrentHost
+    )
+
+    foreach ($profile in $profiles) {
+        if (Test-Path $profile) {
+            Write-Output "Running $profile"
+            . $profile
+        }
+    }
+}
+
+function Get-Profile {
+    Write-Output $PROFILE
+    cat $PROFILE
+}
+
+Set-Alias reload Reload-Profile
+
+Set-Alias profile Get-Profile
 
 
 # ls alias
-function _LsAliases {
-    # List files
-    Set-Alias l ls
+# List files
+Set-Alias l ls
 
-    # List all files
-    Set-Alias la List-All
+# List all files
+Set-Alias la List-All
 
-    # List only directories
-    Set-Alias lsd List-Directory
+# List only directories
+Set-Alias lsd List-Directory
 
-    # List only hidden files
-    Set-Alias lsh List-Hidden
-}
-
-_GitAliases
-_ProfileAliases
-_LsAliases
+# List only hidden files
+Set-Alias lsh List-Hidden
 
 # Get week number
 Set-Alias week Get-Week
