@@ -36,14 +36,22 @@
 
 ## Windows
 
-- tls 1.2
-- long paths enabled
+- Use TLS 1.2
+- Windows Long Path Enabled (no more path to long errors)
 
 ### Installed Programs for Windows
 
 - git
 - choco
 - brave
+
+### Powershell Modules
+
+- posh-git
+- PowerShellGet
+- PSReadLine
+- Terminal-Icons
+- z
 
 # Aliases
 
