@@ -84,6 +84,8 @@ clone() {
 setup() {
     say "Running setup."
     say
+
+    chmod -x ~/.kidchenko/dotfiles/setup.sh
     source ~/.kidchenko/dotfiles/setup.sh
 }
 
