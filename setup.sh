@@ -1,8 +1,8 @@
 #!/bin/bash
 
-REPO=${REPO:-~/kidchenko/dotfiles}
+REPO=~/kidchenko/dotfiles
 # DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
-DOTFILES_DIR=$REPO
+DOTFILES_DIR=~/.kidchenko/dotfiles
 
 copyProfile() {
     echo "Copying profile files."
