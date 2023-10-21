@@ -17,12 +17,14 @@ function CopyProfile() {
 	Copy-Item $DOTFILES_DIR/.modules.ps1 -Destination "~/.modules.ps1" -Force
 	Copy-Item $DOTFILES_DIR/.aliases.ps1 -Destination "~/.aliases.ps1" -Force
     Copy-Item $DOTFILES_DIR/.gitconfig -Destination ~/.gitconfig -Force
+
+    Copy-Item $DOTFILES_DIR/.hyper.win.js -Destination $Env:AppData/Hyper/.hyper.js
 }
 
 function EnsureFolders() {
 
     if (!(Test-Path "~/lambda3")) {
-        "~/lambda3 folder does not exist. Creating..."
+        Write-Output "~/lambda3 folder does not exist. Creating..."
 
         mkdir "~/lambda3"
 

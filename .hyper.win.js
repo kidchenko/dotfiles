@@ -15,7 +15,7 @@ module.exports = {
 
         // font family with optional fallbacks
         fontFamily:
-            '"Fira Code", "MesloLGM Nerd Font", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
+            '"Delugia","CaskaydiaCove NF", "Fira Code", "MesloLGM Nerd Font", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
 
         // default font weight: 'normal' or 'bold'
         fontWeight: "normal",
@@ -106,7 +106,10 @@ module.exports = {
         //
         // PowerShell on Windows
         // - Example: `C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`
-        shell: "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        //
+        // PowerShell 7 on Windows
+        // - Example: `C:\\Program Files\\PowerShell\\7\\pwsh.exe`
+        shell: 'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
 
         // for setting shell arguments (i.e. for using interactive shellArgs: `['-i']`)
         // by default `['--login']` will be used

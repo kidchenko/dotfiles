@@ -1,1 +1,2 @@
 [x] fix reload
+[] move powershell  functions from .alias.ps1 to .functions.ps1

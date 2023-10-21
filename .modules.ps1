@@ -1,7 +1,12 @@
 #Import-Module posh-git
 # Import-Module PSColor
+# PSColor was replaced by Terminal-Icons
 Import-Module Terminal-Icons
-Import-Module PSReadLine -Force
+try {
+    Import-Module PSReadLine -Force
+}
+catch {
+}
 
 if (Get-Module -ListAvailable -Name PSReadLine) {
 }
