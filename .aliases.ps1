@@ -201,5 +201,3 @@ if ($IsMacOS) {
 }
 
 Set-Alias open ii
-
-Set-Alias tt git
