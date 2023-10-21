@@ -1,6 +1,6 @@
 # Default settings
-REPO=${REPO:-kidchenko/dotfiles}
-DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
+REPO=kidchenko/dotfiles
+DOTFILES_DIR=~/.kidchenko/dotfiles
 
 runUpdate() {
     echo "[dotfiles] New version available."
