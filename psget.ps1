@@ -8,7 +8,7 @@ Install-Module -Name posh-git
 
 Install-Module -Name Terminal-Icons
 
-Install-Module -Name PSReadLine -RequiredVersion 2.1.0 -Force
+Install-Module -Name PSReadLine -Force -AllowPrerelease -SkipPublisherCheck
 
 if (!($IsMacOS)) {
     Install-Module -Name Pscx -RequiredVersion 3.3.2 -AllowClobber

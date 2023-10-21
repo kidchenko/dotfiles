@@ -1,6 +1,7 @@
 #Import-Module posh-git
 # Import-Module PSColor
 Import-Module Terminal-Icons
+Import-Module PSReadLine -Force
 
 if (Get-Module -ListAvailable -Name PSReadLine) {
 }
