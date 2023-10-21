@@ -110,7 +110,7 @@ function GitPull {
 
 # Gps in Pwershell is alias for GetProcess
 if (Test-Path alias:gps) {
-    if ($Host.Version.Major -gt 6) {
+    if ($Host.Version.Major -ge 5) {
         Remove-Alias -Name gps -Force
     } else {
         Remove-Item alias:gps -Force
@@ -201,5 +201,3 @@ if ($IsMacOS) {
 }
 
 Set-Alias open ii
-
-Set-Alias dani git
