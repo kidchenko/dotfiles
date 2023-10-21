@@ -38,15 +38,18 @@ function _Thoughtworks {
     cd ~/thoughtworks
 }
 
-function _SevenPeaks {
-    cd ~/sevenpeaks
-}
-
 function _Thoughtworks {
     cd ~/thoughtworks
 }
 
+function _isho {
+    cd ~/isho
+}
 
+
+function _SevenPeaks {
+    cd ~/sevenpeaks
+}
 
 function Find-Text {
     Get-ChildItem -Recurse -Force | Select-String $args[0] -List
@@ -99,6 +102,7 @@ Set-Alias dt _Desktop
 
 # Me and my stuffs
 Set-Alias ko Kidchenko
+Set-Alias isho _isho
 
 # Work related
 Set-Alias l3 _Lambda3
@@ -211,6 +215,9 @@ else {
 
 # todo flush / clean up
 # end todo
+
+# C# Repl - waf/csharprepl
+Set-Alias csc csharprepl
 
 # Alias to generate md5 from string input
 if (!(Get-Command md5 -ErrorAction SilentlyContinue)) {

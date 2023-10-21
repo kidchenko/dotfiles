@@ -22,16 +22,22 @@ copyProfile() {
 
 ensureFolders() {
 
-    [[ ! -s ~/jetabroad ]] && echo "~/jetabroad folder does not exist. Creating..." && mkdir ~/jetabroad
+    [[ ! -s ~/lambda3 ]] && echo "~/lambda3 folder does not exist. Creating..." && mkdir ~/lambda3
     echo
 
-    [[ ! -s ~/lambda3 ]] && echo "~/lambda3 folder does not exist. Creating..." && mkdir ~/lambda3
+    [[ ! -s ~/jetabroad ]] && echo "~/jetabroad folder does not exist. Creating..." && mkdir ~/jetabroad
     echo
 
     [[ ! -s ~/thoughtworks ]] && echo "~/thoughtworks folder does not exist. Creating..." && mkdir ~/thoughtworks
     echo
 
+    [[ ! -s ~/sevenpeaks ]] && echo "~/sevenpeaks folder does not exist. Creating..." && mkdir ~/sevenpeaks
+    echo
+
     [[ ! -s ~/isho ]] && echo "~/isho folder does not exist. Creating..." && mkdir ~/isho
+    echo
+
+    [[ ! -s ~/kidchenko ]] && echo "~/kidchenko folder does not exist. Creating..." && mkdir ~/kidchenko
     echo
 }
 
