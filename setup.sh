@@ -1,4 +1,5 @@
 #!/bin/bash
+
 REPO=${REPO:-~/kidchenko/dotfiles}
 # DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
 DOTFILES_DIR=$REPO
