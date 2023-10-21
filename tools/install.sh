@@ -2,7 +2,7 @@
 
 # Default settings
 REPO=kidchenko/dotfiles
-DOTFILES_DIR="~/.kidchenko/dotfiles"
+DOTFILES_DIR=~/.kidchenko/dotfiles
 REMOTE=${REMOTE:-https://github.com/${REPO}.git}
 BRANCH=${BRANCH:-master}
 
@@ -84,7 +84,7 @@ clone() {
 setup() {
     say "Running setup."
     say
-    source $DOTFILES_DIR/setup.sh
+    source ~/.kidchenko/dotfiles/setup.sh
 }
 
 main() {
