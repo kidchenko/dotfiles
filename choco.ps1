@@ -1,29 +1,29 @@
 choco feature enable -n=allowGlobalConfirmation
 
+choco install adobereader
+choco install awscli
+choco install azure-cli
+choco install azure-data-studio
+choco install curl
+choco install dbeaver
+choco install discord
+choco install docker-desktop
+choco install dotnet-sdk
+choco install git
+choco install hyper
+choco install jq
+choco install microsoft-windows-terminal
+choco install nvm
 choco install postman
-
+choco install powertoys
+choco install python
+choco install screentogif
+choco install slack
+choco install sql-server-management-studio
+choco install spotify
+choco install vim
 choco install vscode
 
-choco install vim
-
-choco install hyper
-
-choco install nvm
-
-choco install python
-
-choco install dotnet-sdk
-
-choco install microsoft-windows-terminal
-
-choco install discord
-
-choco install spotify
-
-choco install docker-desktop
-
 # add new software
-
-# add more
 
 choco feature disable -n=allowGlobalConfirmation
