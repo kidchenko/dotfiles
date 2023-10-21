@@ -1,9 +1,19 @@
+# Functions
+
 function GoTo {
     cd ..
 }
 
 function Cloud {
     cd ~/Documents/Dropbox
+}
+
+function _Documents {
+    cd ~/Documents
+}
+
+function _Desktop {
+    cd ~/Desktop
 }
 
 function Downloads {
@@ -17,50 +27,41 @@ function Kidchenko {
 function Playground {
     cd "~/kidchenko/playground"
 }
+function _Lambda3 {
+    cd ~/lambda3
+}
+function _Jetabroad {
+    cd ~/jetabroad
+}
 
-function Thoughtworks {
+function _Thoughtworks {
     cd ~/thoughtworks
 }
 
-function Reload-Profile {
-    . Update-Profile
+function _SevenPeaks {
+    cd ~/sevenpeaks
 }
 
-function Update-Profile {
-    $profiles = @(
-        $Profile.AllUsersAllHosts,
-        $Profile.AllUsersCurrentHost,
-        $Profile.CurrentUserAllHosts,
-        $Profile.CurrentUserCurrentHost
-    )
-
-    foreach ($profile in $profiles) {
-        if (Test-Path $profile) {
-            Write-Output "Running $profile"
-            . $profile
-        }
-    }
+function _Thoughtworks {
+    cd ~/thoughtworks
 }
 
-function Get-Profile {
-    Write-Output $PROFILE
-    cat $PROFILE
-}
+
 
 function Find-Text {
     Get-ChildItem -Recurse -Force | Select-String $args[0] -List
 }
 
 function List-All {
-	Get-ChildItem -Force
+    Get-ChildItem -Force
 }
 
 function List-Directory {
-	Get-ChildItem -Directory
+    Get-ChildItem -Directory
 }
 
 function List-Hidden {
-	Get-ChildItem -Hidden
+    Get-ChildItem -Hidden
 }
 
 function Get-Week {
@@ -75,10 +76,12 @@ function Run-Update {
 
 # WinMac compatibility
 
+Set-Alias open ii
+
 # Find aliases
 ##
 ###
-if(!(Get-Command grep -ErrorAction SilentlyContinue)) {
+if (!(Get-Command grep -ErrorAction SilentlyContinue)) {
     Set-Alias grep Find-Text
 }
 
@@ -90,52 +93,105 @@ if(!(Get-Command grep -ErrorAction SilentlyContinue)) {
 Set-Alias -Force ".." GoTo
 
 # Shortcuts
+Set-Alias d _Documents
 Set-Alias dl Downloads
+Set-Alias dt _Desktop
+
+# Me and my stuffs
 Set-Alias ko Kidchenko
-Set-Alias tw Thoughtworks
+
+# Work related
+Set-Alias l3 _Lambda3
+Set-Alias jeta _Jetabroad
+Set-Alias tw _Thoughtworks
+Set-Alias sps _Sevenpeaks
+
 # Set-Alias play Playground
 
 ### Git aliases
 
-# G for git
-Set-Alias g git
-
-function GitPush {
-    git push
-}
-
-function GitPull {
-    git pull
-}
-
-# gps in Ppwershell is alias for GetProcess
-if (Test-Path alias:gps) {
-    if ($Host.Version.Major -lt 5) {
-        Remove-Alias -Name gps -Force
-    } else {
-        Remove-Item alias:gps -Force
+function _GitAliases {
+    function GitPush {
+        git push
     }
+
+    function GitPull {
+        git pull
+    }
+
+    # G for git
+    Set-Alias g git
+
+
+
+    # gps in Ppwershell is alias for GetProcess
+    if (Test-Path alias:gps) {
+        if ($Host.Version.Major -lt 5) {
+            Remove-Alias -Name gps -Force
+        }
+        else {
+            Remove-Item alias:gps -Force
+        }
+    }
+
+    Set-Alias gps GitPush
+
+    Set-Alias gpl GitPull
 }
 
-Set-Alias gps GitPush
 
-Set-Alias gpl GitPull
+function _ProfileAliases {
 
-Set-Alias reload Reload-Profile
+    function Reload-Profile {
+        . Update-Profile
+    }
 
-Set-Alias profile Get-Profile
+    function Update-Profile {
+        $profiles = @(
+            $Profile.AllUsersAllHosts,
+            $Profile.AllUsersCurrentHost,
+            $Profile.CurrentUserAllHosts,
+            $Profile.CurrentUserCurrentHost
+        )
 
-# List files
-Set-Alias l ls
+        foreach ($profile in $profiles) {
+            if (Test-Path $profile) {
+                Write-Output "Running $profile"
+                . $profile
+            }
+        }
+    }
 
-# List all files
-Set-Alias la List-All
+    function Get-Profile {
+        Write-Output $PROFILE
+        cat $PROFILE
+    }
 
-# List only directories
-Set-Alias lsd List-Directory
+    Set-Alias reload Reload-Profile
 
-# List only hidden files
-Set-Alias lsh List-Hidden
+    Set-Alias profile Get-Profile
+}
+
+
+
+# ls alias
+function _LsAliases {
+    # List files
+    Set-Alias l ls
+
+    # List all files
+    Set-Alias la List-All
+
+    # List only directories
+    Set-Alias lsd List-Directory
+
+    # List only hidden files
+    Set-Alias lsh List-Hidden
+}
+
+_GitAliases
+_ProfileAliases
+_LsAliases
 
 # Get week number
 Set-Alias week Get-Week
@@ -150,7 +206,8 @@ Set-Alias update Run-Update
 if ($IsMacOS) {
     function Open-Brave { open -n '/Applications/Brave Browser.app' }
     Set-Alias brave Open-Brave
-} else {
+}
+else {
     Set-Alias brave "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
 }
 
@@ -158,7 +215,8 @@ if ($IsMacOS) {
 if ($IsMacOS) {
     function Get-LocalIp { ipconfig getifaddr en0 }
     Set-Alias localip Get-LocalIp
-} else {
+}
+else {
     function Get-LocalIp { (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias Ethernet*).IPAddress }
     Set-Alias localip Get-LocalIp
     Set-Alias ip Get-LocalIp
@@ -168,26 +226,26 @@ if ($IsMacOS) {
 # end todo
 
 # Alias to generate md5 from string input
-if(!(Get-Command md5 -ErrorAction SilentlyContinue)) {
+if (!(Get-Command md5 -ErrorAction SilentlyContinue)) {
     function Get-Md5($value) {
-        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","").ToLower()
-      }
+        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-", "").ToLower()
+    }
     Set-Alias md5 Get-Md5
 }
 
 # Alias to generate sha1 from string input
-if(!(Get-Command sha1 -ErrorAction SilentlyContinue)) {
+if (!(Get-Command sha1 -ErrorAction SilentlyContinue)) {
     function Get-Sha1($value) {
-        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA1CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","")
-      }
+        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA1CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-", "")
+    }
     Set-Alias sha1 Get-Sha1
 }
 
 # Alias to generate sha256 from string input
-if(!(Get-Command sha256 -ErrorAction SilentlyContinue)) {
+if (!(Get-Command sha256 -ErrorAction SilentlyContinue)) {
     function Get-Sha256($value) {
-        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA256CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-","")
-      }
+        ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA256CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-", "")
+    }
     Set-Alias sha256 Get-Sha256
 }
 
@@ -195,9 +253,9 @@ if(!(Get-Command sha256 -ErrorAction SilentlyContinue)) {
 if ($IsMacOS) {
     function Write-Path { $Env:PATH.Split(":") }
     Set-Alias path Write-Path
-} else {
+}
+else {
     function Write-Path { $Env:PATH.Split(";") }
     Set-Alias path Write-Path
 }
 
-Set-Alias open ii

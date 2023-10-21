@@ -17,23 +17,33 @@ alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
 # Shortcuts
-alias d="cd ~/Documents/Dropbox"
+alias d="cd ~/Documents"
 alias dl="cd ~/Downloads"
 alias dt="cd ~/Desktop"
 
-# Me and my businesses
+# Me and my stuffs
 alias ko="cd ~/kidchenko"
 
-# Companies I own
+# Personal work
 alias isho="cd ~/isho"
 
-# Companies I worked with
+# Work related
 alias l3="cd ~/lambda3"
 alias jeta="cd ~/jetabroad"
 alias tw="cd ~/thoughtworks"
+alias sps="cd ~/sevenpeaks"
+
+### Git aliases
 
 alias g="git"
+
+# Profile
 alias profile="cat ~/.zshrc"
+
+# Reload the shell (i.e. invoke as a login shell)
+alias reload="exec ${SHELL} -l"
+
+# ls alias
 
 # Detect which `ls` flavor is in use
 # if ls --color > /dev/null 2>&1; then # GNU `ls`
@@ -164,8 +174,7 @@ alias chromekill="ps ux | grep '[C]hrome Helper --type=renderer' | grep -v exten
 # Lock the screen (when going AFK)
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 
-# Reload the shell (i.e. invoke as a login shell)
-alias reload="exec ${SHELL} -l"
+
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'

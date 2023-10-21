@@ -130,6 +130,4 @@ Delugia
 
 `profile` = Print profile
 
-Add Kannan
-
-Built with <3 in Bangkok.
+**Built with ❤️ by @kidchenko in Bangkok
