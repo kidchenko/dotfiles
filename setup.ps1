@@ -73,8 +73,6 @@ function ReloadProfile {
 	. $PROFILE
 }
 
-
-
 function Main () {
 	CopyProfile
     EnsureFolders

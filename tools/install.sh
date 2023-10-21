@@ -89,11 +89,13 @@ setup() {
 
 main() {
     say
-	say "Installing dotfiles at $DOTFILES_DIR"
 
-	checkdeps git brew juca
-	installdeps juca
-	clone
+	# checkdeps git brew juca
+	# installdeps juca
+
+    say "Installing dotfiles at $DOTFILES_DIR"
+
+    clone
     setup
 }
 

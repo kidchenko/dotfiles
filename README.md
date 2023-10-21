@@ -1,5 +1,7 @@
 # dotfiles
-🔧💻  kidchenko's `.files` macOS / Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, `.vimrc`, `powershell profile`, etc.
+🔧💻  @kidchenko's `.dotfiles`  for macOS/Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, `.vimrc`, `powershell profile`, etc.
+
+![dotfiles](./dotfiles.png "dotfiles")
 
 ## Font
 

@@ -8,3 +8,5 @@ Install-Module -Name z -AllowClobber
 if (!($IsMacOS)) {
     Install-Module -Name Pscx -RequiredVersion 3.3.2 -AllowClobber
 }
+
+dotnet tool install -g csharprepl
