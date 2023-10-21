@@ -6,6 +6,7 @@ choco install azure-cli
 choco install azure-data-studio
 choco install curl
 choco install dbeaver
+choco install nerd-fonts-delugiacomplete
 choco install discord
 choco install docker-desktop
 choco install dotnet-sdk

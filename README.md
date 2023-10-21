@@ -1,6 +1,10 @@
 # dotfiles
 🔧💻  kidchenko's `.files` macOS / Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, `.vimrc`, `powershell profile`, etc.
 
+## Font
+
+Delugia
+
 # Install
 
 ## Mac
