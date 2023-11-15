@@ -217,7 +217,7 @@ else {
 # end todo
 
 # C# Repl - waf/csharprepl
-Set-Alias csc csharprepl
+Set-Alias csrepl csharprepl
 
 # Alias to generate md5 from string input
 if (!(Get-Command md5 -ErrorAction SilentlyContinue)) {
@@ -253,3 +253,9 @@ else {
     Set-Alias path Write-Path
 }
 
+function _SetEnv($keyValue) {
+    $tuple = $keyValue.Split(":");
+    [System.Environment]::SetEnvironmentVariable($tuple[0].ToString().ToUpper(), $tuple[1].ToString(), "Machine")
+}
+
+Set-Alias env _SetEnv
