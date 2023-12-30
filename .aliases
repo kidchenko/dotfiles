@@ -55,22 +55,22 @@ alias reload="exec ${SHELL} -l"
 # fi
 
 # Use lsd for `ls``
-alias ls="lsd -l"
+alias ls="$(brew --prefix)/bin/lsd -l"
 
 # List all files
-alias l="lsd"
+alias l="$(brew --prefix)/bin/lsd"
 
 # List all files colorized in long format, including . and ..
-alias la="lsd -lAF"
+alias la="$(brew --prefix)/bin/lsd -lAF"
 
-# # List only directories
-# alias lsd="lsd -lF | grep '^d'"
-
-# List only list hidden files
-alias lsh="lsd --directory-only .*(^/)"
+# List only directories
+alias lsd="$(brew --prefix)/bin/lsd -d */"
 
 # List only list hidden files
-alias lsv="lsd --directory-only *(^/)"
+alias lsh="$(brew --prefix)/bin/lsd --directory-only .*(^/)"
+
+# List only list hidden files
+alias lsv="$(brew --prefix)/bin/lsd --directory-only *(^/)"
 
 # Always enable colored `grep` output
 # Note: `GREP_OPTIONS="--color=auto"` is deprecated, hence the alias usage.
