@@ -106,6 +106,13 @@ brew install zopfli
 brew install z
 brew install nvm
 
+brew tap homebrew/cask-fonts
+brew install font-hack-nerd-font
+
+brew install lsd
+brew install bat
+
+
 # Cask
 brew install --cask hyper
 brew install --cask docker
