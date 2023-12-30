@@ -54,17 +54,23 @@ alias reload="exec ${SHELL} -l"
 # 	export LSCOLORS='BxBxhxDxfxhxhxhxhxcxcx'
 # fi
 
-# List all files colorized in long format
-alias l="lsd -lF"
+# Use lsd for `ls``
+alias ls="lsd -l"
 
-# List all files colorized in long format, excluding . and ..
+# List all files
+alias l="lsd"
+
+# List all files colorized in long format, including . and ..
 alias la="lsd -lAF"
 
-# Always use color output for `ls`
-alias ls="lsd"
+# # List only directories
+# alias lsd="lsd -lF | grep '^d'"
 
-# List only directories
-# alias lsd="ls -lF ${colorflag} | grep --color=never '^d'"
+# List only list hidden files
+alias lsh="lsd --directory-only .*(^/)"
+
+# List only list hidden files
+alias lsv="lsd --directory-only *(^/)"
 
 # Always enable colored `grep` output
 # Note: `GREP_OPTIONS="--color=auto"` is deprecated, hence the alias usage.
