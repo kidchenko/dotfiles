@@ -41,10 +41,10 @@ fi
 # uninstall by removing these lines
 [ -f ~/.config/tabtab/__tabtab.bash ] && . ~/.config/tabtab/__tabtab.bash || true
 
-
-
 # check direnv
 [ "$(command -v direnv)" ] && eval "$(direnv hook zsh)"
 
 eval "$(ssh-agent -s)"
 [ -s  ~/.ssh/id_ed25519 ] && ssh-add ~/.ssh/id_ed25519
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
