@@ -111,7 +111,7 @@ brew install font-hack-nerd-font
 
 brew install lsd
 brew install bat
-
+brew install fzf
 
 # Cask
 brew install --cask hyper
