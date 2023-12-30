@@ -104,7 +104,6 @@ brew install vbindiff
 brew install zopfli
 
 brew install z
-brew install nvm
 
 brew tap homebrew/cask-fonts
 brew install font-hack-nerd-font
