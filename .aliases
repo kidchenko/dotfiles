@@ -66,6 +66,9 @@ alias la="$(brew --prefix)/bin/lsd -lAF"
 # List only directories
 alias lsd="$(brew --prefix)/bin/lsd -d */"
 
+# List only files
+alias lsf="$(brew --prefix)/bin/lsd -d (.*|*)(^/)"
+
 # List only list hidden files
 alias lsh="$(brew --prefix)/bin/lsd --directory-only .*(^/)"
 
