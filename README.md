@@ -1,26 +1,38 @@
 # dotfiles
 🔧💻  @kidchenko's `.dotfiles`  for macOS/Windows - including `~/.macos`, `~/.gitconfig`, `.zshrc`, `.vimrc`, `powershell profile`, etc.
 
-![dotfiles](./dotfiles.png "dotfiles")
-
-## Font
-
-Delugia
-
 # Install
 
-## Mac
+## MacOS
 
-`sh -c "$(curl -fsSL https://raw.github.com/kidchenko/dotfiles/master/tools/install.sh)"`
+To install on macOS, run the following command in your terminal:
+
+```sh
+sh -c "$(curl -fsSL https://raw.github.com/kidchenko/dotfiles/master/tools/install.sh)"
+```
+
+![dotfiles on mac](./img/dotfiles-mac.png "dotfiles")
+
+### Font
+
+Hack Nerd Font
 
 
 ## Windows
 
-![Theme](./robbyrussel.png "Theme")
+To install on Windows, run the following command in your terminal:
 
-`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072`
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
-`iwr -useb 'https://raw.githubusercontent.com/kidchenko/dotfiles/master/tools/install.ps1' | iex`
+iwr -useb 'https://raw.githubusercontent.com/kidchenko/dotfiles/master/tools/install.ps1' | iex
+```
+
+![dotfiles on win](./img/dotfiles-win.png "dotfiles")
+
+### Font
+
+Delugia
 
 
 # Features
