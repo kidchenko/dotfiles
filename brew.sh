@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-# Install command-line tools using Homebrew.
+# Ask for the administrator password upfront
+sudo -v
 
+# Install command-line tools using Homebrew.
 # Make sure we’re using the latest Homebrew.
 brew update
 
@@ -112,7 +114,7 @@ brew install --cask flux
 brew install --cask rescuetime
 brew install --cask spotify
 brew install --cask visual-studio-code
-
+brew install --cask iterm2
 
 # Remove outdated versions from the cellar.
 brew cleanup
