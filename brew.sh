@@ -111,6 +111,7 @@ brew install font-hack-nerd-font
 brew install lsd
 brew install bat
 brew install fzf
+brew install graphviz
 
 # Cask
 brew install --cask hyper
@@ -121,6 +122,13 @@ brew install --cask rescuetime
 brew install --cask spotify
 brew install --cask visual-studio-code
 brew install --cask iterm2
+brew install --cask 1password
+brew install --cask slack
+brew install --cask notion
+brew install --cask postman
+brew install --cask spectacle
+brew install --cask discord
+
 
 # Remove outdated versions from the cellar.
 brew cleanup
