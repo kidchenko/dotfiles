@@ -259,3 +259,6 @@ function _SetEnv($keyValue) {
 }
 
 Set-Alias env _SetEnv
+
+
+Set-Alias jose git
