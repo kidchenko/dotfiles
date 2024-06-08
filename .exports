@@ -50,3 +50,6 @@ export GOPATH=/usr/local/bin/go
 export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.7.0/bin"
 export PATH="/usr/local/opt/libpq/bin:$PATH"
+
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"

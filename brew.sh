@@ -113,7 +113,10 @@ brew install bat
 brew install fzf
 brew install graphviz
 brew install azure-cli
-
+brew install jq
+brew install java
+brew install ruby
+brew install kdoctor
 
 # Cask
 brew install --cask hyper
@@ -131,7 +134,7 @@ brew install --cask postman
 brew install --cask spectacle
 brew install --cask discord
 brew install --cask powershell
-
+brew install --cask jetbrains-toolbox
 
 # Remove outdated versions from the cellar.
 brew cleanup

@@ -202,3 +202,5 @@ alias path='echo -e ${PATH//:/\\n}'
 # alias k="kubectl"
 
 alias gps="git push"
+
+alias gpl="git pull"
