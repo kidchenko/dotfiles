@@ -5,6 +5,10 @@
 
 ## MacOS
 
+Requirements:
+- zsh
+- oh-my-zsh
+
 To install on macOS, run the following command in your terminal:
 
 ```sh

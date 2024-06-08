@@ -112,6 +112,8 @@ brew install lsd
 brew install bat
 brew install fzf
 brew install graphviz
+brew install azure-cli
+
 
 # Cask
 brew install --cask hyper
@@ -128,6 +130,7 @@ brew install --cask notion
 brew install --cask postman
 brew install --cask spectacle
 brew install --cask discord
+brew install --cask powershell
 
 
 # Remove outdated versions from the cellar.
