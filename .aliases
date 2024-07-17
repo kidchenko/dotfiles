@@ -204,5 +204,3 @@ alias path='echo -e ${PATH//:/\\n}'
 alias gps="git push"
 
 alias gpl="git pull"
-
-alias xnight="git"
