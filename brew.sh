@@ -119,6 +119,7 @@ brew install ruby
 brew install kdoctor
 
 # Cask
+brew install --cask dotnet-sdk
 brew install --cask hyper
 brew install --cask docker
 brew install --cask brave-browser
@@ -135,6 +136,7 @@ brew install --cask spectacle
 brew install --cask discord
 brew install --cask powershell
 brew install --cask jetbrains-toolbox
+
 
 # Remove outdated versions from the cellar.
 brew cleanup

@@ -205,4 +205,4 @@ alias gps="git push"
 
 alias gpl="git pull"
 
-alias erik=git
+alias makon=git
