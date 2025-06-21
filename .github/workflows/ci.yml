@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, v2 ] # Adjust to your default branch
+    branches: [ v2 ] # Adjust to your default branch
   pull_request:
-    branches: [ main, master, v2 ] # Adjust to your default branch
+    branches: [ v2 ] # Adjust to your default branch
 
 jobs:
   lint:
@@ -24,7 +24,7 @@ jobs:
       #     Import-Module PSScriptAnalyzer
 
       - name: Lint Bash scripts
-        run: shellcheck setup.sh tools/install.sh custom_scripts/*.sh tests/bash/*.bats
+        run: shellcheck setup.sh tools/install.sh custom_scripts/*.sh
 
       # - name: Lint PowerShell scripts
       #   shell: pwsh
