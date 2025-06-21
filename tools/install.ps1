@@ -8,6 +8,19 @@ $REPO="kidchenko/dotfiles"
 $DOTFILES_DIR="$BASE_DIR/.$REPO"
 $REMOTE="https://github.com/$REPO.git"
 
+# OS detection functions (copied from setup.ps1)
+function Get-OSType-Install {
+    if ($IsWindows) { return "windows" }
+    elseif ($IsMacOS) { return "macos" }
+    elseif ($IsLinux) { return "linux" }
+    else { return "unknown" }
+}
+
+function Test-IsMacOS-Install { return $IsMacOS }
+function Test-IsLinux-Install { return $IsLinux }
+function Test-IsWindows-Install { return $IsWindows }
+# End OS detection functions
+
 function Say ([string]$message) {
 	Write-Host $message
 }
@@ -24,11 +37,17 @@ function Warn([string]$message) {
 }
 
 function IsCommand([string]$cmd) {
-	if ($IsMacOS -or $IsLinux) {
-		return which $cmd
+	# In PowerShell 7+, Get-Command can find executables.
+    # For broader compatibility, especially on Windows PowerShell 5.1:
+	if (Test-IsWindows-Install) {
+        # where.exe is reliable on Windows for finding .exe, .cmd, .bat etc. in PATH
+        return (where.exe $cmd 2>$null)
+	} else {
+        # For macOS/Linux, 'command -v' or 'which' are typical
+        # 'command -v' is generally preferred over 'which'
+        # Using Get-Command as it's PowerShell idiomatic and works for functions/aliases too
+        return (Get-Command $cmd -ErrorAction SilentlyContinue)
 	}
-
-	return where.exe $cmd
 }
 
 function CheckDeps([string[]]$deps) {
@@ -115,14 +134,29 @@ function Install-DotFilesPsGetModules () {
 
 function Main {
 	Say "Installing dotfiles at $DOTFILES_DIR"
+    Say "Determined OS Type: $(Get-OSType-Install)"
 
 	CheckDeps choco, git, juca
 	InstallDeps choco, git #, juca
 	Install-DotFilesPsGetModules
 
+	Install-Chezmoi
+
 	Clone
 
     Invoke-Setup
+}
+
+function Install-Chezmoi {
+	Say "Installing chezmoi..."
+	Say
+	if (!(IsCommand "chezmoi")) {
+		Say "Installing chezmoi using Chocolatey..."
+		choco install chezmoi -y
+	} else {
+		Say "chezmoi is already installed."
+	}
+	Say
 }
 
 Main
