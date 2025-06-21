@@ -1,9 +1,7 @@
 #!/bin/bash
 
-REPO=~/kidchenko/dotfiles
 # DOTFILES_DIR=${DOTFILES_DIR:-~/.${REPO}}
 DOTFILES_DIR=~/.kidchenko/dotfiles
-CRON_DIR=~/.kidchenko/dotfiles/cron
 CONFIG_FILE=~/.kidchenko/dotfiles/config.yaml
 
 # Logging functions
@@ -35,12 +33,13 @@ get_os_type() {
         return
     fi
 
-    if [[ "$(uname)" == "Darwin" ]]; then
+    local_uname_s=$(uname -s)
+    if [[ "$(uname)" == "Darwin" ]]; then # uname without -s for Darwin is fine
         _OS_TYPE="macos"
-    elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+    elif [[ "${local_uname_s:0:5}" == "Linux" ]]; then # Bash specific string manipulation
         _OS_TYPE="linux"
     # Add other checks if needed, e.g. for WSL (Windows Subsystem for Linux)
-    # elif grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null; then
+    # elif grep -qE "(Microsoft|WSL)" "/proc/version" &> /dev/null; then # Added quotes for /proc/version
     #     _OS_TYPE="wsl" # Could be considered a type of linux
     else
         _OS_TYPE="unknown"
@@ -64,7 +63,8 @@ get_config_value() {
 # Function to check if a feature flag is enabled
 is_feature_enabled() {
     local feature_name="$1"
-    local value=$(get_config_value ".feature_flags.$feature_name")
+    local value
+    value=$(get_config_value ".feature_flags.$feature_name")
     if [[ "$value" == "true" ]]; then
         return 0 # true
     else
@@ -73,7 +73,8 @@ is_feature_enabled() {
 }
 
 ensureFolders() {
-    local username=$(get_config_value '.general.username')
+    local username
+    username=$(get_config_value '.general.username')
     log_info "Using username from config: $username for folder checks (if applicable in future)"
 
     local DIRS_TO_ENSURE=(
@@ -104,10 +105,14 @@ install_yq() {
         # This part needs to be adjusted based on the target system and package manager
         if is_macos; then
             log_info "Detected macOS, attempting to install yq via Homebrew..."
-            brew install yq || log_error "Failed to install yq with Homebrew."
+            if ! brew install yq; then
+                log_error "Failed to install yq with Homebrew."
+            fi
         elif is_linux; then
             log_info "Detected Linux, attempting to install yq via apt-get..."
-            sudo apt-get update && sudo apt-get install -y yq || log_error "Failed to install yq with apt-get."
+            if ! (sudo apt-get update && sudo apt-get install -y yq); then
+                log_error "Failed to install yq with apt-get."
+            fi
         else
             log_error "Unsupported OS for yq installation. Please install yq manually."
             return 1 # Indicate failure
@@ -160,12 +165,16 @@ install_git_bash() {
             log_info "Attempting to install Git..."
             if is_macos; then
                 if command -v brew &> /dev/null; then
-                    brew install git || log_error "Failed to install Git with Homebrew."
+                    if ! brew install git; then
+                        log_error "Failed to install Git with Homebrew."
+                    fi
                 else
                     log_error "Homebrew not found. Cannot install Git."
                 fi
             elif is_linux; then
-                sudo apt-get update && sudo apt-get install -y git || log_error "Failed to install Git with apt-get."
+                if ! (sudo apt-get update && sudo apt-get install -y git); then
+                    log_error "Failed to install Git with apt-get."
+                fi
             else
                 log_warn "Git installation not configured for this OS. Please install Git manually."
             fi
@@ -227,75 +236,7 @@ install_oh_my_posh_bash() {
         fi
     else
         log_info "Oh My Posh is already installed."
-            if command -v brew &> /dev/null; then
-                brew install git || log_error "Failed to install Git with Homebrew."
-            else
-                log_error "Homebrew not found. Cannot install Git."
-            fi
-        elif is_linux; then
-            sudo apt-get update && sudo apt-get install -y git || log_error "Failed to install Git with apt-get."
-        else
-            log_warn "Git installation not configured for this OS. Please install Git manually."
-        fi
-    else
-        log_info "Git is already installed."
-    fi
-}
-
-install_brave_bash() {
-    # This is a simplified check. Real check might involve 'dpkg -s brave-browser' or 'brew list brave-browser'
-    if ! command -v brave-browser &> /dev/null && ! command -v brave &> /dev/null; then # 'brave' for some linux installs
-        log_info "Attempting to install Brave Browser..."
-        if is_macos; then
-            if command -v brew &> /dev/null; then
-                brew install brave-browser || log_error "Failed to install Brave Browser with Homebrew."
-            else
-                log_error "Homebrew not found. Cannot install Brave Browser."
-            fi
-        elif is_linux; then
-            # Brave installation on Linux is more involved (repo and key setup)
-            # For now, just a placeholder message.
-            # Example:
-            # sudo apt install apt-transport-https curl
-            # sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-            # echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main"|sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-            # sudo apt update
-            # sudo apt install brave-browser
-            log_warn "Brave Browser installation on Linux requires manual steps or a more complex script section. See Brave website."
-            log_info "Placeholder: sudo apt-get update && sudo apt-get install -y brave-browser (this might not be the correct package name or method)"
-        else
-            log_warn "Brave Browser installation not configured for this OS. Please install Brave manually."
-        fi
-    else
-        log_info "Brave Browser is already installed or a 'brave' command exists."
-    fi
-}
-
-install_oh_my_posh_bash() {
-    # Oh My Posh recommends installation via their script for latest version
-    # curl -s https://ohmyposh.dev/install.sh | bash -s
-    if ! command -v oh-my-posh &> /dev/null; then
-        log_info "Attempting to install Oh My Posh..."
-        if is_macos; then
-             if command -v brew &> /dev/null; then
-                brew install oh-my-posh || log_error "Failed to install Oh My Posh with Homebrew."
-            else
-                log_warn "Homebrew not found. Attempting Oh My Posh script install."
-                curl -s https://ohmyposh.dev/install.sh | bash -s || log_error "Failed to install Oh My Posh using script."
-            fi
-        elif is_linux; then
-            # On Linux, script install is common. Ensure /usr/local/bin is in PATH for the user.
-            curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin || log_error "Failed to install Oh My Posh using script."
-            # User might need to add ~/.local/bin to PATH if not already present
-            if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-                 log_warn "$HOME/.local/bin is not in your PATH. Add it to use oh-my-posh, or ensure it's added by your shell profile."
-            fi
-        else
-            log_warn "Oh My Posh installation not configured for this OS (non-macOS/Linux). Please install manually."
-        fi
-    else
-        log_info "Oh My Posh is already installed."
-    fi
+    fi # Added missing fi
 }
 # End Installation functions
 
@@ -307,20 +248,26 @@ run_post_install_hooks_bash() {
         return
     fi
 
-    local hooks_count=$(get_config_value ".post_install_hooks.scripts | length")
+    local hooks_count
+    hooks_count=$(get_config_value ".post_install_hooks.scripts | length")
     if [[ -z "$hooks_count" || "$hooks_count" -eq 0 ]]; then
         log_info "No post-install hooks defined in config.yaml."
         return
     fi
 
     log_info "Found $hooks_count post-install hook(s) defined. Processing..."
-    local current_os=$(get_os_type)
+    local current_os
+    current_os=$(get_os_type)
 
-    for i in $(seq 0 $(($hooks_count - 1))); do
-        local hook_run_on_list=$(get_config_value ".post_install_hooks.scripts[$i].run_on")
-        local hook_script=$(get_config_value ".post_install_hooks.scripts[$i].script")
-        local hook_command=$(get_config_value ".post_install_hooks.scripts[$i].command")
-        local hook_description=$(get_config_value ".post_install_hooks.scripts[$i].description")
+    for i in $(seq 0 $((hooks_count - 1))); do # SC2004 fixed
+        local hook_run_on_list
+        hook_run_on_list=$(get_config_value ".post_install_hooks.scripts[$i].run_on")
+        local hook_script
+        hook_script=$(get_config_value ".post_install_hooks.scripts[$i].script")
+        local hook_command
+        hook_command=$(get_config_value ".post_install_hooks.scripts[$i].command")
+        local hook_description
+        hook_description=$(get_config_value ".post_install_hooks.scripts[$i].description")
 
         # Check if current_os is in hook_run_on_list (e.g., "[linux, macos]")
         local run_this_hook=false
@@ -348,11 +295,13 @@ run_post_install_hooks_bash() {
                 if [[ -f "$hook_script_path" ]]; then
                     if [[ -x "$hook_script_path" ]]; then
                         log_info "Executing script: $hook_script_path"
+                        local script_exit_code
                         (cd "$DOTFILES_DIR" && "$hook_script_path") # Execute in context of dotfiles dir
-                        if [[ $? -eq 0 ]]; then
+                        script_exit_code=$?
+                        if [[ $script_exit_code -eq 0 ]]; then
                             log_info "Script $hook_script_path executed successfully."
                         else
-                            log_error "Script $hook_script_path failed with error code $?."
+                            log_error "Script $hook_script_path failed with error code $script_exit_code."
                         fi
                     else
                         log_error "Script $hook_script_path is not executable. Please use chmod +x."
@@ -362,11 +311,13 @@ run_post_install_hooks_bash() {
                 fi
             elif [[ "$hook_command" != "null" && -n "$hook_command" ]]; then
                 log_info "Executing command: $hook_command"
+                local cmd_exit_code
                 eval "$hook_command"
-                if [[ $? -eq 0 ]]; then
+                cmd_exit_code=$?
+                if [[ $cmd_exit_code -eq 0 ]]; then
                     log_info "Command executed successfully: $hook_command"
                 else
-                    log_error "Command failed with error code $?: $hook_command"
+                    log_error "Command failed with error code $cmd_exit_code: $hook_command"
                 fi
             else
                 log_warn "Hook ($((i+1))/$hooks_count) for $current_os has no valid script or command."

@@ -48,6 +48,7 @@ EOF
     # setup.sh is designed to be sourced by tools/install.sh, but its main() is called at the end.
     # For testing functions, we can source it and not call main().
     # Or, we can extract functions to a library if setup.sh becomes too complex.
+    # shellcheck source=../../setup.sh
     source ../../setup.sh
 }
 

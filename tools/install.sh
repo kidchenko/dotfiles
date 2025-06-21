@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Default settings
 REPO=kidchenko/dotfiles
@@ -13,18 +13,21 @@ _OS_TYPE_INSTALL="" # Cache variable for install script
 
 get_os_type_install() {
     if [[ -n "$_OS_TYPE_INSTALL" ]]; then
-        echo "$_OS_TYPE_INSTALL"
+        printf '%s\n' "$_OS_TYPE_INSTALL"
         return
     fi
 
+    # SC2046: Quote this to prevent word splitting
+    local local_uname_s
+    local_uname_s=$(uname -s)
     if [[ "$(uname)" == "Darwin" ]]; then
         _OS_TYPE_INSTALL="macos"
-    elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+    elif [[ "${local_uname_s:0:5}" == "Linux" ]]; then # Bash specific string manipulation
         _OS_TYPE_INSTALL="linux"
     else
         _OS_TYPE_INSTALL="unknown"
     fi
-    echo "$_OS_TYPE_INSTALL"
+    printf '%s\n' "$_OS_TYPE_INSTALL"
 }
 
 is_macos_install() {
@@ -37,89 +40,115 @@ is_linux_install() {
 # End OS detection functions
 
 say() {
-	echo $1
+    # SC2086: Double quote to prevent globbing and word splitting.
+	printf '%s\n' "$1"
 }
 
 ask() {
-	say
-	read -p "$*" -n 1 -r
-	say
+	say "" # Print a newline before the prompt
+    # SC3045: In POSIX sh, read -p is undefined. (Still valid for bash)
+    # However, to make it more robust and handle empty input for -n 1:
+    local reply
+	read -r -n 1 -p "$* " reply
+	printf '\n' # Add a newline after input
+    REPLY="$reply" # Set REPLY for compatibility if other parts of script use it
+	say "" # Print a newline after
 }
 
 warn() {
-	printf >&2 "WARNING $SCRIPTNAME: $*\n"
-    say
+    # SC2059: Don't use variables in the printf format string.
+	printf >&2 "WARNING %s: %s\n" "$SCRIPTNAME" "$*"
+    say "" # Print a newline after warning
 }
 
 iscmd() {
-	command -v "$@" >&-
+    # No change needed, command -v is fine. ">&-" redirects stdout to null.
+	command -v "$@" >/dev/null 2>&1
 }
 
 checkdeps() {
-	say
+	say ""
 	say "Checking dependencies..."
     say ""
-	# https://ss64.com/bash/local.html
-	local -i not_found
-	for cmd; do
+	# SC3043: In POSIX sh, 'local' is undefined. (Fine in bash)
+	local -i not_found=0 # Initialize not_found
+	for cmd in "$@"; do # Iterate over arguments safely
 		say "Checking if $cmd is installed."
-		iscmd "$cmd" || {
-			warn $"$cmd is required and is not found."
-			let not_found++
-		}
+		if ! iscmd "$cmd"; then
+            # SC3004: In POSIX sh, $".." is undefined. (Fine in bash's gettext support, but not used here)
+            # Use standard quoting.
+			warn "$cmd is required and is not found."
+            # SC3039: In POSIX sh, 'let' is undefined. (Fine in bash)
+            # SC3018: In POSIX sh, ++ is undefined. (Fine in bash)
+            # SC2219: Instead of 'let expr', prefer (( expr )) .
+			((not_found++))
+		fi
 	done
-	# same as if ()
-	((not_found == 0)) || {
+	# SC3006: In POSIX sh, standalone ((..)) is undefined. (Fine in bash)
+	if ((not_found != 0)); then
 		warn "The dependencies listed above are required to install and use this project."
         say "I can install the required dependencies for you."
-		ask $"Do you wanna to install? [y/n]: "
+        # SC3004: In POSIX sh, $".." is undefined.
+		ask "Do you wanna to install? [y/n]:" # Removed $
 		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 			say "Install the required dependencies and then try again..."
 			say "Bye."
-			[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 # handle exits from shell or function but don't exit interactive shell
+            # SC2128: Expanding an array without an index only gives the first element. (BASH_SOURCE is not an array here)
+            # SC3028: In POSIX sh, BASH_SOURCE is undefined. (Fine in bash)
+			[[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1 # handle exits from shell or function but don't exit interactive shell
 		fi
-
-	}
-
+	fi
 }
 
 installdeps() {
+	say ""
 	say "Installing dependencies..."
-    say
-	# same as for var in "$@"
-	# https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
-	for dep; do
+    say ""
+	for dep in "$@"; do # Iterate over arguments safely
 		say "Installing dependency: $dep."
 	done
-    say
+    say ""
 }
 
 clone() {
     say "Cloning dotfiles..."
-    say
-    # if [ -d "$DOTFILES_DIR"]; then
+    say ""
+    # if [ -d "$DOTFILES_DIR"]; then # Typo: missing space before ]
     #     say "$DOTFILES_DIR already exists. Skipping"
     #     # do something if the absolute directory exists
     # fi
-	rm -rf $DOTFILES_DIR
-	git clone $REMOTE $DOTFILES_DIR || {
+    # Consider expanding ~ for DOTFILES_DIR if it's not already
+    local expanded_dotfiles_dir
+    expanded_dotfiles_dir=$(eval echo "$DOTFILES_DIR")
+
+	rm -rf "$expanded_dotfiles_dir"
+    # SC2086: Double quote to prevent globbing and word splitting.
+	git clone "$REMOTE" "$expanded_dotfiles_dir" || {
     say "Fail to clone dotfiles."
     exit 1
   }
-  say
+  say ""
 }
 
 setup() {
     say "Running setup."
-    say
+    say ""
 
-    chmod -x ~/.kidchenko/dotfiles/setup.sh
-    source ~/.kidchenko/dotfiles/setup.sh
+    local setup_script_path
+    # SC2088: Tilde does not expand in quotes. Use $HOME.
+    setup_script_path="$HOME/.kidchenko/dotfiles/setup.sh"
+
+    chmod +x "$setup_script_path" # Changed from -x to +x, assuming it needs to be executable to be sourced or run
+    # SC3046: In POSIX sh, 'source' in place of '.' is undefined. (Fine in bash)
+    # SC1090: ShellCheck can't follow non-constant source.
+    # Using eval to expand tilde.
+    # shellcheck source=/dev/null
+    source "$setup_script_path"
 }
 
 install_chezmoi() {
     say "Installing chezmoi..."
-    say
+    say ""
     if ! iscmd chezmoi; then
         if is_macos_install; then
             say "Detected macOS. Installing chezmoi using Homebrew..."
@@ -132,6 +161,7 @@ install_chezmoi() {
         elif is_linux_install; then
             say "Detected Linux. Installing chezmoi from sh.chezmoi.io..."
             if iscmd curl || iscmd wget; then
+                 # SC2046: Quote this to prevent word splitting is not an issue here as we want word splitting for sh -c
                  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin || { say "Failed to install chezmoi from script."; exit 1; }
             else
                 say "curl or wget not found. Please install one of them or install chezmoi manually."
@@ -144,15 +174,15 @@ install_chezmoi() {
     else
         say "chezmoi is already installed."
     fi
-    say
+    say ""
 }
 
 main() {
-    say
-    say "Determined OS type: $(get_os_type_install)"
+    say ""
+    say "Determined OS type: $(get_os_type_install)" # Subshell output is fine here
 
-	# checkdeps git brew juca
-	# installdeps juca
+	# checkdeps git brew juca # Example, not active
+	# installdeps juca        # Example, not active
 
     say "Installing dotfiles at $DOTFILES_DIR"
 

@@ -10,6 +10,7 @@ PATH="$MOCK_DIR_TOOLS_INSTALL:$PATH"
 
 setup_file() {
     # Source the script to be tested
+    # shellcheck source=../../../tools/install.sh
     source ../../../tools/install.sh
 }
 
