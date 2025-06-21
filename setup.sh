@@ -72,6 +72,16 @@ is_feature_enabled() {
     fi
 }
 
+is_post_install_hooks_enabled() {
+    local value
+    value=$(get_config_value ".post_install_hooks.enabled")
+    if [[ "$value" == "true" ]]; then
+        return 0 # true
+    else
+        return 1 # false
+    fi
+}
+
 ensureFolders() {
     local username
     username=$(get_config_value '.general.username')
@@ -190,7 +200,7 @@ install_oh_my_posh_bash() {
 # Post-install hooks execution
 run_post_install_hooks_bash() {
     log_info "Checking for post-install hooks..."
-    if ! is_feature_enabled "post_install_hooks.enabled"; then
+    if ! is_post_install_hooks_enabled ; then
         log_info "Post-install hooks are disabled globally. Skipping."
         return
     fi
