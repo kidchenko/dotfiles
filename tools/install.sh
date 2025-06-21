@@ -8,6 +8,34 @@ BRANCH=${BRANCH:-master}
 
 SCRIPTNAME="${0##*/}"
 
+# OS detection functions (copied from setup.sh, consider sourcing if scripts grow)
+_OS_TYPE_INSTALL="" # Cache variable for install script
+
+get_os_type_install() {
+    if [[ -n "$_OS_TYPE_INSTALL" ]]; then
+        echo "$_OS_TYPE_INSTALL"
+        return
+    fi
+
+    if [[ "$(uname)" == "Darwin" ]]; then
+        _OS_TYPE_INSTALL="macos"
+    elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+        _OS_TYPE_INSTALL="linux"
+    else
+        _OS_TYPE_INSTALL="unknown"
+    fi
+    echo "$_OS_TYPE_INSTALL"
+}
+
+is_macos_install() {
+    [[ "$(get_os_type_install)" == "macos" ]]
+}
+
+is_linux_install() {
+    [[ "$(get_os_type_install)" == "linux" ]]
+}
+# End OS detection functions
+
 say() {
 	echo $1
 }
@@ -89,14 +117,46 @@ setup() {
     source ~/.kidchenko/dotfiles/setup.sh
 }
 
+install_chezmoi() {
+    say "Installing chezmoi..."
+    say
+    if ! iscmd chezmoi; then
+        if is_macos_install; then
+            say "Detected macOS. Installing chezmoi using Homebrew..."
+            if iscmd brew; then
+                brew install chezmoi || { say "Failed to install chezmoi using Homebrew."; exit 1; }
+            else
+                say "Homebrew not found. Please install Homebrew or install chezmoi manually."
+                exit 1
+            fi
+        elif is_linux_install; then
+            say "Detected Linux. Installing chezmoi from sh.chezmoi.io..."
+            if iscmd curl || iscmd wget; then
+                 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin || { say "Failed to install chezmoi from script."; exit 1; }
+            else
+                say "curl or wget not found. Please install one of them or install chezmoi manually."
+                exit 1
+            fi
+        else
+            say "Unsupported OS for automatic chezmoi installation. Please visit https://www.chezmoi.io/install/ for manual instructions."
+            exit 1
+        fi
+    else
+        say "chezmoi is already installed."
+    fi
+    say
+}
+
 main() {
     say
+    say "Determined OS type: $(get_os_type_install)"
 
 	# checkdeps git brew juca
 	# installdeps juca
 
     say "Installing dotfiles at $DOTFILES_DIR"
 
+    install_chezmoi
     clone
     setup
 }
