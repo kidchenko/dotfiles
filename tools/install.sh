@@ -6,8 +6,6 @@ DOTFILES_DIR=~/.kidchenko/dotfiles
 REMOTE=${REMOTE:-https://github.com/${REPO}.git}
 BRANCH=${BRANCH:-master}
 
-SCRIPTNAME="${0##*/}"
-
 # OS detection functions (copied from setup.sh, consider sourcing if scripts grow)
 _OS_TYPE_INSTALL="" # Cache variable for install script
 
@@ -44,70 +42,9 @@ say() {
 	printf '%s\n' "$1"
 }
 
-ask() {
-	say "" # Print a newline before the prompt
-    # SC3045: In POSIX sh, read -p is undefined. (Still valid for bash)
-    # However, to make it more robust and handle empty input for -n 1:
-    local reply
-	read -r -n 1 -p "$* " reply
-	printf '\n' # Add a newline after input
-    REPLY="$reply" # Set REPLY for compatibility if other parts of script use it
-	say "" # Print a newline after
-}
-
-warn() {
-    # SC2059: Don't use variables in the printf format string.
-	printf >&2 "WARNING %s: %s\n" "$SCRIPTNAME" "$*"
-    say "" # Print a newline after warning
-}
-
 iscmd() {
     # No change needed, command -v is fine. ">&-" redirects stdout to null.
 	command -v "$@" >/dev/null 2>&1
-}
-
-checkdeps() {
-	say ""
-	say "Checking dependencies..."
-    say ""
-	# SC3043: In POSIX sh, 'local' is undefined. (Fine in bash)
-	local -i not_found=0 # Initialize not_found
-	for cmd in "$@"; do # Iterate over arguments safely
-		say "Checking if $cmd is installed."
-		if ! iscmd "$cmd"; then
-            # SC3004: In POSIX sh, $".." is undefined. (Fine in bash's gettext support, but not used here)
-            # Use standard quoting.
-			warn "$cmd is required and is not found."
-            # SC3039: In POSIX sh, 'let' is undefined. (Fine in bash)
-            # SC3018: In POSIX sh, ++ is undefined. (Fine in bash)
-            # SC2219: Instead of 'let expr', prefer (( expr )) .
-			((not_found++))
-		fi
-	done
-	# SC3006: In POSIX sh, standalone ((..)) is undefined. (Fine in bash)
-	if ((not_found != 0)); then
-		warn "The dependencies listed above are required to install and use this project."
-        say "I can install the required dependencies for you."
-        # SC3004: In POSIX sh, $".." is undefined.
-		ask "Do you wanna to install? [y/n]:" # Removed $
-		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			say "Install the required dependencies and then try again..."
-			say "Bye."
-            # SC2128: Expanding an array without an index only gives the first element. (BASH_SOURCE is not an array here)
-            # SC3028: In POSIX sh, BASH_SOURCE is undefined. (Fine in bash)
-			[[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1 # handle exits from shell or function but don't exit interactive shell
-		fi
-	fi
-}
-
-installdeps() {
-	say ""
-	say "Installing dependencies..."
-    say ""
-	for dep in "$@"; do # Iterate over arguments safely
-		say "Installing dependency: $dep."
-	done
-    say ""
 }
 
 clone() {
@@ -123,7 +60,7 @@ clone() {
 
 	rm -rf "$expanded_dotfiles_dir"
     # SC2086: Double quote to prevent globbing and word splitting.
-	git clone "$REMOTE" "$expanded_dotfiles_dir" || {
+	git clone -b "$BRANCH" --single-branch "$REMOTE" "$expanded_dotfiles_dir" || {
     say "Fail to clone dotfiles."
     exit 1
   }
@@ -180,9 +117,6 @@ install_chezmoi() {
 main() {
     say ""
     say "Determined OS type: $(get_os_type_install)" # Subshell output is fine here
-
-	# checkdeps git brew juca # Example, not active
-	# installdeps juca        # Example, not active
 
     say "Installing dotfiles at $DOTFILES_DIR"
 
