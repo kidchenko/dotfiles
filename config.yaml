@@ -8,8 +8,8 @@ tools:
   # Add versions if needed, e.g.
   # ohMyPoshVersion: "latest"
 feature_flags:
-  withOhMyPosh: true
-  installCoreSoftware: true
+  withOhMyPosh: false
+  installCoreSoftware: false
   installDevelopmentTools: true # Existing, could cover more specific dev tools later
   installPowerShellModules: true
   setupGitAliases: true

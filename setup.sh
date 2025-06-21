@@ -96,32 +96,6 @@ ensureFolders() {
     done
 }
 
-install_yq() {
-    if ! command -v yq &> /dev/null
-    then
-        log_warn "yq could not be found, attempting to install..."
-        # Add yq installation command for Linux/macOS
-        # For example, using sudo apt-get install yq or brew install yq
-        # This part needs to be adjusted based on the target system and package manager
-        if is_macos; then
-            log_info "Detected macOS, attempting to install yq via Homebrew..."
-            if ! brew install yq; then
-                log_error "Failed to install yq with Homebrew."
-            fi
-        elif is_linux; then
-            log_info "Detected Linux, attempting to install yq via apt-get..."
-            if ! (sudo apt-get update && sudo apt-get install -y yq); then
-                log_error "Failed to install yq with apt-get."
-            fi
-        else
-            log_error "Unsupported OS for yq installation. Please install yq manually."
-            return 1 # Indicate failure
-        fi
-    else
-        log_info "yq is already installed."
-    fi
-}
-
 # Interactive prompt function
 ask_user_confirm() {
     local prompt_message="$1"
@@ -158,33 +132,6 @@ ask_user_confirm() {
 
 
 # Installation functions
-install_git_bash() {
-    # Git is fundamental, usually non-interactive, but shown for pattern
-    if ! command -v git &> /dev/null; then
-        if ask_user_confirm "Git is not installed. Install Git?"; then
-            log_info "Attempting to install Git..."
-            if is_macos; then
-                if command -v brew &> /dev/null; then
-                    if ! brew install git; then
-                        log_error "Failed to install Git with Homebrew."
-                    fi
-                else
-                    log_error "Homebrew not found. Cannot install Git."
-                fi
-            elif is_linux; then
-                if ! (sudo apt-get update && sudo apt-get install -y git); then
-                    log_error "Failed to install Git with apt-get."
-                fi
-            else
-                log_warn "Git installation not configured for this OS. Please install Git manually."
-            fi
-        else
-            log_info "Skipping Git installation based on user input."
-        fi
-    else
-        log_info "Git is already installed."
-    fi
-}
 
 install_brave_bash() {
     # This is a simplified check. Real check might involve 'dpkg -s brave-browser' or 'brew list brave-browser'
@@ -340,12 +287,10 @@ reloadProfile() {
 
 main() {
     log_info "Running on OS: $(get_os_type)"
-    install_yq || exit 1 # Exit if yq installation fails and is needed
 
     # Core software installations
     if is_feature_enabled "installCoreSoftware"; then
         log_info "Feature 'installCoreSoftware' is enabled. Proceeding with core software installations."
-        install_git_bash
         install_brave_bash
     else
         log_info "Feature 'installCoreSoftware' is disabled. Skipping core software installations."
