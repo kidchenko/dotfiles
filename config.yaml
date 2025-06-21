@@ -4,7 +4,7 @@ general:
 tools:
   git:
     name: "kidchenko"
-    email: "kidchenko@example.com"
+    email: "kidchenko@gmail.com"
   # Add versions if needed, e.g.
   # ohMyPoshVersion: "latest"
 feature_flags:
