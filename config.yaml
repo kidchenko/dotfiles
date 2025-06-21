@@ -3,7 +3,7 @@ general:
   username: "kidchenko"
 tools:
   git:
-    name: "Jose Barbosa"
+    name: "kidchenko"
     email: "kidchenko@example.com"
   # Add versions if needed, e.g.
   # ohMyPoshVersion: "latest"

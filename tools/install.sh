@@ -48,11 +48,11 @@ get_os_type_install() {
     printf '%s\n' "$_OS_TYPE_INSTALL"
 }
 
-is_macos_install() {
+is_macos() {
     [[ "$(get_os_type_install)" == "macos" ]]
 }
 
-is_linux_install() {
+is_linux() {
     [[ "$(get_os_type_install)" == "linux" ]]
 }
 # End OS detection functions
@@ -107,7 +107,7 @@ install_chezmoi() {
     say "Installing chezmoi..."
     say ""
     if ! iscmd chezmoi; then
-        if is_macos_install; then
+        if is_macos; then
             say "Detected macOS. Installing chezmoi using Homebrew..."
             if iscmd brew; then
                 brew install chezmoi || { say "Failed to install chezmoi using Homebrew."; exit 1; }
@@ -115,7 +115,7 @@ install_chezmoi() {
                 say "Homebrew not found. Please install Homebrew or install chezmoi manually."
                 exit 1
             fi
-        elif is_linux_install; then
+        elif is_linux; then
             say "Detected Linux. Installing chezmoi from sh.chezmoi.io..."
             if iscmd curl || iscmd wget; then
                  # SC2046: Quote this to prevent word splitting is not an issue here as we want word splitting for sh -c
