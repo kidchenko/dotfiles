@@ -1,0 +1,41 @@
+# config.yaml
+general:
+  username: "kidchenko"
+tools:
+  git:
+    name: "Jose Barbosa"
+    email: "kidchenko@example.com"
+  # Add versions if needed, e.g.
+  # ohMyPoshVersion: "latest"
+feature_flags:
+  withOhMyPosh: true
+  installCoreSoftware: true
+  installDevelopmentTools: true # Existing, could cover more specific dev tools later
+  installPowerShellModules: true
+  setupGitAliases: true
+  interactivePrompts: false
+
+post_install_hooks:
+  enabled: true # Master switch for all post-install hooks
+  scripts:
+    # For Bash (Linux/macOS)
+    - run_on: [linux, macos]
+      script: "./custom_scripts/my_bash_hook.sh"
+      description: "Runs a custom bash script for Linux/macOS."
+    - run_on: [macos]
+      command: "echo 'macOS specific post-install command from config.yaml'"
+      description: "Example macOS specific command hook."
+    # For PowerShell (Windows)
+    - run_on: [windows]
+      script: "./custom_scripts/my_powershell_hook.ps1"
+      description: "Runs a custom PowerShell script for Windows."
+    - run_on: [windows]
+      command: "Write-Host 'Windows specific post-install command from config.yaml'"
+      description: "Example Windows specific command hook."
+    # Example of a disabled or non-matching hook
+    - run_on: [linux]
+      script: "./custom_scripts/linux_only_hook.sh" # This script won't be created for this example
+      description: "A Linux-only hook that might not run."
+    - run_on: [windows, linux, macos]
+      command: "echo 'This is a cross-platform command hook from config.yaml'"
+      description: "Example cross-platform command hook."

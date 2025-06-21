@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ] # Adjust to your default branch
+  pull_request:
+    branches: [ main, master ] # Adjust to your default branch
+
+jobs:
+  lint:
+    name: Lint Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      # - name: Install PSScriptAnalyzer # Decide if to run PS lint on Linux or Windows job
+      #   shell: pwsh
+      #   run: |
+      #     Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+      #     Import-Module PSScriptAnalyzer
+
+      - name: Lint Bash scripts
+        run: shellcheck setup.sh tools/install.sh custom_scripts/*.sh tests/bash/*.bats
+
+      # - name: Lint PowerShell scripts
+      #   shell: pwsh
+      #   run: |
+      #     Invoke-ScriptAnalyzer -Path ./setup.ps1 -Recurse | ConvertTo-SARIF -OutputFile PSScriptAnalyzer.sarif
+      #     # Upload SARIF file if you want to integrate with GitHub code scanning
+      #     # - name: Upload SARIF file
+      #     #   uses: github/codeql-action/upload-sarif@v2
+      #     #   with:
+      #     #     sarif_file: PSScriptAnalyzer.sarif
+
+
+  bash_tests_linux:
+    name: Bash Tests (Linux)
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive' # If using submodules for Bats
+
+      - name: Install yq
+        run: sudo apt-get update && sudo apt-get install -y yq
+
+      - name: Setup Bats-core (if not using submodule or already present)
+        run: |
+          if [ ! -d "tests/bash/bats-core" ] || [ ! -f "tests/bash/bats-core/bin/bats" ]; then
+            git clone https://github.com/bats-core/bats-core.git tests/bash/bats-core-dl
+            sudo tests/bash/bats-core-dl/install.sh /usr/local
+            rm -rf tests/bash/bats-core-dl
+          fi
+
+      - name: Make mock scripts executable
+        run: chmod +x tests/mocks/* || true # Allow if no mocks yet
+
+      - name: Run Bats tests on Linux
+        run: |
+          # Ensure bats is found, either from submodule or system install
+          if [ -f "tests/bash/bats-core/bin/bats" ]; then
+            tests/bash/bats-core/bin/bats tests/bash/*.bats
+          else
+            bats tests/bash/*.bats
+          fi
+
+  bash_tests_macos:
+    name: Bash Tests (macOS)
+    needs: lint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install yq (macOS)
+        run: brew install yq
+
+      - name: Setup Bats-core (macOS)
+        run: |
+          if [ ! -d "tests/bash/bats-core" ] || [ ! -f "tests/bash/bats-core/bin/bats" ]; then
+            brew install bats-core
+          fi
+
+      - name: Make mock scripts executable
+        run: chmod +x tests/mocks/* || true
+
+      - name: Run Bats tests on macOS
+        run: |
+          if [ -f "tests/bash/bats-core/bin/bats" ]; then
+            tests/bash/bats-core/bin/bats tests/bash/*.bats
+          else
+            bats tests/bash/*.bats
+          fi
+
+  powershell_tests_windows:
+    name: PowerShell Tests (Windows)
+    needs: lint # Or run independently
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module Pester -ListAvailable)) {
+            Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
+          }
+          Import-Module Pester
+          Get-Module Pester | Select-Object Version, Path
+
+      - name: Install powershell-yaml module
+        shell: pwsh
+        run: |
+          Install-Module powershell-yaml -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module powershell-yaml
+
+      - name: Run Pester tests on Windows
+        shell: pwsh
+        run: |
+          $PesterPreference = @{
+              ออกมา = 'NUnitXml'
+              OutputEncoding = 'Legacy' # For older systems if issues arise, else UTF8
+              OutputFile = 'pester-results.xml'
+          }
+          # For Pester v5+
+          Invoke-Pester -Script @{Path = "./tests/powershell/*.Tests.ps1"} -OutputFormat NUnitXML -OutputFile Test-Pester.xml
+          # For Pester v4 or if the above has issues with multiple files:
+          # Invoke-Pester -Path "./tests/powershell" -OutputFile Test-Pester.xml -OutputFormat NUnitXml
+
+          # Optional: Upload test results (example)
+          # - name: Upload Pester Test Results
+          #   uses: actions/upload-artifact@v3
+          #   with:
+          #     name: pester-test-results
+          #     path: Test-Pester.xml
+          #     if-no-files-found: error # 'warn' or 'ignore'
+
+      - name: Check for errors in test run
+        shell: pwsh
+        run: |
+          $results = Get-Content Test-Pester.xml -Raw | ConvertFrom-Xml
+          $failedCount = $results.SelectNodes("//test-case[@result='Failed']").Count
+          if ($failedCount -gt 0) {
+            Write-Error "$failedCount Pester test(s) failed."
+            exit 1
+          } else {
+            Write-Host "All Pester tests passed."
+          }
