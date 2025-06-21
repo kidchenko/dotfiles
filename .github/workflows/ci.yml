@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ] # Adjust to your default branch
+    branches: [ main, master, v2 ] # Adjust to your default branch
   pull_request:
-    branches: [ main, master ] # Adjust to your default branch
+    branches: [ main, master, v2 ] # Adjust to your default branch
 
 jobs:
   lint:
