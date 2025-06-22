@@ -2,12 +2,12 @@
 
 # Create a new directory and enter it
 function mkd() {
-	mkdir -p "$@" && cd "$_";
+	mkdir -p "$@" && cd "$_" || exit || exit;
 }
 
 # Change working directory to the top-most Finder window location
 function cdf() { # short for `cdfinder`
-	cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')";
+	cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')" || exit || exit;
 }
 
 # Create a .tar.gz archive, using `zopfli`, `pigz` or `gzip` for compression
@@ -171,48 +171,75 @@ function tre() {
 }
 
 
-function juca() {
-    # echo "hello param: $1"
+# function juca() {
+#     # echo "hello param: $1"
 
-    # go to folder
-    echo "Navigating to $1"
+#     # go to folder
+#     echo "Navigating to $1"
 
-    pushd $1 >/dev/null
+#     pushd $1 >/dev/null
 
-    echo ""
-    sleep 1
+#     echo ""
+#     sleep 1
 
-    echo "Removing sub-git repo in $1"
-    echo ""
-    echo "bash: rm -rf .git .DS_Store"
+#     echo "Removing sub-git repo in $1"
+#     echo ""
+#     echo "bash: rm -rf .git .DS_Store"
 
-    rm -f .DS_Store
-    rm -rf .git
+#     rm -f .DS_Store
+#     rm -rf .git
 
-    echo ""
-    sleep 1
+#     echo ""
+#     sleep 1
 
-    echo "Navigating back"
-    # go back
+#     echo "Navigating back"
+#     # go back
 
-    popd >/dev/null
+#     popd >/dev/null
 
-    echo ""
-    sleep 1
+#     echo ""
+#     sleep 1
 
-    # # add in playground
-    # echo "git: git add '$1'"
-    # git add "$1"
+#     # # add in playground
+#     # echo "git: git add '$1'"
+#     # git add "$1"
 
-    # echo "git: git cm 'Add $1'"
-    # git cm "Add $1"
+#     # echo "git: git cm 'Add $1'"
+#     # git cm "Add $1"
 
-    # echo "git: git push"
-    # git push
+#     # echo "git: git push"
+#     # git push
 
-    # echo ""
-    # sleep 1
+#     # echo ""
+#     # sleep 1
 
-    echo ""
-    echo "Push completed: $1 pushed to kidchenko/playground"
+#     echo ""
+#     echo "Push completed: $1 pushed to kidchenko/playground"
+# }
+
+
+sync_brave_extensions_to_file() {
+  local brave_base="$HOME/Library/Application Support/BraveSoftware/Brave-Browser"
+  local extensions_file="$1"
+
+  if [[ ! -f "$extensions_file" ]]; then
+    echo "Creating $extensions_file..."
+    touch "$extensions_file"
+  fi
+
+  echo "Scanning installed Brave extensions..."
+
+  # Read extensions.txt into a set (remove comments, trim)
+  existing_ids=$(grep -v '^\s*#' "$extensions_file" | awk '{print $1}' | sort | uniq)
+
+  # Iterate over each profile Extensions directory
+  find "$brave_base" -maxdepth 2 -type d -name "Extensions" | while read -r ext_dir; do
+    for id in "$ext_dir"/*; do
+      id=$(basename "$id")
+      if ! echo "$existing_ids" | grep -q "^$id$"; then
+        echo "$id  # auto-added" >> "$extensions_file"
+        echo "➕ Added: $id"
+      fi
+    done
+  done
 }

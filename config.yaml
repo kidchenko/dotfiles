@@ -39,3 +39,6 @@ post_install_hooks:
     - run_on: [windows, linux, macos]
       command: "echo 'This is a cross-platform command hook from config.yaml'"
       description: "Example cross-platform command hook."
+    - run_on: [linux, macos]
+      script: "./brave/installExtensions.sh"
+      description: "Installs Brave browser extensions by opening their web store pages."

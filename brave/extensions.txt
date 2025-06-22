@@ -1,0 +1,6 @@
+# Brave/Chrome Extensions List
+# Add one extension ID per line. Inline comments after the ID are allowed.
+
+aeblfdkhhhdcdjpifhhbdiojplfjncoa # 1Password
+kbfnbcaeplbcioakkpcpgfkobkghlhen # Grammarly
+bdakmnplckeopfghnlpocafcepegjeap # RescueTime
