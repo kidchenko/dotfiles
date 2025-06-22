@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Default settings
-REPO=kidchenko/dotfiles
 DOTFILES_DIR=~/.kidchenko/dotfiles
 
 runUpdate() {
@@ -12,21 +11,24 @@ runUpdate() {
         echo "[dotfiles] Updating..."
         echo
         git pull -r
-        popd >/dev/null
+        popd >/dev/null || exit
         echo "Ready to go!"
         echo
-        . "$DOTFILES_DIR/setup.sh" # script ends here
+        # . "$DOTFILES_DIR/setup.sh" # script ends here - setup.sh is removed by bootstrap.sh
+        # Consider re-running parts of bootstrap.sh or `chezmoi apply` if configurations need to be reapplied after update.
     fi
 }
 
 main() {
     echo
-    pushd $DOTFILES_DIR >/dev/null
+    pushd $DOTFILES_DIR >/dev/null || exit
     # check for updates
-    local fetch=$(git fetch --dry-run 2>&1)
+    local fetch
+    
+    fetch=$(git fetch --dry-run 2>&1)
     if [ -z "$fetch" ]; then
         # no updates
-        popd >/dev/null
+        popd >/dev/null || exit
         echo "[dotfiles] Using last version."
         echo
     else

@@ -12,7 +12,7 @@ function Invoke-Update {
         Pop-Location
         Write-Host "Ready to go!"
         Write-Host
-        . "$DOTFILES_DIR/setup.ps1" # script ends here
+        . "$DOTFILES_DIR/tools/os_installers/setup.ps1" # script ends here
     }
 }
 

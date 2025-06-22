@@ -22,7 +22,6 @@ say "Chezmoi not found. Attempting to install..."
 
 # Determine OS and architecture
 OS="$(uname -s)"
-ARCH="$(uname -m)"
 
 INSTALL_DIR="$HOME/.local/bin" # Install to user's local bin directory
 mkdir -p "$INSTALL_DIR"

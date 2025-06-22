@@ -57,17 +57,39 @@ Example:
 bash tools/bootstrap.sh --verbose --dry-run
 ```
 
-## Structure Overview (XDG + Chezmoi)
+## Repository Structure and XDG Overview
 
-*   **Chezmoi Source Directory**: `~/.local/share/chezmoi` (this is where your dotfiles Git repository will be cloned by Chezmoi).
+This repository and the resulting setup on your machine are organized with XDG compliance and Chezmoi's templating in mind.
+
+### Source Repository Layout:
+
+*   `home/`: Contains the source templates for your dotfiles that Chezmoi will manage.
+    *   `home/.config/`: Templates for files that go into `$XDG_CONFIG_HOME` (e.g., `zsh/`, `nvim/`, `tmux/`, `git/`).
+    *   Files like `home/dot_gitconfig.tmpl` become `~/.gitconfig` (for files directly in your home directory).
+    *   Files like `home/.profile.tmpl` become `~/.profile`.
+*   `tools/`: Contains scripts essential for bootstrapping, installing, and managing the dotfiles environment.
+    *   `tools/bootstrap.sh`: The main entry point for setting up your system.
+    *   `tools/os_installers/`: Scripts for OS-specific package installations (e.g., `apt.sh`, `brew.sh`, `choco.ps1`).
+    *   `tools/os_setup/`: Scripts for OS-specific configurations (e.g., `macos_config.sh`).
+    *   Other helper scripts for updates, Chezmoi interaction, and installing global tools or VS Code extensions.
+*   `scripts/`: Contains user-facing utility scripts or personal custom scripts.
+    *   `scripts/backup/`: Example backup utilities.
+    *   `scripts/custom/`: Location for your personal custom hook scripts, which can be triggered by setup scripts.
+*   `tests/`: Contains automated tests (Bats for Bash, Pester for PowerShell) for the dotfiles scripts.
+*   `.github/workflows/`: CI configuration for linting and testing the repository.
+*   `README.md`: This file.
+*   Other files: Root-level configurations for the repository itself (e.g., `.editorconfig`, `.gitignore`) and Chezmoi data files (e.g., `.chezmoidata.yaml`).
+
+### Applied Structure on Your Machine (Managed by Chezmoi):
+
+*   **Chezmoi Source Directory**: Typically `~/.local/share/chezmoi` (this is where this Git repository is cloned by Chezmoi for its operations).
 *   **Chezmoi Config File**: `~/.config/chezmoi/chezmoi.toml`.
-*   **Dotfile Templates**: Located within the `home/` directory in this repository (e.g., `home/.config/zsh/.zshrc.tmpl`). Chezmoi processes these templates and creates the actual configuration files in your home directory (e.g., `~/.config/zsh/.zshrc`).
-*   **XDG Directories Used**:
-    *   `$XDG_CONFIG_HOME` (defaults to `~/.config`): For configuration files (e.g., `nvim`, `tmux`, `zsh`, `git/ignore`).
-    *   `$XDG_DATA_HOME` (defaults to `~/.local/share`): For user data files (e.g., `nvim/undo`, `zsh/history` (via `$HISTFILE`), `nvm`, `sdkman`).
-    *   `$XDG_CACHE_HOME` (defaults to `~/.cache`): For cached data (e.g., `nvim/shada`, `zsh/completions`).
-    *   `$XDG_STATE_HOME` (defaults to `~/.local/state`): For state files (e.g., history logs if not in data).
-    *   `$XDG_BIN_HOME` (defaults to `~/.local/bin`): For user-installed executables (added to `PATH`).
+*   **Actual Dotfiles**: Applied by Chezmoi to their target locations based on the templates in `home/`.
+    *   **XDG Config**: Most configurations go to `$XDG_CONFIG_HOME` (defaults to `~/.config`), e.g., `~/.config/zsh/`, `~/.config/nvim/`.
+    *   **XDG Data**: Application data goes to `$XDG_DATA_HOME` (defaults to `~/.local/share`), e.g., Zsh history, NVM, SDKMAN.
+    *   **XDG Cache**: Cache files go to `$XDG_CACHE_HOME` (defaults to `~/.cache`).
+    *   **XDG State**: State files go to `$XDG_STATE_HOME` (defaults to `~/.local/state`).
+    *   **User Binaries**: Scripts intended to be in `PATH` may be linked to `$XDG_BIN_HOME` (defaults to `~/.local/bin`).
 
 ## Customization
 

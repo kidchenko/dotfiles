@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $REPO="kidchenko/dotfiles"
 $DOTFILES_DIR="~/.$REPO"
-$CONFIG_FILE = "$DOTFILES_DIR/config.yaml"
+$CONFIG_FILE = "$DOTFILES_DIR/tools/config.yaml" # Updated path
 
 # Logging functions
 function Log-Message {
