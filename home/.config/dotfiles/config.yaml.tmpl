@@ -61,6 +61,197 @@ global_tools:
 #   show_warnings_for_missing_managers: true
 #   dry_run_default: false
 #   verbose_default: true
+
+# ----------------------------------------------------------------------
+# Homebrew Packages (macOS) - Managed by brew.sh
+# ----------------------------------------------------------------------
+# List of packages to install with 'brew install <package>'
+# List of applications to install with 'brew install --cask <cask>'
+#
+# To get the name of a package: brew search <term>
+# To get the name of a cask: brew search --casks <term>
+#
+# These lists will be read by brew.sh (or a similar script).
+# The script will need yq to parse this file.
+# ----------------------------------------------------------------------
+brew:
+  packages:
+    # System Utilities & Shell Enhancements
+    - coreutils
+    - moreutils
+    - findutils
+    - gnu-sed # Note: --with-default-names would be handled by script if necessary
+    - bash
+    - bash-completion2
+    - zsh
+    - z # z jump around
+    - lsd # ls deluxe
+    - bat # cat clone with syntax highlighting
+    - fzf # command-line fuzzy finder
+    - tree
+    - htop # Interactive process viewer
+
+    # Development Tools
+    - git
+    - git-lfs
+    - gnupg # For GPG signing
+    - vim # Note: --with-override-system-vi would be handled by script
+    - openssh
+    - screen
+    - wget # Note: --with-iri would be handled by script
+    - jq # JSON processor
+    - yq # YAML processor (useful for scripts like this one)
+    - gh # GitHub CLI
+    - azure-cli
+    - graphviz
+    - java # Or openjdk for specific versions
+    - ruby
+    - nvm # Node Version Manager
+    - python # Python 3
+
+    # Libraries
+    - php # Example, if needed directly
+    - gmp
+    - imagemagick # Note: --with-webp would be handled by script
+    - lua
+
+    # Document & Font Tools
+    - gs # Ghostscript
+    - sfnt2woff
+    - sfnt2woff-zopfli
+    - woff2
+
+    # Other Useful Binaries
+    - ack # Grep-like tool
+    - p7zip
+    - pigz # Parallel gzip
+    - pv # Pipe viewer
+    - rename # Perl rename tool
+    - rlwrap # Readline wrapper
+    - ssh-copy-id
+    - vbindiff
+    - zopfli # Zopfli compression
+
+    # Fun/Misc
+    - kdoctor # For Kotlin Multiplatform Mobile development environment check
+
+    # Example CTF tools (uncomment if needed)
+    # - aircrack-ng
+    # - bfg
+    # - binutils
+    # - binwalk
+    # - cifer
+    # - dex2jar
+    # - dns2tcp
+    # - fcrackzip
+    # - foremost
+    # - hashpump
+    # - hydra
+    # - john
+    # - knock
+    # - netpbm
+    # - nmap
+    # - pngcheck
+    # - socat
+    # - sqlmap
+    # - tcpflow
+    # - tcpreplay
+    # - tcptrace
+    # - ucspi-tcp
+    # - xpdf
+    # - xz
+
+  casks:
+    # Fonts
+    - font-hack-nerd-font
+
+    # Development Environment & Tools
+    - visual-studio-code
+    - iterm2
+    - docker # Docker Desktop
+    - dotnet-sdk # .NET SDK
+    - hyper # Terminal emulator
+    - postman # API platform
+    - jetbrains-toolbox # Manage JetBrains IDEs
+
+    # Browsers
+    - brave-browser
+    # - google-chrome
+    # - firefox
+
+    # Productivity & Utilities
+    - 1password # Password manager
+    - slack
+    - notion
+    - spotify
+    - flux # Adjusts screen color temperature
+    - rescuetime # Time tracking
+    - spectacle # Window manager (macOS, consider alternatives like Rectangle)
+    - discord
+    - powershell # PowerShell Core
+    # - karabiner-elements # Keyboard customizer
+    # - alfred # Productivity app
+
+# ----------------------------------------------------------------------
+# Chocolatey Packages (Windows) - Managed by choco.ps1
+# ----------------------------------------------------------------------
+# List of packages to install with 'choco install <package>'
+#
+# To find packages: choco search <term>
+#
+# These lists will be read by choco.ps1 (or a similar script).
+# The script will need a way to parse YAML (e.g., powershell-yaml module).
+# ----------------------------------------------------------------------
+choco:
+  packages:
+    # Essential CLI Tools
+    - git # Git SCM
+    - chocolateygui # GUI for Chocolatey
+    - curl
+    - wget
+    - jq
+    - yq # For YAML processing in scripts
+    - vim
+    - 7zip # Archiver
+
+    # Shells & Terminals
+    - microsoft-windows-terminal
+    - powershell-core # Installs pwsh, cross-platform PowerShell
+    # - zsh # If using WSL and want zsh there, usually managed within WSL
+
+    # Development Tools
+    - vscode # Visual Studio Code
+    - python # Python 3
+    - nvm # Node Version Manager (then use nvm to install node/npm)
+    - dotnet-sdk # .NET SDK
+    - openjdk # Or a specific version like openjdk11
+    - maven
+    - gradle
+    - docker-desktop
+    - postman
+    - azure-cli
+    - awscli
+
+    # Productivity & Utilities
+    - powertoys # Microsoft PowerToys
+    - screentogif # Screen recorder
+    - slack
+    - discord
+    - spotify
+    - adobereader # Adobe Acrobat Reader
+    - vlc # Media player
+    - anki # Spaced repetition flashcards
+
+    # Fonts
+    - nerd-fonts-delugiacomplete # Example, ensure this exact name is on Chocolatey
+
+    # Database Tools
+    - dbeaver
+    - sql-server-management-studio # SSMS
+
+    # Other
+    - hyper # Terminal emulator
+
 {{ if .is_work_machine }}
 # Example of conditional configuration using chezmoi templates
 # This section would only be included if 'is_work_machine' is true in chezmoi data.

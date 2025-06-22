@@ -100,7 +100,38 @@ global_tools:
     - dotnet-ef
 ```
 
-### 4. Managing VS Code Extensions
+### 4. Managing Homebrew and Chocolatey Packages (OS-specific)
+
+System-level packages and applications for macOS (via Homebrew) and Windows (via Chocolatey) are also managed through the `~/.config/dotfiles/config.yaml` file.
+
+*   Edit `~/.config/dotfiles/config.yaml`.
+*   For **macOS**, add Homebrew package names to the `brew.packages` list and application/cask names to the `brew.casks` list.
+*   For **Windows**, add Chocolatey package names to the `choco.packages` list.
+*   These packages will be installed when the respective setup scripts (`brew.sh` for macOS, `choco.ps1` for Windows) are run. These are typically executed during the initial bootstrap or when OS-specific setup is invoked.
+
+Example snippet from `config.yaml` for Homebrew and Chocolatey:
+```yaml
+# In ~/.config/dotfiles/config.yaml
+
+brew:
+  packages:
+    - coreutils
+    - git
+    - yq # YAML processor, useful for these scripts
+  casks:
+    - visual-studio-code
+    - iterm2
+
+choco:
+  packages:
+    - git
+    - vscode
+    - powertoys
+    - yq # YAML processor, useful for PowerShell scripts if it has a choco package
+```
+**Note:** The `brew.sh` script will attempt to install `yq` if it's missing. The `choco.ps1` script uses the `powershell-yaml` module, which it will attempt to install if missing.
+
+### 5. Managing VS Code Extensions
 
 *   Edit `~/.config/dotfiles/vscode-extensions.txt` (this file is created by Chezmoi from `home/.config/dotfiles/vscode-extensions.txt.tmpl`).
 *   Add or remove extension IDs (one per line). Comments start with `#`.
