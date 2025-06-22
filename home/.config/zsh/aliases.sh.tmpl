@@ -1,0 +1,328 @@
+#!/usr/bin/env bash
+# Sourced by .zshrc
+
+# WinMac compatibility
+alias cls="clear"
+alias ii="open" # macOS specific, consider cross-platform alternative or conditional alias
+
+# Easier navigation: .., ..., ...., ....., ~ and -
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ~="cd ~" # `cd` is probably faster to type though
+alias -- -="cd -" # Navigate to previous directory
+
+# Shortcuts
+alias d="cd ~/Documents"
+alias dl="cd ~/Downloads"
+alias dt="cd ~/Desktop"
+
+# Me and my stuffs
+alias ko="cd ~/kidchenko"
+
+# Personal work
+alias isho="cd ~/isho"
+
+# Work related
+alias l3="cd ~/lambda3"
+alias jeta="cd ~/jetabroad"
+alias tw="cd ~/thoughtworks"
+alias sps="cd ~/sevenpeaks"
+
+### Git aliases
+alias g="git"
+# More git aliases are typically in .gitconfig or sourced from a dedicated git_aliases file
+
+# Profile
+# ZDOTDIR should be set by .zshrc to $XDG_CONFIG_HOME/zsh
+alias zshconfig="\$EDITOR \"${ZDOTDIR:-\$HOME/.config/zsh}/.zshrc\""
+alias zshreload="source \"${ZDOTDIR:-\$HOME/.config/zsh}/.zshrc\" && echo 'Zsh config reloaded'"
+
+# Reload the shell (i.e. invoke as a login shell)
+alias reload="exec ${SHELL} -l"
+
+# ls alias using lsd if available, otherwise system ls
+if command -v lsd &> /dev/null; then
+    alias ls='lsd'
+    alias l='lsd -l'
+    alias la='lsd -lA' # Show hidden files, long format
+    alias lsa='lsd -lA' # explicit alias for -lA
+    alias ll='lsd -alF' # Show almost all, classify
+    alias lt='lsd --tree'
+    # List only directories
+    alias lsd='lsd --directory-only */' # This lsd specific syntax might need adjustment based on lsd version
+    # List only files (more complex with lsd, might need a function or find)
+    # alias lsf='lsd -d (.*|*)(^/)' # Original, might not work with lsd, better use find
+    # List only list hidden files
+    # alias lsh='lsd --directory-only .*(^/)' # Original
+    # List only list visible files (directories)
+    # alias lsv='lsd --directory-only *(^/)' # Original
+else
+    # Standard ls aliases
+    if ls --color=auto > /dev/null 2>&1; then # GNU ls
+        alias ls='ls --color=auto -F'
+        alias l='ls -lh --color=auto -F'
+        alias la='ls -lAh --color=auto -F'
+        alias ll='ls -lAh --color=auto -F' # ll is often alias to la on GNU
+    elif [[ "$(uname -s)" == "Darwin" ]]; then # BSD/macOS ls
+        alias ls='ls -GF'
+        alias l='ls -lhGF'
+        alias la='ls -lAhGF'
+        alias ll='ls -lAhGF' # ll is often alias to la on macOS
+    else # other ls
+        alias ls='ls -F'
+        alias l='ls -lhF'
+        alias la='ls -lAhF'
+        alias ll='ls -lAhF'
+    fi
+    alias lsd='ls -d */' # List only directories with standard ls
+fi
+
+
+# cat alias using bat if available
+if command -v bat &> /dev/null; then
+    alias cat='bat -pp --paging=never' # -pp for plain, no line numbers/git, no paging
+else
+    alias cat='cat'
+fi
+
+# Always enable colored `grep` output
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# Enable aliases to be sudo’ed
+alias sudo='sudo '
+
+# Get week number
+alias week='date +%V'
+
+# Update script (macOS specific parts here)
+# Consider making this more cross-platform or conditional
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias update-macos='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup; npm install npm -g; npm update -g; sudo gem update --system; sudo gem update; sudo gem cleanup'
+fi
+
+# Brave Browser (macOS specific path)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias brave='/Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser'
+fi
+
+# IP addresses
+alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias localip="ipconfig getifaddr en0" # macOS specific
+else # Linux fallback
+    alias localip="hostname -I | awk '{print \$1}'"
+fi
+alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'" # May need adjustment for net-tools vs iproute2
+
+# Show active network interfaces (macOS specific `pcregrep`)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
+fi
+
+# Flush Directory Service cache (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias flush="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
+fi
+
+# Clean up LaunchServices to remove duplicates in the “Open With” menu (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias lscleanup="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
+fi
+
+# Canonical hex dump; some systems have this symlinked
+command -v hd > /dev/null || alias hd="hexdump -C"
+
+# md5sum and sha1sum fallbacks for macOS
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    command -v md5sum > /dev/null || alias md5sum="md5"
+    command -v sha1sum > /dev/null || alias sha1sum="shasum -a 1" # shasum needs algorithm specified
+fi
+
+# JavaScriptCore REPL (macOS specific path)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    jscbin="/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Resources/jsc";
+    [ -e "${jscbin}" ] && alias jsc="${jscbin}";
+    unset jscbin;
+fi
+
+# Trim new lines and copy to clipboard (macOS specific `pbcopy`)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias c="tr -d '\n' | pbcopy"
+elif command -v xclip &> /dev/null; then # Linux with xclip
+    alias c="tr -d '\n' | xclip -selection clipboard"
+elif command -v xsel &> /dev/null; then # Linux with xsel
+    alias c="tr -d '\n' | xsel --clipboard --input"
+fi
+
+
+# Recursively delete `.DS_Store` files (macOS specific files)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias cleanup-dsstore="find . -type f -name '*.DS_Store' -ls -delete"
+fi
+
+# Empty the Trash on all mounted volumes and the main HDD (macOS specific)
+# Also, clear Apple’s System Logs to improve shell startup speed.
+# Finally, clear download history from quarantine. https://mths.be/bum
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent' 2>/dev/null || echo 'Failed to clear QuarantineEvents (this is normal if DB does not exist)'"
+fi
+
+# Show/hide hidden files in Finder (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias showhiddenfiles="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+    alias hidehiddenfiles="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
+fi
+
+# Hide/show all desktop icons (useful when presenting) (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
+    alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+fi
+
+# URL-encode strings
+alias urlencode='python3 -c "import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]));"'
+
+# Merge PDF files, preserving hyperlinks (requires ghostscript)
+if command -v gs &> /dev/null; then
+    alias mergepdf='gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=_merged.pdf'
+fi
+
+# Spotlight control (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias spotoff="sudo mdutil -a -i off"
+    alias spoton="sudo mdutil -a -i on"
+fi
+
+# PlistBuddy alias (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias plistbuddy="/usr/libexec/PlistBuddy"
+fi
+
+# Airport CLI alias (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    airport_path="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+    if [ -x "$airport_path" ]; then
+        alias airport="$airport_path"
+    fi
+fi
+
+# Intuitive map function
+# For example, to list all directories that contain a certain file:
+# find . -name .gitattributes | map dirname
+alias map="xargs -n1"
+
+# HTTP request aliases using curl if lwp-request is not available
+if command -v lwp-request &> /dev/null; then
+    for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
+        alias "${method}"="lwp-request -m '${method}'"
+    done
+else
+    alias GET="curl -X GET"
+    alias HEAD="curl -I"
+    alias POST="curl -X POST"
+    alias PUT="curl -X PUT"
+    alias DELETE="curl -X DELETE"
+fi
+
+
+# Kill all the tabs in Chrome to free up memory (macOS specific and might be fragile)
+# [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias chromekill="ps ux | grep '[C]hrome Helper --type=renderer' | grep -v extension-process | tr -s ' ' | cut -d ' ' -f2 | xargs kill"
+fi
+
+# Lock the screen (when going AFK) (macOS specific)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+# else # Linux lock screen commands vary (e.g. gnome-screensaver-command -l, xdg-screensaver lock)
+    # Add Linux specific lock command if desired, e.g.
+    # alias afk='xdg-screensaver lock'
+fi
+
+# Print each PATH entry on a separate line
+alias path='echo -e ${PATH//:/\\n}'
+
+# Docker
+# alias compose='docker-compose -f $(ls docker-*.yml)' # This is very specific, maybe remove or make more general
+# alias cc="docker rm $(docker ps -aq) -f && docker volume prune -y" # Destructive, use with care
+
+# Kubernetes alias (kubectl is often aliased to k)
+if command -v kubectl &> /dev/null; then
+    alias k="kubectl"
+fi
+
+alias gps="git push"
+alias gpl="git pull"
+
+# The 'pavels=git' alias is likely a typo or personal joke, I'll keep it commented
+# alias pavels=git
+
+# Quick way to get to config folder for these dotfiles
+alias dotconfig="cd \"${XDG_CONFIG_HOME:-\$HOME/.config}/dotfiles\" && ls -la"
+alias zshhome="cd \"${ZDOTDIR:-\$HOME/.config/zsh}\" && ls -la"
+
+# Edit various config files quickly
+alias editaliases="\$EDITOR \"${ZDOTDIR:-\$HOME/.config/zsh}/aliases.sh\""
+alias editfunctions="\$EDITOR \"${ZDOTDIR:-\$HOME/.config/zsh}/functions.sh\""
+alias editexports="\$EDITOR \"${ZDOTDIR:-\$HOME/.config/zsh}/exports.sh\""
+alias editzshrc="\$EDITOR \"${ZDOTDIR:-\$HOME/.config/zsh}/.zshrc\""
+alias editzlogin="\$EDITOR \"${ZDOTDIR:-\$HOME/.config/zsh}/.zlogin\""
+alias editgitconfig="\$EDITOR \"\$HOME/.gitconfig\"" # .gitconfig is usually not in XDG
+alias edittmuxconf="\$EDITOR \"${XDG_CONFIG_HOME:-\$HOME/.config}/tmux/tmux.conf\""
+alias editvimrc="\$EDITOR \"${XDG_CONFIG_HOME:-\$HOME/.config}/nvim/init.vim\"" # or vimrc if not using nvim folder structure
+
+# Copy current working directory path to clipboard
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias cwdcopy='pwd | pbcopy'
+elif command -v xclip &> /dev/null; then
+    alias cwdcopy='pwd | xclip -selection clipboard'
+elif command -v xsel &> /dev/null; then
+    alias cwdcopy='pwd | xsel --clipboard --input'
+fi
+
+# Open current directory in Finder/File Explorer
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    alias o.='open .'
+elif command -v xdg-open &> /dev/null; then
+    alias o.='xdg-open .'
+elif command -v explorer.exe &> /dev/null; then # For WSL
+    alias o.='explorer.exe .'
+fi
+
+# Duff - Duplicate file finder
+if command -v duff &> /dev/null; then
+    alias duff='duff -r' # Search recursively by default
+fi
+
+# fd - a simple, fast and user-friendly alternative to 'find'
+if command -v fd &> /dev/null; then
+    alias find='fd' # BE CAREFUL: this overrides system `find`. Maybe use `fda` or similar.
+                    # For now, I will not override `find`.
+    alias fda='fd --hidden --follow --exclude .git'
+fi
+
+# Ripgrep - recursively searches directories for a regex pattern
+if command -v rg &> /dev/null; then
+    alias rgc='rg --color=always' # Always color, useful for piping
+    alias rgl='rg --smart-case --no-heading --vimgrep' # Good for editor integration
+fi
+
+# exa - a modern replacement for ls
+if command -v exa &> /dev/null; then
+    # If lsd is not preferred or installed, exa can be an alternative
+    # alias ls='exa'
+    # alias l='exa -l'
+    # alias la='exa -la'
+    # alias ll='exa -alh'
+    # alias lt='exa --tree'
+    : # Keep exa aliases commented if lsd is primary, or choose one.
+fi
+
+# HTTPie - a CLI, cURL-like tool for humans
+if command -v http &> /dev/null; then
+    alias https='http --default-scheme=https' # Default to https
+fi

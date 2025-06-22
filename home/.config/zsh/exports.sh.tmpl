@@ -1,0 +1,380 @@
+#!/usr/bin/env bash
+# Sourced by .zshrc
+
+# Set Zsh as default shell if login shell is different (though this export might be too late)
+# This is more of a system configuration than a shell export.
+# export SHELL=/bin/zsh
+
+# Make vim the default editor. Use nvim if available.
+if command -v nvim &> /dev/null; then
+  export EDITOR='nvim'
+elif command -v vim &> /dev/null; then
+  export EDITOR='vim'
+else
+  export EDITOR='vi'
+fi
+export VISUAL="$EDITOR" # For applications that use VISUAL
+
+# Enable persistent REPL history for `node`.
+# Store in XDG_DATA_HOME if possible
+NODE_HISTORY_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/node"
+mkdir -p "$NODE_HISTORY_DIR"
+export NODE_REPL_HISTORY="$NODE_HISTORY_DIR/history"
+# Allow 32³ entries; the default is 1000.
+export NODE_REPL_HISTORY_SIZE='32768'
+# Use sloppy mode by default, matching web browsers.
+export NODE_REPL_MODE='sloppy'
+
+# Make Python use UTF-8 encoding for output to stdin, stdout, and stderr.
+export PYTHONIOENCODING='UTF-8'
+
+# Bash/Zsh history size. Zsh settings are usually in .zshrc (e.g. HISTFILE, SAVEHIST).
+# These are more for Bash if also sourced by it.
+export HISTSIZE='32768'
+export HISTFILESIZE="${HISTSIZE}"
+# Omit duplicates and commands that begin with a space from history. (Bash specific, Zsh hassetopt)
+export HISTCONTROL='ignoreboth'
+
+# Prefer US English and use UTF-8.
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8' # Setting LC_ALL is very broad, consider LC_CTYPE for character encoding if issues arise.
+
+# Highlight section titles in manual pages.
+export LESS_TERMCAP_mb=$(printf '\e[1;31m') # begin blinking
+export LESS_TERMCAP_md=$(printf '\e[1;36m') # begin bold
+export LESS_TERMCAP_me=$(printf '\e[0m')    # end mode
+export LESS_TERMCAP_se=$(printf '\e[0m')    # end standout-mode
+export LESS_TERMCAP_so=$(printf '\e[1;44;33m') # begin standout-mode - info box
+export LESS_TERMCAP_ue=$(printf '\e[0m')    # end underline
+export LESS_TERMCAP_us=$(printf '\e[1;32m') # begin underline
+
+# Don’t clear the screen after quitting a manual page.
+export MANPAGER='less -X'
+# For BSD man, MANWIDTH can be useful if terminal width is not detected correctly.
+# export MANWIDTH=tty
+
+# Avoid issues with `gpg` as installed via Homebrew.
+# https://stackoverflow.com/a/42265848/96656
+export GPG_TTY=$(tty)
+
+# NVM (Node Version Manager)
+# Store NVM stuff in XDG_DATA_HOME if NVM supports it (might need manual config or fork)
+# Default NVM_DIR is $HOME/.nvm
+export NVM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
+# Create NVM_DIR if it doesn't exist, so NVM installation doesn't fail
+mkdir -p "$NVM_DIR"
+
+# Load NVM script. Paths can vary based on installation (manual, brew).
+# Homebrew path for NVM:
+NVM_HOMEBREW_OPT_DIR=""
+if command -v brew &> /dev/null && [[ "$(uname -s)" == "Darwin" ]]; then
+    NVM_HOMEBREW_OPT_DIR=$(brew --prefix nvm 2>/dev/null) # Get prefix if nvm is installed
+fi
+
+if [ -s "$NVM_HOMEBREW_OPT_DIR/nvm.sh" ]; then
+    # shellcheck source=/dev/null
+    . "$NVM_HOMEBREW_OPT_DIR/nvm.sh"  # This loads nvm
+elif [ -s "/usr/local/opt/nvm/nvm.sh" ]; then # Older Homebrew path or manual symlink
+    # shellcheck source=/dev/null
+    . "/usr/local/opt/nvm/nvm.sh"
+fi
+# NVM Bash Completion (adjust path as per nvm.sh source)
+if [ -s "$NVM_HOMEBREW_OPT_DIR/etc/bash_completion.d/nvm" ]; then
+    # shellcheck source=/dev/null
+    . "$NVM_HOMEBREW_OPT_DIR/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+elif [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ]; then
+    # shellcheck source=/dev/null
+    . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"
+fi
+# For Zsh, nvm plugin for Oh My Zsh or a Zsh framework usually handles completion.
+# If not using a framework, add to fpath: FPATH="$NVM_DIR/completions:$FPATH" for Zsh completion.
+
+
+# SDKMAN
+# Store SDKMAN in XDG_DATA_HOME. SDKMAN_DIR can be configured.
+export SDKMAN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/sdkman"
+mkdir -p "$SDKMAN_DIR" # Ensure it exists for the init script
+# SDKMAN init script - this should be the last thing sourced if it modifies PATH extensively.
+# The original path was /Users/$USER/.sdkman - updated to use $HOME
+SDKMAN_INIT_SCRIPT="$SDKMAN_DIR/bin/sdkman-init.sh"
+if [[ -s "$SDKMAN_INIT_SCRIPT" ]]; then
+    # shellcheck source=/dev/null
+    source "$SDKMAN_INIT_SCRIPT"
+elif [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]]; then # Fallback to default if XDG one not found
+    # shellcheck source=/dev/null
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+fi
+
+# Go path
+# Modern Go versions (1.11+ with modules) don't strictly need GOPATH for projects,
+# but it's still used for `go install` packages (GOBIN).
+# Default GOPATH is $HOME/go. Let's use XDG_DATA_HOME for Go related user data.
+export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
+# GOBIN is where `go install` places binaries. Add it to PATH.
+export GOBIN="$GOPATH/bin"
+mkdir -p "$GOPATH/src" "$GOPATH/pkg" "$GOBIN"
+
+
+# Kubectl completion for Zsh (if kubectl is installed)
+# This is usually handled by .zshrc or a zsh plugin for kubectl
+# if command -v kubectl &> /dev/null && [[ -n "$ZSH_VERSION" ]]; then
+#   # Ensure completions directory exists in fpath
+#   KUBECTL_COMPLETION_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/completions"
+#   mkdir -p "$KUBECTL_COMPLETION_DIR"
+#   if [[ ! "$FPATH" == *"$KUBECTL_COMPLETION_DIR"* ]]; then
+#     export FPATH="_kubectrl_completion:$FPATH"
+#   fi
+#   # Generate completion script if it doesn't exist or is outdated
+#   # kubectl completion zsh > "${KUBECTL_COMPLETION_DIR}/_kubectl"
+#   # For now, let's assume OMZ or similar handles this, or user runs it manually.
+#   # Source <(kubectl completion zsh) is also an option in .zshrc but can slow down startup.
+# fi
+
+# RVM path (Ruby Version Manager)
+# RVM is typically installed in $HOME/.rvm
+# It's best to let RVM's own scripts manage its PATH additions.
+# The line `export PATH="$PATH:$HOME/.rvm/bin"` is often added by RVM itself.
+# If RVM is used, its init script should be sourced (usually in .zshrc or .zlogin).
+
+# GEM paths for Ruby
+# GEM_HOME and GEM_PATH can be set to XDG directories.
+# E.g., export GEM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/gem"
+#       export GEM_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/gem"
+# However, this needs to be compatible with how RVM or system Ruby expects it.
+# For now, relying on RVM or system Ruby defaults. The original .exports had:
+# export PATH="$PATH:$HOME/.gem/ruby/2.7.0/bin" # This is very specific and might break.
+# Better to use `gem environment path` and add that.
+
+# PostgreSQL client tools (if installed via Homebrew)
+# export PATH="/usr/local/opt/libpq/bin:$PATH" # Old Homebrew path
+# For current Homebrew on Apple Silicon: /opt/homebrew/opt/libpq/bin
+# For current Homebrew on Intel: /usr/local/opt/libpq/bin
+LIBPQ_BIN_PATH=""
+if command -v brew &> /dev/null; then
+    LIBPQ_PREFIX=$(brew --prefix libpq 2>/dev/null)
+    if [ -n "$LIBPQ_PREFIX" ] && [ -d "$LIBPQ_PREFIX/bin" ]; then
+        LIBPQ_BIN_PATH="$LIBPQ_PREFIX/bin"
+    fi
+fi
+
+# Homebrew paths (for systems where brew is not in default /usr/local or /opt/homebrew)
+# Or for specific formula kegs.
+# The original .exports had some specific Homebrew paths. Generalizing:
+HOMEBREW_OPT_PATHS=""
+if command -v brew &> /dev/null; then
+    # Example for Ruby installed by brew (if not using RVM/rbenv)
+    BREW_RUBY_PREFIX=$(brew --prefix ruby 2>/dev/null)
+    if [ -n "$BREW_RUBY_PREFIX" ] && [ -d "$BREW_RUBY_PREFIX/bin" ]; then
+        HOMEBREW_OPT_PATHS="${HOMEBREW_OPT_PATHS}:${BREW_RUBY_PREFIX}/bin"
+    fi
+    # Example for OpenJDK installed by brew
+    BREW_OPENJDK_PREFIX=$(brew --prefix openjdk 2>/dev/null)
+    if [ -n "$BREW_OPENJDK_PREFIX" ] && [ -d "$BREW_OPENJDK_PREFIX/bin" ]; then
+        HOMEBREW_OPT_PATHS="${HOMEBREW_OPT_PATHS}:${BREW_OPENJDK_PREFIX}/bin"
+    fi
+    # Ruby gems installed by Homebrew's Ruby
+    # This path is complex and depends on Ruby version. `$(brew --prefix ruby)/lib/ruby/gems/X.Y.0/bin`
+    # It's often better to manage gems with Bundler or within project.
+fi
+
+# .NET Core tools global path
+# Default is $HOME/.dotnet/tools
+DOTNET_TOOLS_PATH="$HOME/.dotnet/tools"
+
+
+# Prepend user's local bin directories for scripts and local installs
+# Standard XDG bin location is $HOME/.local/bin
+USER_LOCAL_BIN="${XDG_BIN_HOME:-$HOME/.local/bin}"
+mkdir -p "$USER_LOCAL_BIN"
+
+
+# Construct the PATH carefully to avoid duplicates and maintain order
+# 1. User's local bin (highest precedence for user scripts)
+# 2. GOBIN (Go binaries)
+# 3. DOTNET_TOOLS_PATH (.NET global tools)
+# 4. SDKMAN paths (managed by its init script, usually prepends)
+# 5. NVM paths (managed by its script, usually prepends)
+# 6. Homebrew specific opt paths (e.g. libpq, ruby, openjdk from brew)
+# 7. Standard system PATH
+# 8. RVM (if used, its script usually handles PATH modification)
+
+# Start with a clean base PATH or augment existing one.
+# Let's augment the existing PATH. Order of addition matters.
+# Prepending ensures higher priority.
+
+# Initial PATH (system default)
+# export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" # Example base, usually inherited
+
+# Add paths, ensuring they are not already included.
+# Helper function to prepend to PATH if not already present
+prepend_to_path() {
+    local dir_to_add="$1"
+    if [ -d "$dir_to_add" ]; then
+        case ":$PATH:" in
+            *":$dir_to_add:"*) :;; # already present
+            *) PATH="$dir_to_add:$PATH";;
+        esac
+    fi
+}
+
+prepend_to_path "$USER_LOCAL_BIN"
+prepend_to_path "$GOBIN"
+prepend_to_path "$DOTNET_TOOLS_PATH"
+# NVM and SDKMAN modify PATH in their init scripts.
+
+# Add Homebrew opt paths if any were found
+if [ -n "$HOMEBREW_OPT_PATHS" ]; then
+    # Split by : and prepend each
+    OLD_IFS="$IFS" && IFS=':'
+    for path_entry in $HOMEBREW_OPT_PATHS; do
+        if [ -n "$path_entry" ]; then # handles leading/trailing colons
+            prepend_to_path "$path_entry"
+        fi
+    done
+    IFS="$OLD_IFS"
+fi
+
+if [ -n "$LIBPQ_BIN_PATH" ]; then
+    prepend_to_path "$LIBPQ_BIN_PATH"
+fi
+
+
+# Final PATH export
+export PATH
+
+# Fuzzy finder FZF settings
+# FZF can use Ripgrep for faster searching if available
+if command -v rg &> /dev/null; then
+  export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND="rg --files --hidden --follow --glob '!.git/*'" # For directory navigation
+fi
+# FZF options (layout, colors, etc.)
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --inline-info'
+# Example colors:
+# export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#ff79c6 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6,marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
+
+
+# For direnv, if you want to whitelist specific directories for .envrc loading for security:
+# export DIRENV_WHITELIST_PREFIXES=( "$HOME/projects" "$HOME/work" )
+# Or use `direnv allow <path>` per project.
+
+# Set CARGO_HOME and RUSTUP_HOME to XDG directories
+export CARGO_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/cargo"
+export RUSTUP_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/rustup"
+mkdir -p "$CARGO_HOME" "$RUSTUP_HOME"
+# Add cargo bin to path if not already handled by rustup/cargo install scripts
+prepend_to_path "$CARGO_HOME/bin"
+export PATH
+
+# Yarn global bin path
+# Yarn's default global bin location can be found with `yarn global bin`
+# Often $HOME/.yarn/bin or $XDG_CONFIG_HOME/yarn/global/node_modules/.bin
+# Let's try to use XDG if possible, though yarn might not respect it directly for bin.
+# yarn config set prefix "${XDG_DATA_HOME:-$HOME/.local/share}/yarn" (run once)
+# Then add "${XDG_DATA_HOME:-$HOME/.local/share}/yarn/bin" to PATH
+YARN_GLOBAL_BIN_XDG="${XDG_DATA_HOME:-$HOME/.local/share}/yarn/bin"
+YARN_GLOBAL_BIN_LEGACY="$HOME/.yarn/bin" # Common legacy path
+
+if [ -d "$YARN_GLOBAL_BIN_XDG" ]; then
+    prepend_to_path "$YARN_GLOBAL_BIN_XDG"
+elif [ -d "$YARN_GLOBAL_BIN_LEGACY" ]; then
+    prepend_to_path "$YARN_GLOBAL_BIN_LEGACY"
+fi
+export PATH
+
+# Pip user install bin path
+# Python's user scheme for installing packages: `pip install --user <package>`
+# Binaries go to:
+#   macOS: $HOME/Library/Python/X.Y/bin
+#   Linux: $HOME/.local/bin (already covered by USER_LOCAL_BIN)
+# Let's ensure the macOS Python user bin is in PATH if on macOS.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    # This path needs the Python version. It's tricky to get programmatically
+    # without knowing which python `pip` corresponds to.
+    # Example: export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+    # A more robust way is `python -m site --user-base`/bin, but which python?
+    # For now, if using system python or brew python, this might be needed.
+    # If using pyenv, pyenv shims handle this.
+    # Adding common versions, but this is not ideal.
+    prepend_to_path "$HOME/Library/Python/3.11/bin" # Example
+    prepend_to_path "$HOME/Library/Python/3.10/bin" # Example
+    prepend_to_path "$HOME/Library/Python/3.9/bin"  # Example
+    prepend_to_path "$HOME/Library/Python/3.8/bin"  # Example
+    prepend_to_path "$HOME/Library/Python/3.7/bin"  # Example
+fi
+export PATH
+
+# Ensure XDG base directories are exported for other applications to use
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}" # For state files like history
+
+# Create XDG dirs if they don't exist
+mkdir -p "$XDG_CONFIG_HOME" \
+           "$XDG_CACHE_HOME" \
+           "$XDG_DATA_HOME" \
+           "$XDG_STATE_HOME" \
+           "${XDG_BIN_HOME:-$HOME/.local/bin}" # Also ensure user bin exists
+
+# BAT theme (if bat is installed)
+# Bat themes are usually in bat's config dir: $(bat --config-dir)/themes
+# Set preferred theme via BAT_THEME or bat --config-file
+# export BAT_THEME="Monokai Extended"
+# Bat config file is at $(bat --config-file) -> $XDG_CONFIG_HOME/bat/config
+# Example content for config: --theme="Monokai Extended"
+BAT_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/bat"
+mkdir -p "$BAT_CONFIG_DIR/themes"
+export BAT_CONFIG_PATH="$BAT_CONFIG_DIR/config"
+# if [ ! -f "$BAT_CONFIG_PATH" ]; then
+#   echo "# Bat config file" > "$BAT_CONFIG_PATH"
+#   echo "--theme=\"TwoDark\"" >> "$BAT_CONFIG_PATH" # Example theme
+# fi
+
+# Broot (file navigator) configuration
+# Broot stores config in $XDG_CONFIG_HOME/broot/conf.toml
+# No specific env vars usually needed unless customizing install paths.
+
+# Starship prompt (if used)
+# Starship config is at $XDG_CONFIG_HOME/starship.toml
+# export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship.toml" (usually picked up automatically)
+
+# Any other application-specific XDG exports or PATH adjustments can go here.
+# Example: If an app FOO_APP needs FOO_CONFIG_DIR
+# export FOO_CONFIG_DIR="$XDG_CONFIG_HOME/foo_app"
+# mkdir -p "$FOO_CONFIG_DIR"
+
+# Java Home (if not managed by SDKMAN or a specific tool)
+# On macOS, /usr/libexec/java_home can find it
+# if [[ "$(uname -s)" == "Darwin" ]]; then
+#    export JAVA_HOME=$(/usr/libexec/java_home)
+# fi
+# SDKMAN usually sets JAVA_HOME when you `sdk use java <version>`
+# Ensure OpenJDK from brew is available if that's the primary source
+if command -v brew &> /dev/null && [[ "$(uname -s)" == "Darwin" ]]; then
+    BREW_OPENJDK_PREFIX_FOR_JAVA_HOME=$(brew --prefix openjdk 2>/dev/null)
+    if [ -n "$BREW_OPENJDK_PREFIX_FOR_JAVA_HOME" ] && [ -z "$JAVA_HOME" ]; then # Only if JAVA_HOME isn't set
+        export JAVA_HOME="$BREW_OPENJDK_PREFIX_FOR_JAVA_HOME"
+    fi
+fi
+
+# Android SDK paths (if applicable)
+# export ANDROID_HOME="$XDG_DATA_HOME/android/sdk"
+# export PATH="$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools"
+# mkdir -p "$ANDROID_HOME"
+
+# Flutter SDK paths (if applicable)
+# export FLUTTER_HOME="$XDG_DATA_HOME/flutter"
+# export PATH="$PATH:$FLUTTER_HOME/bin"
+# mkdir -p "$FLUTTER_HOME"
+
+# Final check for duplicate PATH entries and cleanup (optional, can be slow)
+# Consider using a more robust path management tool or function if PATH gets very complex.
+# Example: awk -v RS=: -v ORS=: '!a[$0]++' <<<"$PATH"
+# This is generally not needed if `prepend_to_path` is used consistently.
+# export PATH=$(echo "$PATH" | awk -v RS=':' -v ORS=':' '!seen[$0]++{print $0}' | sed 's/:$//')
+
+# Ensure this script is sourced, not executed, so exports take effect in the current shell.
+# The #!/usr/bin/env bash shebang is for linters/editors but doesn't affect sourcing.
+true # Ensure script exits with 0 if sourced.

@@ -1,0 +1,175 @@
+# If you come from bash you might have to change your $PATH.
+# export PATH=$HOME/bin:/usr/local/bin:$PATH
+
+# Path to your oh-my-zsh installation.
+# This will need to be XDG compliant if Oh My Zsh supports it,
+# or we might need to set ZSH_DIR explicitly if we move OMZ.
+# For now, assume OMZ is in default location or its location is handled by OMZ itself.
+export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
+
+# Set name of the theme to load --- if set to "random", it will
+# load a random theme each time oh-my-zsh is loaded, in which case,
+# to know which specific one was loaded, run: echo $RANDOM_THEME
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+ZSH_THEME="avit"
+
+# Set list of themes to pick from when loading at random
+# Setting this variable when ZSH_THEME=random will cause zsh to load
+# a theme from this variable instead of looking in $ZSH/themes/
+# If set to an empty array, this variable will have no effect.
+# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion.
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment one of the following lines to change the auto-update behavior
+# zstyle ':omz:update' mode disabled  # disable automatic updates
+# zstyle ':omz:update' mode auto      # update automatically without asking
+# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+
+# Uncomment the following line to change how often to auto-update (in days).
+# zstyle ':omz:update' frequency 13
+
+# Uncomment the following line if pasting URLs and other text is messed up.
+# DISABLE_MAGIC_FUNCTIONS="true"
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# You can also set it to another string to have that shown instead of the default red dots.
+# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
+# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# You can set one of the optional three formats:
+# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# or set a custom format using the strftime function format specifications,
+# see 'man strftime' for details.
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+# ZSH_CUSTOM=/path/to/new-custom-folder
+
+# Which plugins would you like to load?
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(git zsh-autosuggestions zsh-nvm node npm kubectl dotnet zsh-syntax-highlighting)
+
+# Source Oh My Zsh
+if [ -f "$ZSH/oh-my-zsh.sh" ]; then
+  source "$ZSH/oh-my-zsh.sh"
+else
+  echo "WARN: Oh My Zsh not found at $ZSH"
+fi
+
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR='vim'
+# else
+#   export EDITOR='mvim'
+# fi
+
+# Compilation flags
+# export ARCHFLAGS="-arch x86_64"
+
+# Set personal aliases, overriding those provided by oh-my-zsh libs,
+# plugins, and themes. Aliases can be placed here, though oh-my-zsh
+# users are encouraged to define aliases within the ZSH_CUSTOM folder.
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.config/zsh/.zshrc" # Updated to XDG path
+# alias ohmyzsh="mate ~/.oh-my-zsh" # Path to OMZ
+
+# Source user's custom files from XDG Zsh config directory
+ZDOTDIR_USER_CONFIG="${ZDOTDIR:-$HOME/.config/zsh}"
+
+if [ -f "$ZDOTDIR_USER_CONFIG/exports.sh" ]; then # Renamed to .sh for clarity, was .exports
+    source "$ZDOTDIR_USER_CONFIG/exports.sh"
+fi
+if [ -f "$ZDOTDIR_USER_CONFIG/aliases.sh" ]; then # Renamed to .sh, was .aliases
+    source "$ZDOTDIR_USER_CONFIG/aliases.sh"
+fi
+if [ -f "$ZDOTDIR_USER_CONFIG/functions.sh" ]; then # Renamed to .sh, was .functions
+    source "$ZDOTDIR_USER_CONFIG/functions.sh"
+fi
+
+# XDG Base Directory environment variables setup
+# This should ideally be in a more global profile file like /etc/profile.d or ~/.profile
+# but for zsh-specific setup, we can ensure they are defined here.
+# This will be part of the xdg_setup.sh script's responsibility to add to shell profiles.
+if [ -z "$XDG_CONFIG_HOME" ]; then
+    export XDG_CONFIG_HOME="$HOME/.config"
+fi
+if [ -z "$XDG_CACHE_HOME" ]; then
+    export XDG_CACHE_HOME="$HOME/.cache"
+fi
+if [ -z "$XDG_DATA_HOME" ]; then
+    export XDG_DATA_HOME="$HOME/.local/share"
+fi
+
+# Set ZDOTDIR if not already set by user/system
+# This tells Zsh where to find its config files like .zshrc, .zlogin etc.
+if [ -z "$ZDOTDIR" ]; then
+    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+fi
+
+# Ensure the ZDOTDIR exists
+mkdir -p "$ZDOTDIR"
+
+# Oh My Zsh XDG Compliance (Experimental - OMZ might not fully support this easily)
+# If you want to try moving Oh My Zsh itself to XDG_DATA_HOME:
+# export ZSH="$XDG_DATA_HOME/oh-my-zsh"
+# You would need to clone/install OMZ to this location.
+# The default ZSH variable is usually "$HOME/.oh-my-zsh".
+
+# For zsh history
+# Default is ~/.zsh_history. Let's move it to XDG_STATE_HOME or XDG_DATA_HOME.
+# XDG_STATE_HOME is more appropriate for history files. If not set, fallback to XDG_DATA_HOME/zsh.
+if [ -z "$XDG_STATE_HOME" ]; then
+    export HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
+else
+    export HISTFILE="${XDG_STATE_HOME}/zsh/history"
+fi
+mkdir -p "$(dirname "$HISTFILE")"
+
+# Source any custom environment settings managed by dotfiles
+if [ -f "$XDG_CONFIG_HOME/dotfiles/env.sh" ]; then
+    source "$XDG_CONFIG_HOME/dotfiles/env.sh"
+fi
+
+# To customize your prompt, edit ~/.config/zsh/themes/your-theme.zsh-theme
+# Or, if using a standard OMZ theme, it's sourced from $ZSH/themes/
+
+# Example of sourcing a custom prompt if you choose to manage it separately
+# if [ -f "$ZDOTDIR_USER_CONFIG/prompt.zsh" ]; then
+#   source "$ZDOTDIR_USER_CONFIG/prompt.zsh"
+# fi

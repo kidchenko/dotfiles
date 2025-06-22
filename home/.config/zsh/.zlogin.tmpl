@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# .zlogin executed for login shells, after .zshrc
+
+# REPO path might need to be updated if your chezmoi source is not kidchenko/dotfiles
+# However, this update mechanism might be superseded by how chezmoi handles updates.
+# For now, let's assume DOTFILES_DIR points to where chezmoi clones the repo.
+# This might be better handled by a chezmoi scriptlet or run_on_change script.
+
+# DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi" # Example if chezmoi source is there
+# The original script seemed to point to the dotfiles repo itself.
+# Let's make it point to where this .zlogin file will reside after chezmoi apply.
+# ZDOTDIR should be $XDG_CONFIG_HOME/zsh
+
+# This update logic might conflict with or be redundant with `chezmoi update`.
+# Consider removing if chezmoi's built-in update is used.
+# REPO_SOURCE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi" # Default chezmoi source path
+# if [[ -f "$REPO_SOURCE_DIR/tools/update.sh" ]]; then
+#     {
+#         # chmod a+x "$REPO_SOURCE_DIR/tools/update.sh" # Should already be executable
+#         # "$REPO_SOURCE_DIR/tools/update.sh" # This would run the update script from the source repo
+#         # This is probably not what we want in .zlogin.
+#         # `chezmoi update` is the more idiomatic way.
+#     } || {
+#         # echo "fail to update from .zlogin..."
+#     }
+# fi
+
+
+h=$(date +%H)
+
+if [ $h -lt 12 ]; then
+  echo "Good Morning Jose!"
+elif [ $h -lt 18 ]; then
+  echo "Good Afternoon Jose!"
+else
+  echo "Good Evening Jose!"
+fi
+echo
+
+# [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+# RVM path might need checking if it respects XDG or has its own config for location.
+RVM_PATH="$HOME/.rvm/scripts/rvm" # Default RVM path
+if [[ -s "$RVM_PATH" ]]; then
+    source "$RVM_PATH"
+fi
+
+
+# z.sh for directory jumping
+# Assuming z.sh is installed via Homebrew or another package manager that places it in a standard location.
+# Homebrew prefix can change, so use `brew --prefix` if available.
+if command -v brew &> /dev/null && [[ "$(uname)" == "Darwin" ]]; then
+    Z_SH_PATH="$(brew --prefix)/etc/profile.d/z.sh"
+    if [[ -f "$Z_SH_PATH" ]]; then
+        # shellcheck source=/dev/null
+        . "$Z_SH_PATH"
+    else
+        echo "WARN: z.sh not found at Homebrew path: $Z_SH_PATH"
+    fi
+elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+    # For Linux, z.sh might be installed elsewhere, e.g., /usr/share/z/z.sh or via a plugin manager
+    # This part might need user configuration or a more robust detection method.
+    # As a placeholder:
+    if [[ -f "/usr/local/etc/profile.d/z.sh" ]]; then # Example path
+        # shellcheck source=/dev/null
+        . "/usr/local/etc/profile.d/z.sh"
+    elif [[ -f "$HOME/.z.sh" ]]; then # Common manual install path
+        # shellcheck source=/dev/null
+        . "$HOME/.z.sh"
+    fi
+fi
+# MINGW support was in original, keeping for completeness if relevant
+# elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    # Do something under 32 bits Windows NT platform
+# elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+    # Do something under 64 bits Windows NT platform
+# fi
+
+# tabtab source for packages
+# tabtab might use XDG_CONFIG_HOME if updated, otherwise it's usually ~/.config/tabtab
+TABTAB_SCRIPT_BASH="${XDG_CONFIG_HOME:-$HOME/.config}/tabtab/__tabtab.bash"
+TABTAB_SCRIPT_ZSH="${XDG_CONFIG_HOME:-$HOME/.config}/tabtab/__tabtab.zsh" # For Zsh, it might generate a .zsh file
+
+if [[ -f "$TABTAB_SCRIPT_ZSH" ]]; then
+    # shellcheck source=/dev/null
+    . "$TABTAB_SCRIPT_ZSH"
+elif [[ -f "$TABTAB_SCRIPT_BASH" ]]; then # Fallback to bash if zsh specific not found
+    # shellcheck source=/dev/null
+    . "$TABTAB_SCRIPT_BASH"
+fi
+
+# check direnv
+if command -v direnv &> /dev/null; then
+    eval "$(direnv hook zsh)"
+fi
+
+# ssh-agent setup
+# Check if ssh-agent is running, if not start it.
+# This is a common snippet, but be mindful of multiple agents if not handled carefully.
+if ! pgrep -u "$USER" ssh-agent > /dev/null; then
+    eval "$(ssh-agent -s)"
+fi
+
+# Add SSH keys. Prioritize ed25519.
+# Ensure .ssh directory and keys have correct permissions.
+SSH_DIR="$HOME/.ssh"
+if [ -f "$SSH_DIR/id_ed25519" ]; then
+    ssh-add "$SSH_DIR/id_ed25519" 2>/dev/null
+elif [ -f "$SSH_DIR/id_rsa" ]; then # Fallback to RSA
+    ssh-add "$SSH_DIR/id_rsa" 2>/dev/null
+fi
+
+# fzf setup
+# Check for fzf installation and source its zsh script.
+# Paths can vary based on installation method (brew, git clone, etc.)
+# Homebrew typical path:
+if command -v brew &> /dev/null && [[ "$(uname)" == "Darwin" ]]; then
+    FZF_ZSH_PATH="$(brew --prefix)/opt/fzf/shell/key-bindings.zsh" # Path for key-bindings
+    FZF_COMPLETION_PATH="$(brew --prefix)/opt/fzf/shell/completion.zsh" # Path for completion
+    if [ -f "$FZF_ZSH_PATH" ]; then source "$FZF_ZSH_PATH"; fi
+    if [ -f "$FZF_COMPLETION_PATH" ]; then source "$FZF_COMPLETION_PATH"; fi
+# Check common manual install path
+elif [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/fzf/fzf.zsh" ]; then
+    source "${XDG_CONFIG_HOME:-$HOME/.config}/fzf/fzf.zsh"
+elif [ -f "$HOME/.fzf.zsh" ]; then
+    source "$HOME/.fzf.zsh"
+fi
+
+# Any other login-specific items can go here.
+# For example, starting services, specific environment messages, etc.
+# Example:
+# if command -v fortune &> /dev/null; then
+#   fortune
+# fi

@@ -1,215 +1,158 @@
-# @kidchenko's Dotfiles v2: Powered by Chezmoi
+# @kidchenko's Dotfiles (v2 - XDG & Chezmoi Edition)
 
-🔧💻 My personal `.dotfiles` for macOS, Linux, and Windows, now supercharged with `chezmoi` for robust management and customization. This setup includes configurations for `zsh`, `PowerShell`, `git`, `vim`, and more, all managed intelligently.
-
-[![CI](https://github.com/kidchenko/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/kidchenko/dotfiles/actions/workflows/ci.yml)
-
-## Overview
-
-These dotfiles aim to provide a consistent and personalized development environment across multiple operating systems. By leveraging `chezmoi`, we gain:
-
-*   **Declarative configuration:** Define the desired state of your dotfiles.
-*   **Cross-platform compatibility:** Manage files for macOS, Linux, and Windows from a single source.
-*   **Templating:** Customize files based on OS or other conditions (though not heavily used in this version yet, `chezmoi` supports it).
-*   **Security:** `chezmoi` can manage secrets (not used in this public version).
-
-This revamped setup uses a central `config.yaml` to control various aspects, from software installation to feature enablement and custom hooks.
+This repository contains my personal dotfiles, managed using [Chezmoi](https://chezmoi.io/) for a robust, cross-platform (macOS and Linux) setup. This version focuses on adhering to the XDG Base Directory Specification for a cleaner home directory.
 
 ## Features
 
-*   **Chezmoi Integration:** Robust dotfile management using `chezmoi`.
-*   **Centralized Configuration:** Single `config.yaml` for easy customization of settings, features, and installations.
-*   **OS Detection:** Scripts adapt behavior for macOS, Linux, and Windows.
-*   **Modular Installation:** Software and PowerShell modules are installed via dedicated, idempotent functions.
-*   **Feature Flags:** Easily enable or disable sets of features (e.g., Oh My Posh, specific tools) via `config.yaml`.
-*   **Interactive Prompts:** Optional prompts for installations, controllable via a feature flag.
-*   **Post-Install Hooks:** Run custom scripts or commands after the main setup.
-*   **Idempotent Scripts:** Setup scripts can be run multiple times without causing issues.
-*   **Improved Logging:** Consistent logging with timestamps and levels in setup scripts.
-*   **Automated Testing:** CI pipeline using Bats-core (Bash) and Pester (PowerShell) to ensure reliability.
+*   **XDG Base Directory Specification**: Configurations, data, and cache files are stored in standard XDG locations (`~/.config`, `~/.local/share`, `~/.cache`).
+*   **Managed by Chezmoi**: Dotfiles are treated as templates, allowing for dynamic configuration and management across multiple machines.
+*   **Automated Tool Installation**:
+    *   Global CLI tools (npm, pip, dotnet) are managed via a configuration file (`~/.config/dotfiles/config.yaml`).
+    *   VS Code extensions are managed via a list file (`~/.config/dotfiles/vscode-extensions.txt`).
+*   **Cross-Platform**: Designed to work on macOS and Linux.
+*   **Idempotent Bootstrap**: The main bootstrap script can be run multiple times safely.
+*   **Verbose Output & Dry-Run Mode**: For better control and understanding during setup.
+*   **Customizable Zsh Environment**: Includes aliases, functions, and Oh My Zsh integration, all XDG-aware.
+*   **Curated Configurations**: For Git, Neovim (from Vim), Tmux, and more.
 
 ## Prerequisites
 
-*   **Git:** Required for cloning this repository and for `chezmoi`'s operations.
-*   **Operating System Specifics:**
-    *   **macOS:** Homebrew is recommended for installing some dependencies. The install script can install `chezmoi` and `yq` via Homebrew if not present.
-    *   **Linux:** A package manager like `apt-get` (Debian/Ubuntu) or `dnf` (Fedora) is expected for installing dependencies. `curl` or `wget` is needed for some installers. The install script can install `chezmoi` and `yq`.
-    *   **Windows:** Chocolatey is recommended for installing some dependencies. The install script can install `chezmoi` via Chocolatey if not present. PowerShell 5.1 or higher.
-*   **Shells:**
-    *   **macOS/Linux:** `zsh` is recommended (though `bash` is the primary target for `setup.sh`). If you use `zsh`, consider Oh My Zsh.
-    *   **Windows:** PowerShell.
+Before running the bootstrap script, ensure you have the following installed:
 
-## Installation
+*   **Git**: For cloning the repository and for Chezmoi's operations.
+*   **curl** or **wget**: For downloading Chezmoi if it's not already installed.
+*   **(Optional but Recommended)** A Nerd Font for your terminal to correctly display icons and symbols used in some prompts/themes (e.g., Hack Nerd Font, FiraCode Nerd Font).
 
-The one-liner commands will download an installer script (`tools/install.sh` for Bash, `tools/install.ps1` for PowerShell). This script will then:
-1.  Install `chezmoi` if not already present (using Homebrew on macOS, a script on Linux, Chocolatey on Windows).
-2.  Initialize `chezmoi` with this dotfiles repository.
-3.  Run the main setup scripts (`setup.sh` or `setup.ps1`).
-4.  These setup scripts read `config.yaml` to customize the setup, install software, and apply dotfiles via `chezmoi apply`.
+The bootstrap script will attempt to install `yq` (YAML processor) if it's missing and you have a common package manager (Homebrew, apt, dnf, etc.) configured with `sudo` access if required. `yq` is used for processing the global tools configuration.
 
-### macOS / Linux (using Bash/Zsh)
+## Installation / Bootstrap
 
-```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/install.sh)"
+To set up your environment using these dotfiles, run the following command in your terminal:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v2/tools/bootstrap.sh)"
 ```
+*(Note: Ensure you are using the correct branch name, e.g., `v2` or `main`, in the URL if it differs from `master` or the default branch.)*
+
+Alternatively, you can clone this repository manually and then run the bootstrap script:
+```bash
+git clone https://github.com/kidchenko/dotfiles.git ~/dotfiles_source # Or any other location
+cd ~/dotfiles_source
+bash tools/bootstrap.sh
+```
+
 *Note: The default branch might be `master` or `main`. Adjust URL if necessary.*
 
-### Windows (using PowerShell)
+### Bootstrap Script Options
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/install.ps1'))
+The `bootstrap.sh` script accepts the following optional flags:
+
+*   `--verbose`: Enable verbose output for the bootstrap process and sub-scripts.
+*   `--dry-run`: Simulate installations and changes without modifying your system. Useful for seeing what the script will do.
+*   `--force-chezmoi-init`: Forces `chezmoi init` even if Chezmoi appears to be already initialized. Useful for resetting the Chezmoi source.
+*   `--repo <URL>`: Specify a different Git repository URL for your dotfiles if you've forked this repo.
+
+Example:
+```bash
+bash tools/bootstrap.sh --verbose --dry-run
 ```
-*Note: The default branch might be `master` or `main`. Adjust URL if necessary.*
 
-After installation, restart your terminal or source your shell profile (`~/.zshrc`, `~/.bashrc`, or PowerShell `$PROFILE`) for all changes to take effect.
+## Structure Overview (XDG + Chezmoi)
 
-## Configuration (`config.yaml`)
+*   **Chezmoi Source Directory**: `~/.local/share/chezmoi` (this is where your dotfiles Git repository will be cloned by Chezmoi).
+*   **Chezmoi Config File**: `~/.config/chezmoi/chezmoi.toml`.
+*   **Dotfile Templates**: Located within the `home/` directory in this repository (e.g., `home/.config/zsh/.zshrc.tmpl`). Chezmoi processes these templates and creates the actual configuration files in your home directory (e.g., `~/.config/zsh/.zshrc`).
+*   **XDG Directories Used**:
+    *   `$XDG_CONFIG_HOME` (defaults to `~/.config`): For configuration files (e.g., `nvim`, `tmux`, `zsh`, `git/ignore`).
+    *   `$XDG_DATA_HOME` (defaults to `~/.local/share`): For user data files (e.g., `nvim/undo`, `zsh/history` (via `$HISTFILE`), `nvm`, `sdkman`).
+    *   `$XDG_CACHE_HOME` (defaults to `~/.cache`): For cached data (e.g., `nvim/shada`, `zsh/completions`).
+    *   `$XDG_STATE_HOME` (defaults to `~/.local/state`): For state files (e.g., history logs if not in data).
+    *   `$XDG_BIN_HOME` (defaults to `~/.local/bin`): For user-installed executables (added to `PATH`).
 
-The heart of this dotfiles setup is the `config.yaml` file located in the root of the repository. It allows you to customize various aspects of your environment.
+## Customization
 
+### 1. Fork this Repository
+
+It's highly recommended to fork this repository to your own GitHub account so you can customize it freely. Update the `DOTFILES_REPO_URL` in `tools/bootstrap.sh` or use the `--repo` flag during the first run.
+
+### 2. Modifying Dotfiles
+
+*   Edit the template files in your forked repository (e.g., `home/.config/nvim/init.vim.tmpl`).
+*   After making changes, commit and push them to your Git repository.
+*   Run `chezmoi apply` on any machine to apply the updates. You can add `chezmoi apply` to your shell's startup (e.g., `.zlogin`) or run it periodically.
+
+### 3. Managing Global Tools
+
+*   Edit `~/.config/dotfiles/config.yaml` (this file is created by Chezmoi from `home/.config/dotfiles/config.yaml.tmpl`).
+*   Add or remove tools under the `npm`, `pip`, or `dotnet` sections.
+*   Run `bash <path_to_your_dotfiles_repo>/tools/install_global_tools.sh` or re-run the main `tools/bootstrap.sh` script.
+
+Example snippet from `config.yaml`:
 ```yaml
-# config.yaml (example structure)
-general:
-  username: "your_username" # Used for informational purposes or by hooks
-
-tools:
-  git:
-    name: "Your Name"      # For global .gitconfig
-    email: "your@email.com" # For global .gitconfig
-
-feature_flags:
-  withOhMyPosh: true             # Install and set up Oh My Posh
-  installCoreSoftware: true      # Install core software like Git, Brave Browser
-  installDevelopmentTools: true  # Placeholder for future dev tools
-  installPowerShellModules: true # Install common PowerShell modules (Windows only)
-  setupGitAliases: true          # Placeholder for Git alias setup via chezmoi/script
-  interactivePrompts: false      # Set to true to be prompted before certain installations
-
-post_install_hooks:
-  enabled: true # Master switch for all post-install hooks
-  scripts:
-    - run_on: [linux, macos]
-      script: "./custom_scripts/my_bash_hook.sh"
-      description: "Example Bash hook for Linux/macOS."
-    - run_on: [windows]
-      command: "Write-Host 'Example Windows command hook.'"
-      description: "Example Windows command hook."
+global_tools:
+  npm:
+    - http-server
+    - eslint
+  pip:
+    - black
+    - flake8
+  dotnet:
+    - dotnet-ef
 ```
 
-### `general`
-*   `username`: Currently informational. Could be used by custom scripts or `chezmoi` templates in the future.
+### 4. Managing VS Code Extensions
 
-### `tools.git`
-*   `name`: Sets your global `user.name` in `.gitconfig`.
-*   `email`: Sets your global `user.email` in `.gitconfig`.
+*   Edit `~/.config/dotfiles/vscode-extensions.txt` (this file is created by Chezmoi from `home/.config/dotfiles/vscode-extensions.txt.tmpl`).
+*   Add or remove extension IDs (one per line). Comments start with `#`.
+*   Run `bash <path_to_your_dotfiles_repo>/tools/install_vscode_extensions.sh` or re-run the main `tools/bootstrap.sh` script.
 
-### `feature_flags`
-These boolean flags control which parts of the setup are executed:
-*   `withOhMyPosh`: If true, attempts to install Oh My Posh for your shell.
-*   `installCoreSoftware`: If true, installs essential software like Git (if not present) and Brave Browser.
-*   `installDevelopmentTools`: A general flag that can be used to control the installation of a suite of development tools (currently a placeholder for further extension).
-*   `installPowerShellModules`: If true (and on Windows), installs useful PowerShell modules like `posh-git`, `Terminal-Icons`, etc.
-*   `setupGitAliases`: Placeholder for managing Git aliases, potentially through a dedicated script or by adding a Git aliases file to `chezmoi`.
-*   `interactivePrompts`:
-    *   If `false` (default): The scripts will run non-interactively, assuming default 'yes' for most operations where a choice might be offered (e.g., installing a specific application).
-    *   If `true`: For certain operations (like installing Brave or Oh My Posh), you will be prompted for confirmation before proceeding.
+### 5. Machine-Specific Configurations (Chezmoi Templating)
 
-### `post_install_hooks`
-This section allows you to run custom scripts or commands after the main setup and `chezmoi apply` have completed.
-*   `enabled`: A master switch. If `false`, no hooks will be run.
-*   `scripts`: A list of hook definitions. Each item can have:
-    *   `run_on`: A list of OS identifiers (e.g., `linux`, `macos`, `windows`) for which this hook should run. The script uses `get_os_type` (Bash) or `Get-OSType` (PowerShell) to determine the current OS.
-    *   `script`: (Optional) Path to a script file to execute. Paths are typically relative to the dotfiles repository root (e.g., `./custom_scripts/my_script.sh`). The script will be executed from the dotfiles directory.
-    *   `command`: (Optional) A direct command string to execute.
-    *   `description`: A brief description of what the hook does, for logging purposes.
+Chezmoi uses Go templating. You can make parts of your dotfiles conditional based on hostname, OS, or custom data.
 
-## Core Tooling: `chezmoi`
-
-This setup uses `chezmoi` to manage your dotfiles. `chezmoi` initializes a local source directory (usually `~/.local/share/chezmoi`) where it stores your dotfiles. It then creates symlinks (or copies, depending on configuration) from this source to their target locations (e.g., `~/.zshrc`).
-
-**Key `chezmoi` commands:**
-
-*   `chezmoi add <file_path>`: Adds a new file to your `chezmoi` source directory.
-    *   Example: `chezmoi add ~/.gitconfig`
-*   `chezmoi apply`: Applies any pending changes from your `chezmoi` source directory to your target files. This is run automatically by the setup scripts.
-*   `chezmoi edit <file_path>`: Opens a target file (e.g., `~/.zshrc`) in your editor. When you save, `chezmoi` updates its source directory.
-*   `chezmoi update`: Pulls the latest changes from your dotfiles repository into `chezmoi`'s source directory and applies them.
-*   `chezmoi status`: Shows files that have been modified or are managed by `chezmoi`.
-*   `chezmoi forget <file_path>`: Stops `chezmoi` from managing a file.
-*   `chezmoi diff`: Shows differences between your target files and the `chezmoi` source state.
-
-For more detailed information, refer to the [official chezmoi documentation](https://www.chezmoi.io/docs/).
-
-## Usage After Initial Setup
-
-*   **Applying local changes:** If you manually edit a file in `~/.local/share/chezmoi` or want to ensure your system reflects the `chezmoi` source state, run:
-    ```bash
-    chezmoi apply
+*   **Data File**: Create a `.chezmoidata.yaml` (or `.json`/`.toml`) in the root of your dotfiles repository (next to `home/`).
+    Example `.chezmoidata.yaml`:
+    ```yaml
+    email: "your_email@example.com"
+    name: "Your Name"
+    is_work_machine: false
+    # Add other variables you want to use in templates
     ```
-*   **Pulling updates from your Git repo:**
-    ```bash
-    chezmoi update
+*   **Use in Templates**:
+    ```gotemplate
+    # In home/.gitconfig.tmpl
+    [user]
+      email = {{ .email | default "fallback@example.com" }}
+      name = {{ .name | default "Fallback Name" }}
+
+    {{ if .is_work_machine }}
+    # Work-specific git config
+    [includeIf "gitdir:~/work/"]
+      path = .gitconfig-work
+    {{ end }}
     ```
-    This is often configured to run automatically by some `chezmoi` setups, but you can run it manually.
-*   **Editing managed files:**
-    ```bash
-    chezmoi edit ~/.zshrc
-    ```
+    The `config.yaml.tmpl` and `vscode-extensions.txt.tmpl` already include examples of conditional sections using `{{ if .is_work_machine }}`.
 
-## Extending Your Setup
+## Key Scripts
 
-### Adding New Dotfiles
-1.  Create or modify the file in its target location (e.g., `~/.config/mytool/config.toml`).
-2.  Run `chezmoi add ~/.config/mytool/config.toml`.
-3.  Commit the changes in your dotfiles repository (`~/.kidchenko/dotfiles` or where your `chezmoi` source is version-controlled).
+*   `tools/bootstrap.sh`: Main entry point for setting up the dotfiles.
+*   `tools/run_once_install-chezmoi.sh`: Installs Chezmoi.
+*   `tools/xdg_setup.sh`: Sets XDG environment variables for the current session.
+*   `tools/install_global_tools.sh`: Installs global CLI tools.
+*   `tools/install_vscode_extensions.sh`: Installs VS Code extensions.
 
-### Customizing Installations
-*   **Modify `config.yaml`**: Toggle `feature_flags` or add/remove items from software installation lists (if the scripts are designed to read such lists, which is a potential future enhancement).
-*   **Edit `setup.sh` or `setup.ps1`**:
-    *   Add new installation functions for software not covered.
-    *   Modify existing installation functions (e.g., to change package manager options or versions).
-    *   Remember to maintain idempotency.
+## Troubleshooting
 
-### Adding Custom Hooks
-1.  Create your hook script (e.g., in `custom_scripts/`).
-2.  Add a new entry to the `post_install_hooks.scripts` list in `config.yaml`, specifying `run_on`, `script` or `command`, and `description`.
-
-## Fonts
-
-*   **macOS/Linux:** [Hack Nerd Font](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Hack) is recommended for terminal icons and a pleasant coding experience.
-*   **Windows:** [Delugia Nerd Font](https://github.com/adam7/delugia-code) (a version of Consolas patched with Nerd Font icons) is recommended.
-
-Font installation is typically manual or handled by your terminal emulator's settings. The setup scripts do not currently install fonts automatically.
-
-## Aliases & Shell Customizations
-Many aliases and shell functions are defined within the dotfiles themselves (e.g., in `.zshrc`, `.aliases`, PowerShell profile files). Explore these files after installation to see available shortcuts.
-
-## Testing
-This repository uses Bats-core for Bash testing and Pester for PowerShell testing.
-
-### Running Bash Tests (Linux/macOS)
-1.  **Prerequisites:**
-    *   Ensure Bats-core is installed (e.g., `brew install bats-core` or `sudo apt-get install bats`).
-    *   Ensure `yq` is installed (e.g., `brew install yq` or `sudo apt-get install yq`).
-2.  **From the repository root:**
-    ```bash
-    # If Bats is in your PATH
-    bats tests/bash/*.bats
-    # Or, if using the CI Bats installation path:
-    # /usr/local/lib/bats-core/bin/bats tests/bash/*.bats (path may vary)
-    ```
-
-### Running PowerShell Tests (Windows)
-1.  **Prerequisites:**
-    *   Ensure Pester is installed: `Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck`
-    *   Ensure `powershell-yaml` module is installed: `Install-Module powershell-yaml -Scope CurrentUser -Force -SkipPublisherCheck`
-2.  **From the repository root (in PowerShell):**
-    ```powershell
-    Invoke-Pester -Script @{Path = "./tests/powershell/*.Tests.ps1"} -OutputFormat NUnitXML -OutputFile Test-Pester.xml
-    ```
-
-## License
-This project is licensed under the MIT License. See the `LICENSE` file for details (though a `LICENSE` file wasn't explicitly created in previous steps, it's standard to add one for MIT).
+*   **Chezmoi**: Refer to the [official Chezmoi documentation](https://www.chezmoi.io/docs/). Common commands:
+    *   `chezmoi doctor`: Checks your setup.
+    *   `chezmoi edit <path_to_dotfile>`: Edit a dotfile managed by Chezmoi.
+    *   `chezmoi apply`: Apply changes from your source repo.
+    *   `chezmoi update`: Pulls changes from your Git remote and applies them.
+    *   `chezmoi diff`: Shows differences between your target files and what Chezmoi would apply.
+*   **Permissions**: Ensure scripts in the `tools/` directory are executable. The bootstrap script attempts to handle this.
+*   **PATH issues**: If commands like `chezmoi`, `npm`, `pip`, `dotnet`, or newly installed tools are not found after running the bootstrap, you might need to start a new shell session or manually ensure their installation directories are in your `PATH`. The XDG setup aims to add `~/.local/bin` to `PATH`.
 
 ---
-**Built with ❤️ by @kidchenko**
+
+Built with ❤️ by @kidchenko. Adapted for XDG and enhanced automation.
+Original v1 branch/README can be found [here](<link to old branch if it exists or remove this line>).

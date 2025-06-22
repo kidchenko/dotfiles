@@ -12,4 +12,60 @@ Thumbs.db
 # Files that might appear on external disks
 .Spotlight-V100
 .Trashes
-**/dotfiles
+# **/dotfiles # This line might be too broad or no longer needed with chezmoi structure.
+              # If it was to prevent committing the live dotfiles, chezmoi handles this separation.
+
+# Chezmoi specific
+.chezmoi.yaml.lock # Lock file for `chezmoi apply --safe`
+# .chezmoidata.* # If local data files with secrets are used and not committed
+# .chezmoitemplates/ # If `chezmoi add --template` output is stored before commit
+
+# Common editor temporary/backup files
+*~
+*.swp
+*.swo
+*.bak
+Session.vim
+.viminfo # This is a user vim state file, usually in $HOME, but good to ignore if it appears
+
+# OS generated files
+.DS_Store? # More robust .DS_Store pattern
+._*
+Thumbs.db
+
+# Python build / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.venv/
+venv/
+ENV/
+env/
+pip-wheel-metadata/
+pip-selfcheck.json
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json # Depending on policy, sometimes committed, sometimes not.
+                  # For a dotfiles repo, usually not needed unless JS tools are part of the repo itself.
+# yarn.lock
+
+# IDE specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+nbproject/ # NetBeans
+*.nbinfo   # NetBeans
+
+# Output / build directories
+build/
+dist/
+out/
+target/ # Common for Java/Rust
