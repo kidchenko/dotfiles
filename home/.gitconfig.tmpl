@@ -1,0 +1,332 @@
+# Main Git configuration file
+# Located at ~/.gitconfig after chezmoi applies it.
+# Chezmoi will manage this file as a template.
+
+[user]
+    # email = kidchenko@gmail.com # Best to set this using `chezmoi data` or environment-specific config
+    # name = kidchenko            # Or let git prompt for it on first commit / set manually
+    {{- if (and (hasKey . "email") (ne .email "")) }}
+    email = {{ .email }}
+    {{- else }}
+    # email = YourEmail@example.com # Placeholder, will use global git config or prompt if not set by chezmoi data
+    {{- end }}
+    {{- if (and (hasKey . "name") (ne .name "")) }}
+    name = {{ .name }}
+    {{- else }}
+    # name = Your Name # Placeholder
+    {{- end }}
+    {{- if (and (hasKey . "signingkey") (ne .signingkey "")) }}
+    signingkey = {{ .signingkey }}
+    {{- end }}
+
+# [credential]
+# 	helper = manager # This is often OS or environment specific.
+                     # macOS: osxkeychain
+                     # Linux: libsecret / gnome-keyring / kwallet
+                     # Windows: manager-core (Git Credential Manager Core)
+                     # Consider setting this based on OS:
+                     # {{ if eq .chezmoi.os "darwin" }}
+                     # helper = osxkeychain
+                     # {{ else if eq .chezmoi.os "linux" }}
+                     # helper = libsecret # or cache, or gnome-keyring etc.
+                     # {{ else if eq .chezmoi.os "windows" }}
+                     # helper = manager-core
+                     # {{ end }}
+
+
+# Include additional git configurations.
+# For example, XDG-compliant gitignore and gitattributes.
+[core]
+    # Excludes file - global .gitignore
+    # Git itself doesn't support XDG for excludesfile directly in ~/.gitconfig
+    # But we can point it to an XDG location managed by chezmoi.
+    excludesfile = {{ .chezmoi.homeDir }}/.config/git/ignore
+    # Attributes file - global .gitattributes
+    attributesfile = {{ .chezmoi.homeDir }}/.config/git/attributes
+
+    # Editor - uses $VISUAL or $EDITOR by default. Explicitly:
+    editor = {{ .editor | default "vim" }}
+
+	# Detect whitespace errors when applying a patch
+	whitespace = fix
+
+	# Make `git rebase` safer on macOS
+	# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+	trustctime = false # Default on macOS is true, safer to set to false.
+
+	# Prevent showing files whose names contain non-ASCII symbols as unversioned on macOS.
+	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+	{{- if eq .chezmoi.os "darwin" }}
+	precomposeunicode = true # Default on macOS is true. Explicit for clarity.
+	{{- end }}
+
+	# Speed up commands involving untracked files such as `git status`.
+	# https://git-scm.com/docs/git-update-index#_untracked_cache
+	untrackedCache = true
+
+    # Pager - default is 'less'. Can be customized.
+    # pager = delta # Example: using 'delta' diff viewer
+
+    # Default branch name for new repositories (main is the new standard)
+    # This needs Git 2.28+
+    # init.defaultBranch = main
+
+[apply]
+	# Detect whitespace errors when applying a patch (already in core, but can be specific here)
+	whitespace = fix
+
+[color]
+	# Use colors in Git commands that are capable of colored output when
+	# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
+	ui = auto
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold # line info
+	old = red # deletions
+	new = green # additions
+[color "status"]
+	added = yellow
+	changed = green
+	untracked = cyan
+
+[commit]
+	# GPG signing of commits
+	# gpgsign = false # Set to true to sign all commits by default
+	# To sign commits by default if a signing key is available:
+	{{- if (and (hasKey . "signingkey") (ne .signingkey "")) }}
+	gpgsign = true
+	{{- else }}
+	gpgsign = false
+	{{- end }}
+    # Template for commit messages (global)
+    # template = {{ .chezmoi.homeDir }}/.config/git/commit_template.txt
+
+[diff]
+	# Detect copies as well as renames
+	renames = copies
+    # Tool for `git difftool`
+    # tool = vscode
+    # [difftool "vscode"]
+    # cmd = code --wait --diff $LOCAL $REMOTE
+    # Algorithm for diffing
+    # algorithm = histogram # or patience, myers (default)
+[diff "bin"]
+	# Use `hexdump` to diff binary files
+	textconv = hexdump -v -C # Ensure hexdump is available
+
+[help]
+	# Automatically correct and execute mistyped commands (0=off, 1=correct, 2=correct and run)
+	autocorrect = 1
+
+[merge]
+	# Include summaries of merged commits in newly created merge commit messages
+	log = true
+    # Tool for `git mergetool`
+    # tool = vscode
+    # [mergetool "vscode"]
+    # cmd = code --wait $MERGED
+    # trustExitCode = true
+    # keepBackup = false
+
+[push]
+	# Default push behavior: simple, upstream, current, matching
+	# 'simple' is safe and common for Git 2.0+
+	default = simple
+	# Make `git push` push relevant annotated tags when pushing branches out.
+	followTags = true
+    # Automatically set upstream for new branches on first push
+    autoSetupRemote = true
+
+# URL shorthands (from original .gitconfig)
+[url "git@github.com:"]
+	insteadOf = "gh:"
+	pushInsteadOf = "github:" # This might conflict if gh: is also for push
+	pushInsteadOf = "git://github.com/"
+[url "git://github.com/"]
+	insteadOf = "github:"
+[url "git@gist.github.com:"]
+	insteadOf = "gst:"
+	pushInsteadOf = "gist:"
+	pushInsteadOf = "git://gist.github.com/"
+[url "git://gist.github.com/"]
+	insteadOf = "gist:"
+
+# Include aliases from the very large alias section of the original .gitconfig
+# It's better to manage these in a separate file for clarity if they are extensive.
+# For example, create `home/.config/git/aliases.conf.tmpl` and include it:
+# [include]
+#   path = {{ .chezmoi.homeDir }}/.config/git/aliases.conf
+# For now, I will embed a selection of the most common/useful ones from the original.
+# The original .gitconfig was extremely verbose with aliases.
+
+[alias]
+    # Basic Aliases (selection from original)
+    a = add
+    aa = add --all
+    ap = add --patch # Interactively stage hunks
+    au = add --update # Add changes to tracked files
+
+    b = branch
+    ba = branch -a # All branches (local and remote)
+    bd = branch -d # Delete branch (safe)
+    bD = branch -D # Delete branch (force)
+    bm = branch --merged
+    bnm = branch --no-merged
+
+    c = commit
+    cm = commit -m
+    ca = commit --amend
+    cane = commit --amend --no-edit # Amend last commit without changing message
+
+    co = checkout
+    cob = checkout -b # Create and switch to new branch
+    cot = checkout -t # Checkout remote branch and track
+
+    cp = cherry-pick
+    cpa = cherry-pick --abort
+    cpc = cherry-pick --continue
+
+    d = diff
+    dc = diff --cached # Diff staged changes
+    ds = diff --staged # Same as --cached
+    dw = diff --word-diff
+
+    f = fetch
+    fa = fetch --all --prune --tags # Fetch all remotes, prune deleted branches, get tags
+
+    g = grep --break --heading --line-number --color # Grep with context
+
+    l = log --pretty=oneline --abbrev-commit --graph --decorate
+    lg = log --graph --topo-order --date=short --abbrev-commit --decorate --all --boundary --pretty=format:'%C(green)%ad %C(red)%h%Creset -%C(yellow)%d%Creset %s %C(blue)[%cn]%Creset %C(auto)%G?%Creset'
+    ll = log --graph --topo-order --date=relative --abbrev-commit --decorate --pretty=format:'%C(green)%ad %C(red)%h%Creset -%C(yellow)%d%Creset %s %C(blue)[%cn]%Creset %C(auto)%G?%Creset'
+    lo = log --oneline
+    lp = log --patch
+    lfp = log --first-parent # Useful for reviewing merge history on main branch
+
+    m = merge
+    mnf = merge --no-ff # Create a merge commit even if fast-forward is possible
+
+    p = pull
+    pr = pull --rebase # Pull and rebase local commits on top
+    pf = pull --ff-only # Pull only if it's a fast-forward
+
+    ps = push
+    pst = push --tags
+    psu = push --set-upstream origin # Push current branch and set upstream
+
+    r = remote -v
+    ra = remote add
+    rr = remote rm
+    rs = remote show
+
+    rb = rebase
+    rba = rebase --abort
+    rbc = rebase --continue
+    rbi = rebase --interactive @{upstream} # Interactive rebase against upstream
+    rbs = rebase --skip
+
+    # Reset & Undo
+    undo = reset HEAD # Unstage files (soft reset of staging area)
+    uncommit = reset --soft HEAD~1 # Undo last commit, keep changes staged
+    uncommit-hard = reset --hard HEAD~1 # Undo last commit, discard changes (DANGEROUS)
+
+    rv = revert HEAD # Revert last commit by creating a new commit
+
+    s = status -sb # Short branch status
+    st = status
+    ss = status -s # Short status
+
+    sh = show
+    shc = show --pretty=fuller --patch # Show commit with patch
+
+    t = tag
+    ta = tag -a # Annotated tag
+    td = tag -d # Delete tag
+
+    # Work In Progress
+    wip = "!git add -A; git ls-files --deleted -z | xargs -0 git rm; git commit -m 'WIP'"
+    unwip = "!git log -n 1 | grep -q -c wip && git reset HEAD~1 || true"
+
+    # Show our defined alias list
+    aliases = "!git config --get-regexp '^alias\\.' | sed 's/^alias\\.\\([^ ]*\\) /\\1 = /' | sort"
+
+    # List files ignored by git
+    ignored = ls-files --others --ignored --exclude-standard
+
+    # Show incoming/outgoing changes relative to upstream
+    incoming = !"git remote update --prune; git log ..@{u}"
+    outgoing = log @{u}..
+
+    # Last tag
+    lasttag = describe --tags --abbrev=0
+
+    # Pretty log for a specific file
+    fl = "!f() { git log --pretty=short --follow -- \"$1\"; }; f"
+
+    # Credit an author on the latest commit
+    credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
+
+    # Remove branches that have already been merged with master (or current branch)
+    cleanup-branches = "!git branch --merged | grep -v '\\*' | grep -v 'master' | grep -v 'main' | xargs -n 1 git branch -d"
+
+
+# Settings for 'git instaweb' (if used)
+# [instaweb]
+#   local = true
+#   httpd = apache2 -f
+#   port = 1234
+#   browser = firefox
+
+# Settings from the original .gitconfig that were very extensive or specific
+# have been omitted for brevity. The most common and useful ones are kept.
+# The full list of aliases from the original was extremely long and contained
+# many niche or complex shell script aliases. It's better to manage those
+# in shell alias files or scripts if needed.
+
+# Example of including an external alias file (if you want to keep the huge list)
+# [include]
+#   path = ~/.gitconfig_aliases # or {{ .chezmoi.homeDir }}/.config/git/aliases.conf
+
+# If you have a very long list of aliases from the original, consider putting them in a separate file:
+# e.g., create a file named `home/.config/git/aliases.conf.tmpl`
+# and then in this main .gitconfig.tmpl, add:
+# [include]
+#   path = {{ .chezmoi.homeDir }}/.config/git/aliases.conf
+# This keeps the main gitconfig cleaner.
+
+# For the purpose of this task, I've included a curated list of aliases above.
+# The original list was extremely long and included many advanced/workflow-specific shell aliases.
+# It's generally recommended to keep .gitconfig focused on git's own settings and simpler aliases,
+# and put complex shell scripting aliases into your shell's alias/function files.
+
+# The original gitconfig also had a lot of specific settings for `git-svn`, `gitk`, `cvs`, etc.
+# These are omitted as they are less common now.
+
+# Diff tool configuration (example with VS Code)
+# [diff]
+#   tool = vscode
+# [difftool "vscode"]
+#   cmd = code --wait --diff $LOCAL $REMOTE
+
+# Merge tool configuration (example with VS Code)
+# [merge]
+#   tool = vscode
+# [mergetool "vscode"]
+#   cmd = code --wait $MERGED
+#   trustExitCode = true
+
+# Signing program if using GPG
+# [gpg]
+#   program = gpg # or path to gpg if not in PATH, e.g., /usr/local/MacGPG2/bin/gpg
+
+# Pull configuration
+[pull]
+    rebase = false # Default to merge on pull. Set to true to default to rebase.
+                   # Or 'merges' to preserve merges, 'interactive' for interactive rebase.
+
+# End of .gitconfig.tmpl
+# vim: ft=gitconfig

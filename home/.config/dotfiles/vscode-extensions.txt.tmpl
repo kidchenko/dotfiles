@@ -1,0 +1,97 @@
+# VS Code Extensions List
+# Each line should contain one VS Code extension ID.
+# Example: publisher.extension-name
+#
+# This file will be located at ~/.config/dotfiles/vscode-extensions.txt after chezmoi applies it.
+# The install_vscode_extensions.sh script will read this file to install the extensions.
+
+# Common General Purpose Extensions
+ms-vscode.live-server
+ms-azuretools.vscode-docker
+ms-vscode-remote.remote-containers
+ms-vscode-remote.remote-ssh
+ms-vscode-remote.remote-wsl
+EditorConfig.EditorConfig
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+eamodio.gitlens
+VisualStudioExptTeam.vscodeintellicode
+formulahendry.auto-rename-tag
+formulahendry.auto-close-tag
+CoenraadS.bracket-pair-colorizer-2 # Bracket Pair Colorizer 2 is now built-in to VS Code, this might be deprecated/unnecessary.
+# Consider using built-in features or new alternatives.
+# Check VS Code >=1.60 for native bracket pair colorization.
+# If using native, this extension can be removed. For older versions, it's useful.
+oderwat.indent-rainbow
+Gruntfuggly.todo-tree
+streetsidesoftware.code-spell-checker
+usernamehw.errorlens
+
+# Markdown
+yzhang.markdown-all-in-one
+# DavidAnson.vscode-markdownlint # Consider if markdownlint CLI + ALE/LSP is preferred over dedicated extension
+
+# Python
+ms-python.python
+ms-python.vscode-pylance # Or ms-python.jedi if preferred
+# LittleFoxTeam.vscode-python-test-adapter # If you use the Test Explorer UI
+# njpwerner.autodocstring # Python docstring generator
+
+# JavaScript / TypeScript / Web Development
+# dbaeumer.vscode-eslint (already listed)
+# esbenp.prettier-vscode (already listed)
+# Pulled from common: formulahendry.auto-rename-tag, formulahendry.auto-close-tag
+octref.vetur # For Vue.js (if Vue 2)
+# johnsoncodehk.volar # For Vue.js 3
+# Or Angular specific: Angular.ng-template
+# Or React specific: dsznajder.es7-react-js-snippets
+stylelint.vscode-stylelint # For CSS/SCSS/Less linting
+
+# Java (if needed)
+# vscjava.vscode-java-pack
+
+# C# / .NET (if needed)
+# ms-dotnettools.csharp
+
+# Go (if needed)
+# golang.go
+
+# Rust (if needed)
+# rust-lang.rust-analyzer
+
+# Shell Script
+# timonwong.shellcheck # Wrapper for shellcheck CLI
+# foxundermoon.shell-format
+
+# YAML
+redhat.vscode-yaml
+
+# Terraform / HCL
+# HashiCorp.terraform
+
+# Remote Development (already listed in common)
+# ms-vscode-remote.remote-containers
+# ms-vscode-remote.remote-ssh
+# ms-vscode-remote.remote-wsl
+
+# Themes (Example)
+# dracula-theme.theme-dracula
+# GitHub.github-vscode-theme
+
+# Icons (Example)
+# vscode-icons-team.vscode-icons
+
+# Add your desired extension IDs below:
+# publisher.name
+# ...
+
+# Example of conditional extensions using chezmoi templating:
+{{ if eq .chezmoi.os "darwin" }}
+# macOS specific extensions (if any)
+# example.macos-utility-extension
+{{ end }}
+
+{{ if .is_work_machine }}
+# Work specific extensions
+# internal-publisher.work-specific-extension
+{{ end }}

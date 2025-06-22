@@ -1,0 +1,329 @@
+" Neovim configuration (init.vim)
+" Migrated from .vimrc, structure for Neovim and XDG compliance.
+
+" Define paths according to XDG Base Directory Specification
+let g:xdg_config_home = empty($XDG_CONFIG_HOME) ? $HOME . '/.config' : $XDG_CONFIG_HOME
+let g:xdg_data_home = empty($XDG_DATA_HOME) ? $HOME . '/.local/share' : $XDG_DATA_HOME
+let g:xdg_cache_home = empty($XDG_CACHE_HOME) ? $HOME . '/.cache' : $XDG_CACHE_HOME
+
+" Neovim specific config directory
+let g:nvim_config_dir = g:xdg_config_home . '/nvim'
+let g:nvim_data_dir = g:xdg_data_home . '/nvim'
+let g:nvim_cache_dir = g:xdg_cache_home . '/nvim'
+
+" Ensure data and cache directories exist for Neovim
+if !isdirectory(g:nvim_data_dir)
+  call mkdir(g:nvim_data_dir, 'p', 0700)
+endif
+if !isdirectory(g:nvim_cache_dir)
+  call mkdir(g:nvim_cache_dir, 'p', 0700)
+endif
+
+" the basics
+syntax enable
+set nocompatible            " Be iMproved
+set encoding=utf-8
+filetype plugin indent on   " Enable filetype detection, plugins, and indenting
+
+" Clipboard integration (requires Neovim to be built with +clipboard or a provider like xclip/pbcopy)
+" For Neovim, 'unnamedplus' uses the system clipboard. 'unnamed' uses the '*' register.
+set clipboard=unnamedplus,unnamed
+
+" Intelligent searching and formatting
+set ignorecase              " Ignore case in search patterns
+set smartcase               " Override ignorecase if search pattern has uppercase letters
+set smartindent             " Smart auto-indenting for new lines
+set autoindent              " Copy indent from current line when starting a new line
+" set smarttab              " Use 'shiftwidth' for Tab key in indenting (can conflict with expandtab)
+
+" Modern rendering & UI
+set incsearch               " Show search results incrementally
+set lazyredraw              " Don't redraw screen during macros/scripts (faster)
+set ttyfast                 " Assume a fast terminal connection
+
+" Tabs and spacing
+set tabstop=4               " Number of visual spaces per TAB
+set shiftwidth=4            " Number of spaces for autoindent
+set expandtab               " Use spaces instead of TABs
+set softtabstop=4           " Number of spaces TAB counts for while editing
+
+set nowrap                  " Do not wrap lines
+
+" Better parenthesis / html tag matching (using built-in matchit if available)
+" If matchit.vim is not loaded by default or by a plugin manager, you might need to source it.
+" runtime! macros/matchit.vim " This was in original, usually not needed for nvim default.
+" Check if matchit is loaded
+if !exists("loaded_matchit") && findfile("matchit.vim", &rtp) != ""
+  runtime! macros/matchit.vim
+endif
+
+" Vundle was used in original .vimrc. For Neovim, consider vim-plug, dein.vim, or packer.nvim.
+" For now, I will comment out Vundle parts. User should choose a plugin manager.
+"
+" " Vundle - Plugin Manager
+" " Set the runtime path to include Vundle and initialize
+" let vundle_path = g:nvim_data_dir . '/bundle/Vundle.vim'
+" if isdirectory(vundle_path)
+"   set rtp+=vundle_path
+"   try
+"     call vundle#begin(g:nvim_data_dir . '/bundle') " Plugin directory
+"
+"     " Let Vundle manage Vundle, required
+"     Plugin 'VundleVim/Vundle.vim'
+"
+"     " Original plugins from .vimrc
+"     Plugin 'tpope/vim-fugitive'
+"     " Plugin 'git://git.wincent.com/command-t.git' " Command-T might need compilation
+"     Plugin 'rstacruz/sparkup', {'rtp': 'vim'}
+"     " Plugin 'matchit.zip' " matchit.vim is usually built-in or handled by Vim itself.
+"     Plugin 'chiel92/vim-autoformat'
+"     Plugin 'mattn/emmet-vim'
+"     Plugin 'tpope/vim-surround'
+"     " Add other plugins here
+"
+"     call vundle#end()            " required
+"   catch
+"       echom "Vundle initialization error: " . v:exception
+"   endtry
+" else
+"   echom "Vundle not found at " . vundle_path . ". Please install it."
+" endif
+" filetype plugin indent on    " Re-enable after Vundle, usually good practice.
+
+" Standard Vim options from original .vimrc
+set guifont=Consolas:h14:cANSI " GUI font settings (primarily for gVim/MacVim, nvim-qt)
+set backspace=indent,eol,start  " Allow backspacing over autoindent, EOL, start of insert
+set guioptions-=T             " Remove toolbar (for gVim/MacVim, nvim-qt)
+
+set wildmenu                  " Enhanced command-line completion
+set wildmode=longest:full,full " Completion mode
+set t_Co=256                  " Enable 256 colors in terminal (Neovim usually handles this well)
+set visualbell                " Use visual bell instead of beeping
+set visualbell t_vb=          " No visual bell flash (effectively disable it)
+set ruler                     " Show cursor position in status line
+set number                    " Show line numbers
+set relativenumber            " Show relative line numbers
+" Combine number and relativenumber for current line absolute, others relative
+if has("nvim-0.2.1") || has("patch-8.0.0027") " Check for features allowing this
+  set number relativenumber
+  augroup numbertoggle
+    autocmd!
+    autocmd BufEnter,FocusGained,InsertLeave,WinEnter * set relativenumber number
+    autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * set norelativenumber number
+  augroup END
+endif
+
+" set ofu=syntaxcomplete#Complete " omnifunc for user completion, might be old or specific
+set laststatus=2              " Always show status line
+set list                      " Show invisible characters
+set listchars=tab:▸\ ,trail:·,eol:¬,nbsp:_ " Define how invisible characters are shown
+set formatoptions+=j          " Delete comment character when joining commented lines
+
+" Colorscheme
+" The original had 'desert' and then 'solarized dark'. Solarized is likely the intended one.
+set background=dark           " Assume dark background for terminal
+try
+  colorscheme solarized       " Try to load solarized (requires plugin or manual install)
+  let g:solarized_termtrans=1 " Enable transparent background for terminal solarized
+catch
+  echom "Colorscheme 'solarized' not found. Using default."
+  " colorscheme default " Or another fallback like desert
+endtry
+
+
+set noswapfile                " Disable swap files (consider implications for recovery)
+set nobackup                  " Disable backup files
+set nowritebackup             " Disable write backup files
+
+" If you want persistent undo, configure undodir
+set undofile                  " Enable persistent undo
+set undodir=g:nvim_cache_dir . '/undo' " Store undo files in XDG cache
+if !isdirectory(expand(g:nvim_cache_dir . '/undo'))
+  call mkdir(expand(g:nvim_cache_dir . '/undo'), 'p', 0700)
+endif
+
+
+" Autocmd for XML formatting (from original .vimrc)
+" let g:formatdef_fmt_custom_xml = '"tidy -xml -q --show-errors 0 --show-warnings 0 --indent-attributes 1 --indent 1 --indent-spaces 4 --indent-cdata 1 --vertical-space 0 --show-body-only 1"'
+" let g:formatters_xml = ['fmt_custom_xml']
+" This depends on vim-autoformat plugin. If not using it, this won't work.
+" If vim-autoformat is installed, it should pick this up.
+
+" Mac config section from original - some are general, some specific
+" set background=dark (already set)
+" colorscheme solarized (already set)
+" let g:solarized_termtrans=1 (already set)
+
+" Make Vim more useful
+" set nocompatible (already set)
+" set clipboard=unnamed (set to unnamedplus,unnamed)
+" set wildmenu (already set)
+set esckeys                   " Allow cursor keys in insert mode (usually default)
+" set backspace=indent,eol,start (already set)
+" set ttyfast (already set)
+set gdefault                  " Add the g flag to search/replace by default (s/foo/bar/ -> s/foo/bar/g)
+set encoding=utf-8 nobomb     " Use UTF-8 without BOM (bomb is already part of encoding=utf-8)
+
+" Change mapleader
+let mapleader=","
+let localmapleader="\\"      " Per-filetype mappings
+
+" Don’t add empty newlines at the end of files (original had 'binary' and 'noeol')
+" 'binary' has other side effects. 'fixeol' controls this.
+set nofixeol                  " Do not automatically add a newline at the end of the file if missing.
+
+" Centralize backups, swapfiles and undo history (partially done with undodir)
+" Backup directory (if backups enabled, which they are not by default now)
+set backupdir=g:nvim_cache_dir . '/backup'
+if !isdirectory(expand(g:nvim_cache_dir . '/backup'))
+  call mkdir(expand(g:nvim_cache_dir . '/backup'), 'p', 0700)
+endif
+" Swap/directory for temporary files (Neovim handles this internally usually)
+set directory=g:nvim_cache_dir . '/swp'
+if !isdirectory(expand(g:nvim_cache_dir . '/swp'))
+  call mkdir(expand(g:nvim_cache_dir . '/swp'), 'p', 0700)
+endif
+
+" Don’t create backups when editing files in certain directories (if backups were enabled)
+set backupskip=/tmp/*,/private/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*
+
+" Respect modeline in files
+set modeline
+set modelines=5               " Number of lines to check for modelines
+
+" Enable per-directory .vimrc files (use .nvimrc or .vimrc from project root)
+" set exrc " This can be a security risk. Neovim has specific features for this.
+" Consider using localvimrc plugin or Neovim's built-in project local config.
+set secure                    " Secure modelines (disable unsafe commands)
+
+" set number (already set)
+" set syntax on (syntax enable is already set)
+set cursorline                " Highlight current line
+" set tabstop=2 (original had 2, then 4. Using 4 as per earlier section)
+" set list (already set)
+" set lcs=... (already set listchars)
+set hlsearch                  " Highlight searches
+" set ignorecase (already set)
+" set incsearch (already set)
+" set laststatus=2 (already set)
+set mouse=a                   " Enable mouse in all modes
+set noerrorbells              " Disable error bells (visualbell is used)
+set nostartofline             " Don’t reset cursor to start of line when moving around
+" set ruler (already set)
+set shortmess+=c              " Don't pass messages to |ins-completion-menu|.
+set shortmess+=A              " Ignore annoying swapfile messages
+set shortmess+=I              " Disable intro message
+set shortmess+=W              " Don't echo "written" when writing files
+set shortmess+=T              " Truncate messages from the middle if they are too long
+set showmode                  " Show the current mode (e.g. -- INSERT --)
+set title                     " Show the filename in the window titlebar (if terminal supports)
+set showcmd                   " Show the (partial) command as it’s being typed
+" set relativenumber (already set with toggle logic)
+set scrolloff=5               " Start scrolling N lines before the horizontal window border
+set sidescrolloff=7           " Start scrolling N columns before the vertical window border
+set sidescroll=1              " Minimal number of columns to scroll horizontally
+
+" Strip trailing whitespace (,ss) - mapleader is ,
+function! StripWhitespace()
+    let l:save_cursor = getpos(".")
+    let l:old_query = getreg('/')
+    :%s/\s\+$//e
+    call setpos('.', l:save_cursor)
+    call setreg('/', l:old_query)
+endfunction
+noremap <leader>ss :call StripWhitespace()<CR>
+
+" Save a file as root (,W) - mapleader is ,
+" This uses tee. Requires sudo permissions.
+noremap <leader>W :w !sudo tee % > /dev/null<CR>
+
+" Automatic commands
+if has("autocmd")
+	" Enable file type detection (already done with filetype plugin indent on)
+	" filetype on
+	" Treat .json files as .js (for syntax highlighting, can cause issues with JSON specific linting/formatting)
+	" autocmd BufNewFile,BufRead *.json setfiletype json syntax=javascript
+    " Better: use a JSON plugin that provides good syntax highlighting.
+    " For now, let's keep it simple:
+    autocmd BufNewFile,BufRead *.json setfiletype=json
+
+	" Treat .md files as Markdown
+	autocmd BufNewFile,BufRead *.md setlocal filetype=markdown
+endif
+
+" Folding settings
+set foldmethod=indent   " Fold based on indent
+set foldlevelstart=99   " Start with all folds open
+nnoremap <Space> za      " Toggle fold with Space
+
+" Search settings
+nnoremap <silent> <leader>/ :noh<CR> " Clear search highlight with ,/
+
+" Window navigation
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" Tab navigation
+nnoremap <S-Tab> gT
+nnoremap <Tab> gt
+
+" Spell checking
+set spelllang=en_us
+set spellfile=g:nvim_data_dir . '/spell/en.utf-8.add' " Store custom spellings in XDG data
+" Create spell directory if it doesn't exist
+if !isdirectory(expand(g:nvim_data_dir . '/spell'))
+  call mkdir(expand(g:nvim_data_dir . '/spell'), 'p', 0700)
+endif
+" Map F6 to toggle spell checking
+nnoremap <F6> :set spell!<CR>
+inoremap <F6> <C-O>:set spell!<CR>
+
+" Auto-create parent directories when saving a file
+function s:EnsureDirectories()
+  let dir = expand('%:p:h')
+  if !isdirectory(dir)
+    call mkdir(dir, 'p')
+    echo "Created directory: " . dir
+  endif
+endfunction
+autocmd BufWritePre * :call s:EnsureDirectories()
+
+
+" Session management (basic example, consider a plugin for advanced sessions)
+" let g:session_dir = g:nvim_data_dir . '/sessions'
+" if !isdirectory(g:session_dir)
+"   call mkdir(g:session_dir, 'p', 0700)
+" endif
+" command! SaveSession mksession! g:session_dir . '/current.vim'
+" command! RestoreSession source g:session_dir . '/current.vim'
+" nnoremap <leader>sl :SaveSession<CR>
+" nnoremap <leader>so :RestoreSession<CR>
+
+" Final check, ensure Neovim specific settings are used where appropriate.
+" For example, Neovim uses init.lua or init.vim, not .vimrc in its config dir.
+" Standard paths for shada (shared data) file (history, registers, etc.)
+set shadafile=g:nvim_cache_dir . '/main.shada'
+" Ensure shada directory exists
+if !isdirectory(fnamemodify(resolve(expand(&shadafile)), ':h'))
+  call mkdir(fnamemodify(resolve(expand(&shadafile)), ':h'), 'p', 0700)
+endif
+
+
+" Placeholder for Lua config if user wants to migrate or add Lua down the line
+" if has('nvim-0.5')
+"   lua << EOF
+"   -- print('Hello from Lua in init.vim')
+"   -- require('user.plugins') -- Example: if plugins are managed in Lua
+"   -- require('user.options') -- Example: if options are set in Lua
+"   EOF
+" endif
+
+" Ensure all settings are applied
+" modeline is already set
+" filetype plugin indent on is already set
+" syntax enable is already set
+" colorscheme is set
+
+" vim: sw=2 ts=2 et fdm=indent

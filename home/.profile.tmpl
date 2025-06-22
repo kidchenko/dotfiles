@@ -1,0 +1,83 @@
+# ~/.profile - executed by Bourne-compatible login shells.
+# For XDG Base Directory Specification variables.
+
+# Set XDG environment variables if they are not already set.
+# These provide standard locations for user-specific configuration, data, and cache files.
+
+if [ -z "$XDG_CONFIG_HOME" ]; then
+  export XDG_CONFIG_HOME="$HOME/.config"
+fi
+
+if [ -z "$XDG_CACHE_HOME" ]; then
+  export XDG_CACHE_HOME="$HOME/.cache"
+fi
+
+if [ -z "$XDG_DATA_HOME" ]; then
+  export XDG_DATA_HOME="$HOME/.local/share"
+fi
+
+if [ -z "$XDG_STATE_HOME" ]; then
+  export XDG_STATE_HOME="$HOME/.local/state" # For user-specific state data (history, logs, etc.)
+fi
+
+# XDG User Directories (optional, but good practice for applications that support it)
+# export XDG_DESKTOP_DIR="$HOME/Desktop"
+# export XDG_DOCUMENTS_DIR="$HOME/Documents"
+# export XDG_DOWNLOAD_DIR="$HOME/Downloads"
+# export XDG_MUSIC_DIR="$HOME/Music"
+# export XDG_PICTURES_DIR="$HOME/Pictures"
+# export XDG_PUBLICSHARE_DIR="$HOME/Public"
+# export XDG_TEMPLATES_DIR="$HOME/Templates"
+# export XDG_VIDEOS_DIR="$HOME/Videos"
+
+# Ensure the main XDG directories exist.
+# Applications should create their own subdirectories as needed.
+mkdir -p "$XDG_CONFIG_HOME" \
+           "$XDG_CACHE_HOME" \
+           "$XDG_DATA_HOME" \
+           "$XDG_STATE_HOME"
+
+# User's local bin directory for executables
+# This is not strictly part of XDG Base Dirs but often set alongside.
+USER_LOCAL_BIN="${XDG_BIN_HOME:-$HOME/.local/bin}"
+if [ -d "$USER_LOCAL_BIN" ]; then
+  case ":$PATH:" in
+    *":$USER_LOCAL_BIN:"*) :;; # Already in PATH
+    *) export PATH="$USER_LOCAL_BIN:$PATH";;
+  esac
+fi
+mkdir -p "$USER_LOCAL_BIN"
+
+
+# For Zsh, ZDOTDIR tells Zsh where to find its configuration files.
+# Set this to $XDG_CONFIG_HOME/zsh for XDG compliance.
+# This should ideally be set before Zsh starts reading its config files,
+# e.g., in /etc/zshenv or ~/.zshenv.
+# If setting it here in .profile, it might be too late for the current zsh instance
+# if .zshrc has already been sourced, but will apply for subsequent login shells.
+# Zsh specific files like .zshrc should also ensure ZDOTDIR is set if they want to use it.
+if [ -n "$ZSH_VERSION" ]; then # Check if running in Zsh
+  if [ -z "$ZDOTDIR" ]; then
+    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+  fi
+  mkdir -p "$ZDOTDIR"
+fi
+
+# Source other configuration files if they exist
+# For example, if you create a .bashrc and want .profile to source it for login shells:
+# if [ -n "$BASH_VERSION" ]; then
+#   if [ -f "$HOME/.bashrc" ]; then
+#     # shellcheck source=/dev/null
+#     source "$HOME/.bashrc"
+#   fi
+# fi
+
+# Add other global environment settings here.
+# Example:
+# export EDITOR="nvim"
+# export PAGER="less"
+
+# This file should be kept minimal and POSIX-compliant as much as possible,
+# as it can be sourced by various shells.
+# Shell-specific settings should go into their respective rc files (e.g., .bashrc, .zshrc).
+true # Ensure the script exits with a success status
