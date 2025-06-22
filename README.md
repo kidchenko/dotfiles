@@ -39,8 +39,8 @@ Alternatively, you can clone this repository manually and then run the bootstrap
 git clone https://github.com/kidchenko/dotfiles.git ~/dotfiles_source # Or any other location
 cd ~/dotfiles_source
 bash tools/bootstrap.sh
->>>>>>> 8236eef (feat: Integrate Chezmoi, XDG, and tool/extension automation)
 ```
+
 *Note: The default branch might be `master` or `main`. Adjust URL if necessary.*
 
 ### Bootstrap Script Options
