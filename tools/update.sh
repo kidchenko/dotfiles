@@ -15,7 +15,8 @@ runUpdate() {
         popd >/dev/null
         echo "Ready to go!"
         echo
-        . "$DOTFILES_DIR/setup.sh" # script ends here
+        # . "$DOTFILES_DIR/setup.sh" # script ends here - setup.sh is removed by bootstrap.sh
+        # Consider re-running parts of bootstrap.sh or `chezmoi apply` if configurations need to be reapplied after update.
     fi
 }
 

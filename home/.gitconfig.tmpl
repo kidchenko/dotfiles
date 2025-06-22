@@ -155,6 +155,10 @@
 [url "git://gist.github.com/"]
 	insteadOf = "gist:"
 
+# Include the extensive alias list from gitalias.com project
+[include]
+  path = {{ .chezmoi.homeDir }}/.config/git/aliases.conf
+
 # Include aliases from the very large alias section of the original .gitconfig
 # It's better to manage these in a separate file for clarity if they are extensive.
 # For example, create `home/.config/git/aliases.conf.tmpl` and include it:

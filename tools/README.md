@@ -9,7 +9,7 @@ Install
     - install deps or exit?
         - nice exit
 - git clone kidcheko/dotfiles
-- run or ask to run? setup.ps1 or setup.sh?
+- run or ask to run? tools/os_installers/setup.ps1 or setup.sh?
 
 # update
 

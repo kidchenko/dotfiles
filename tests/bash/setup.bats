@@ -35,7 +35,7 @@ post_install_hooks:
   enabled: true
   scripts:
     - run_on: [macos, linux]
-      script: "custom_scripts/my_bash_hook.sh"
+      script: "scripts/custom/my_bash_hook.sh" # Updated path
       description: "Test Bash Hook"
     - run_on: [macos]
       command: "echo 'Test macOS command hook'"

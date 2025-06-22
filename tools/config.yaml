@@ -20,14 +20,14 @@ post_install_hooks:
   scripts:
     # For Bash (Linux/macOS)
     - run_on: [linux, macos]
-      script: "./custom_scripts/my_bash_hook.sh"
+      script: "./scripts/custom/my_bash_hook.sh" # Updated path
       description: "Runs a custom bash script for Linux/macOS."
     - run_on: [macos]
       command: "echo 'macOS specific post-install command from config.yaml'"
       description: "Example macOS specific command hook."
     # For PowerShell (Windows)
     - run_on: [windows]
-      script: "./custom_scripts/my_powershell_hook.ps1"
+      script: "./scripts/custom/my_powershell_hook.ps1" # Updated path
       description: "Runs a custom PowerShell script for Windows."
     - run_on: [windows]
       command: "Write-Host 'Windows specific post-install command from config.yaml'"

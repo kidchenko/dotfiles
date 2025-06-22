@@ -1,7 +1,7 @@
 #Requires -Modules Pester, powershell-yaml
 
 # Define the path to the script to be tested relative to this test file
-$ScriptPath = Resolve-Path "../../setup.ps1"
+$ScriptPath = Resolve-Path "../../tools/os_installers/setup.ps1"
 
 # Source the script to make its functions available.
 # Using a dot source to bring functions into the current scope.

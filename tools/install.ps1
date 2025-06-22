@@ -124,19 +124,19 @@ function Clone () {
 function Invoke-Setup () {
     Say "Running setup."
     Say
-    & "$DOTFILES_DIR/setup.ps1"
+    & "$DOTFILES_DIR/tools/os_installers/setup.ps1"
 }
 
 function Install-DotFilesPsGetModules () {
 	Say "> Running psget.ps1"
-	& "$DOTFILES_DIR/psget.ps1"
+	& "$DOTFILES_DIR/tools/os_installers/psget.ps1"
 }
 
 function Main {
 	Say "Installing dotfiles at $DOTFILES_DIR"
     Say "Determined OS Type: $(Get-OSType-Install)"
 
-	CheckDeps choco, git, juca
+	CheckDeps choco, git # juca removed as it's not in InstallDeps
 	InstallDeps choco, git #, juca
 	Install-DotFilesPsGetModules
 
