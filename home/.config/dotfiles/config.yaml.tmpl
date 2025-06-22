@@ -1,0 +1,72 @@
+# Sample configuration for global tools installation
+# Located at ~/.config/dotfiles/config.yaml after chezmoi applies it.
+#
+# This file defines lists of tools to be installed globally via different
+# package managers like npm, pip, and dotnet.
+
+global_tools:
+  npm: # Node Package Manager tools
+    # - <package-name> # Example: some-npm-package
+    # - <package-name>@<version> # Example: another-npm-package@1.2.3
+    - http-server
+    - eslint
+    - prettier
+    - yarn # Installing yarn via npm is one way, though it can also be installed standalone.
+    - tldr
+    - live-server
+    # - neovim # For Neovim LSP, if npm is the chosen install method for node-based language servers
+
+  pip: # Python Package Installer tools (will be installed with --user)
+    # - <package-name> # Example: some-pip-package
+    # - <package-name>==<version> # Example: another-pip-package==1.2.3
+    - black                 # Python code formatter
+    - flake8                # Python linter
+    - pylint                # Another Python linter
+    - pipenv                # Python dev workflow tool (manages virtualenvs and dependencies)
+    - poetry                # Python packaging and dependency management
+    - virtualenv            # Tool to create isolated Python environments
+    - httpie                # A command-line HTTP client
+    - glances               # System monitoring tool
+    # - neovim-remote       # For interacting with Neovim from the command line (nvr)
+    # - pynvim              # Python client for Neovim (needed for some Python plugins)
+
+  dotnet: # .NET Core global tools
+    # - <ToolName> # Example: SomeDotNetTool
+    # - <ToolName> --version <version> # Example: AnotherDotNetTool --version 1.2.3
+    # Note: dotnet tool install command structure is `dotnet tool install --global <PACKAGE_NAME>`
+    # The list should contain package names. Versions can be specified in the install command if needed,
+    # but this simple YAML structure assumes just package names for now.
+    # If versioning is critical, the script might need to parse more complex entries.
+    - dotnet-ef           # Entity Framework Core tools
+    - dotnet-serve        # Simple command-line HTTP server for static files
+    - dotnet-try          # Interactive C# experimentation tool
+    # - PowerShell          # If installing PowerShell Core as a dotnet tool (pwsh)
+    # - Amazon.Lambda.Tools
+
+  # Example for other package managers (the script would need to support them)
+  # gem: # RubyGems
+  #   - rails
+  #   - jekyll
+  #
+  # cargo: # Rust's Cargo
+  #   - ripgrep
+  #   - exa
+  #   - bat
+
+# Configuration for the installation script itself (optional)
+# install_settings:
+#   pip_user_install: true # Default for pip, can be overridden
+#   npm_global_install: true # Default for npm
+#   dotnet_global_install: true # Default for dotnet
+#   show_warnings_for_missing_managers: true
+#   dry_run_default: false
+#   verbose_default: true
+{{ if .is_work_machine }}
+# Example of conditional configuration using chezmoi templates
+# This section would only be included if 'is_work_machine' is true in chezmoi data.
+work_specific_tools:
+  npm:
+    - internal-work-tool
+  pip:
+    - work-python-utility
+{{ end }}

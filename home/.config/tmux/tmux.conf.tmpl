@@ -1,0 +1,164 @@
+# Tmux configuration file
+# ~/.config/tmux/tmux.conf
+
+# Use Ctrl+A as the prefix key (standard screen prefix, common alternative to C-b)
+unbind C-b
+set-option -g prefix C-a
+bind-key C-a send-prefix
+
+# Set a Ctrl-A Ctrl-A binding to go to last window (if you are used to screen)
+bind-key C-a last-window
+
+# Set a higher scrollback history limit
+set-option -g history-limit 50000
+
+# Use Vim keybindings in copy mode
+set-window-option -g mode-keys vi
+
+# Setup 'v' to begin selection as in Vim
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy" # macOS clipboard
+# For Linux, use xclip or xsel:
+# bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -i -sel clip"
+# bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xclip -i -sel clip"
+
+
+# Make `Ctrl+A R` reload the config file (force reload)
+# Use r for consistency with original, R is often used for this too.
+unbind r
+bind r source-file "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf" \; display-message "Tmux config reloaded!"
+
+# Split panes using | and - (more intuitive)
+bind | split-window -h -c "#{pane_current_path}" # Horizontal split, current path
+bind - split-window -v -c "#{pane_current_path}" # Vertical split, current path
+unbind '"'
+unbind %
+
+# Navigate panes with Alt + arrow keys (without prefix)
+bind -n M-Left select-pane -L
+bind -n M-Right select-pane -R
+bind -n M-Up select-pane -U
+bind -n M-Down select-pane -D
+
+# Resize panes with Ctrl + arrow keys (after prefix)
+bind -r C-Left resize-pane -L 5
+bind -r C-Right resize-pane -R 5
+bind -r C-Up resize-pane -U 5
+bind -r C-Down resize-pane -D 5
+
+# Mouse mode for scrolling and pane selection
+set-option -g mouse on
+
+# Set terminal type to enable 256 colors and italics
+# set -g default-terminal "screen-256color"
+# For true color and italics, tmux needs to know the outside terminal supports it.
+# Often "tmux-256color" or "xterm-256color" are good choices.
+# If your terminal supports it, you can also use:
+set -g default-terminal "tmux-256color"
+# To enable italics explicitly if the terminfo doesn't include it:
+# set -as terminal-overrides ',xterm*:RGB:sitm=\E[3m:ritm=\E[23m'
+# set -as terminal-overrides ',screen*:RGB:sitm=\E[3m:ritm=\E[23m'
+# set -as terminal-overrides '*256col*:colors=256,sitm=\E[3m,ritm=\E[23m'
+# set -as terminal-features ",xterm-256color:RGB" # For true color
+# set -as terminal-features ",screen-256color:RGB"
+
+# Status bar customization
+set-option -g status-position bottom
+set-option -g status-justify left
+set-option -g status-style "fg=colour247,bg=colour236" # Light grey on dark grey
+
+set-option -g status-left-length 60
+set-option -g status-left "#[fg=colour232,bg=colour109] #S #[fg=colour109,bg=colour236,nobold,nounderscore,noitalics]"
+# Add current weather from wttr.in (refreshes every 15 mins)
+# set -g status-right '#(curl -s wttr.in?format=3) #[fg=colour245,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour232,bg=colour245] %Y-%m-%d  %H:%M #[fg=colour109,bg=colour245,nobold,nounderscore,noitalics]#[fg=colour232,bg=colour109] #H '
+# Simpler status-right:
+set-option -g status-right-length 150
+set-option -g status-right "#[fg=colour245,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour232,bg=colour245] %Y-%m-%d  %H:%M #[fg=colour109,bg=colour245,nobold,nounderscore,noitalics]#[fg=colour232,bg=colour109] #(whoami)@#H "
+
+
+set-window-option -g window-status-style "fg=colour109,bg=colour236" # Orange on dark grey for inactive windows
+set-window-option -g window-status-current-style "fg=colour232,bg=colour51,bold" # Black on blue for active window
+set-window-option -g window-status-format " #I #W#F "
+set-window-option -g window-status-current-format " #I #W#F "
+set-window-option -g window-status-separator ""
+
+
+# Pane border customization
+set-option -g pane-border-style "fg=colour238"    # Dark grey for inactive pane borders
+set-option -g pane-active-border-style "fg=colour51" # Blue for active pane border
+
+# Message styling
+set-option -g message-style "fg=colour232,bg=colour109,bold" # Black on orange for messages
+
+# Set window titles
+set-option -g set-titles on
+set-option -g set-titles-string '#H:#S.#I.#P #W - tmux' # hostname:session.window.pane window_name
+
+# Renumber windows when a window is closed
+set-option -g renumber-windows on
+
+# Start windows and panes at 1, not 0
+set -g base-index 1
+setw -g pane-base-index 1
+
+# Activity monitoring
+set-window-option -g monitor-activity on
+set-option -g visual-activity on # Visual notification of activity in other windows
+
+# Automatically set window title
+set-window-option -g automatic-rename on
+
+# Improve responsiveness
+set -s escape-time 0 # Default is 500ms. Reduces delay for ESC key presses (e.g. in Vim normal mode)
+
+# List of plugins (using TPM - Tmux Plugin Manager)
+# Add this to the bottom of your .tmux.conf
+# To install TPM: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+# Then press prefix + I (capital i, as in Install) to fetch the plugins.
+
+# let g:tmux_plugin_manager_path = '${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/'
+# The default path for TPM is ~/.tmux/plugins/
+# If you want XDG compliance for TPM itself and its plugins, you might need to configure TPM path.
+# For now, assuming default TPM path or user manages TPM installation.
+
+# set -g @tpm_plugins '          \
+#   tmux-plugins/tpm             \
+#   tmux-plugins/tmux-sensible   \
+#   tmux-plugins/tmux-resurrect  \ # Persists tmux environment across system restarts
+#   tmux-plugins/tmux-continuum  \ # Continuous saving of tmux environment
+#   tmux-plugins/tmux-yank       \ # For copying to system clipboard
+#   tmux-plugins/tmux-open       \ # Quickly open highlighted selection in browser/editor
+#   tmux-plugins/tmux-pain-control \ # Useful for pane navigation and resizing
+#   tmux-plugins/tmux-sidebar    \ # A sidebar with a tree directory browser
+#   # Other plugins...
+#   # For example, a theme:
+#   # dracula/tmux               \
+# '
+
+# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+# Make sure TPM is installed to ~/.tmux/plugins/tpm or the path you specify
+# if "test -d $HOME/.tmux/plugins/tpm" \
+#    "run '$HOME/.tmux/plugins/tpm/tpm'"
+# To use XDG path for TPM:
+TPM_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tpm"
+if [ -d "$TPM_PATH" ]; then
+   run "$TPM_PATH/tpm"
+elif [ -d "$HOME/.tmux/plugins/tpm" ]; then # Fallback to default TPM path
+   run "$HOME/.tmux/plugins/tpm/tpm"
+else
+   # Display a message if TPM is not found
+   # This will only work if tmux is started from a shell that evaluates this 'if'
+   # display-message "TPM not found. Please install it to ~/.tmux/plugins/tpm or $TPM_PATH"
+   # A more robust way is to check and echo from the bootstrap script.
+   : # Do nothing, TPM won't be run.
+fi
+
+# Additional settings for specific plugins (if used)
+# set -g @continuum-restore 'on' # Enable auto-restore for tmux-continuum
+# set -g @resurrect-capture-pane-contents 'on' # Capture pane contents for tmux-resurrect
+
+# Ensure configuration directory exists as specified by $XDG_CONFIG_HOME
+# This is more for chezmoi/bootstrap to ensure, tmux itself won't create it.
+# However, tmux will create its runtime files, usually in /tmp or similar.
+
+# End of tmux.conf
