@@ -1,12 +1,6 @@
 # Brave/Chrome Extensions List
 # Add one extension ID per line. Inline comments after the ID are allowed.
 
-cjpalhdlnbpafiamejdnhcphjbkeiagm # uBlock Origin - An efficient blocker: easy on CPU and memory.
-gcbommkclmclpchllfjekcdonpmejbdp # Privacy Badger - Protects you from trackers as you browse the web.
-gighmmpiobklfepjocnamgkkbiglidom # Bitwarden - Free Password Manager
-# pdnfnkhpgegpcingjbfihlkjeighnddk # Dark Reader - Dark mode for every website. Take care of your eyes, use dark theme for night and daily browsing.
-# Another example:
-#EXTENSION_ID_HERE # Name of Extension
-#もっとコメント
-#日本語コメントもOKです
-# 아이디 # 설명입니다
+aeblfdkhhhdcdjpifhhbdiojplfjncoa # 1Password
+kbfnbcaeplbcioakkpcpgfkobkghlhen # Grammarly
+bdakmnplckeopfghnlpocafcepegjeap # RescueTime

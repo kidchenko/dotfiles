@@ -32,7 +32,26 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     continue
   fi
 
+  BRAVE_PROFILE_BASE="$HOME/Library/Application Support/BraveSoftware/Brave-Browser"
+    EXT_FOUND_FLAG="/tmp/brave_ext_found.$$" # temp file per run
+    rm -f "$EXT_FOUND_FLAG"
+
+    find "$BRAVE_PROFILE_BASE" -maxdepth 1 -type d \( -name "Default" -or -name "Profile*" \) | while read -r profile_dir; do
+    if [[ -d "$profile_dir/Extensions/$extension_id" ]]; then
+        echo "Extension $extension_id is already installed in: $profile_dir"
+        touch "$EXT_FOUND_FLAG"
+        break
+    fi
+    done
+
+    if [[ -f "$EXT_FOUND_FLAG" ]]; then
+    rm -f "$EXT_FOUND_FLAG"
+    continue
+    fi
+
   echo "Found extension ID: $extension_id"
+
+
   install_url="https://chrome.google.com/webstore/detail/$extension_id"
 
   echo "Opening install page for $extension_id..."
