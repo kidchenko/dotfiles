@@ -166,7 +166,8 @@ main() {
 
     # 2. Source XDG setup script
     say_verbose "Step 2: Setting up XDG environment variables for this session..."
-    # shellcheck source=./xdg_setup.sh
+
+    # shellcheck source=./tools/xdg_setup.sh
     if source "$SCRIPT_DIR/xdg_setup.sh"; then
         say_verbose "XDG environment variables sourced."
     else

@@ -24,7 +24,7 @@ jobs:
           Import-Module PSScriptAnalyzer
 
       - name: Lint Bash scripts
-        run: shellcheck tools/bootstrap.sh scripts/custom/*.sh # setup.sh removed, tools/install.sh corrected to tools/bootstrap.sh, custom_scripts path updated
+        run: shellcheck tools/xdg_setup.sh tools/*.sh scripts/custom/*.sh 
 
       - name: Lint PowerShell scripts
         shell: pwsh
