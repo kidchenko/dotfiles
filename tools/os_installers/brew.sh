@@ -137,6 +137,7 @@ brew install --cask discord
 brew install --cask powershell
 brew install --cask jetbrains-toolbox
 
+brew install gemini-cli
 
 # Remove outdated versions from the cellar.
 brew cleanup
