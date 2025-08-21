@@ -2,30 +2,34 @@
 
 # .zlogin executed for login shells, after .zshrc
 
-# REPO path might need to be updated if your chezmoi source is not kidchenko/dotfiles
-# However, this update mechanism might be superseded by how chezmoi handles updates.
-# For now, let's assume DOTFILES_DIR points to where chezmoi clones the repo.
-# This might be better handled by a chezmoi scriptlet or run_on_change script.
+# Auto-update dotfiles using Chezmoi
+# This checks for updates in the dotfiles repository and applies them automatically
+if command -v chezmoi &> /dev/null; then
+    CHEZMOI_SOURCE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
 
-# DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi" # Example if chezmoi source is there
-# The original script seemed to point to the dotfiles repo itself.
-# Let's make it point to where this .zlogin file will reside after chezmoi apply.
-# ZDOTDIR should be $XDG_CONFIG_HOME/zsh
+    # Only check for updates if the source directory exists and is a git repo
+    if [[ -d "$CHEZMOI_SOURCE_DIR/.git" ]]; then
+        # Fetch updates silently
+        pushd "$CHEZMOI_SOURCE_DIR" > /dev/null 2>&1
+        git fetch --quiet 2>/dev/null
 
-# This update logic might conflict with or be redundant with `chezmoi update`.
-# Consider removing if chezmoi's built-in update is used.
-# REPO_SOURCE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi" # Default chezmoi source path
-# if [[ -f "$REPO_SOURCE_DIR/tools/update.sh" ]]; then
-#     {
-#         # chmod a+x "$REPO_SOURCE_DIR/tools/update.sh" # Should already be executable
-#         # "$REPO_SOURCE_DIR/tools/update.sh" # This would run the update script from the source repo
-#         # This is probably not what we want in .zlogin.
-#         # `chezmoi update` is the more idiomatic way.
-#     } || {
-#         # echo "fail to update from .zlogin..."
-#     }
-# fi
+        # Check if there are new commits
+        LOCAL=$(git rev-parse @)
+        REMOTE=$(git rev-parse @{u} 2>/dev/null)
 
+        if [[ -n "$REMOTE" && "$LOCAL" != "$REMOTE" ]]; then
+            echo "[dotfiles] New version available."
+            # Automatically apply updates (silent mode)
+            # Use 'chezmoi update --apply=false' if you want to review changes first
+            if chezmoi update --verbose 2>&1 | grep -q "error"; then
+                echo "[dotfiles] Update failed. Run 'chezmoi update' manually to see details."
+            else
+                echo "[dotfiles] Updated and applied successfully."
+            fi
+        fi
+        popd > /dev/null 2>&1
+    fi
+fi
 
 h=$(date +%H)
 

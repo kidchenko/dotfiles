@@ -178,6 +178,3 @@ Chezmoi uses Go templating. You can make parts of your dotfiles conditional base
 
 Built with ❤️ by @kidchenko. Adapted for XDG and enhanced automation.
 Original v1 branch/README can be found [here](<link to old branch if it exists or remove this line>).
-
-
-Test setup
