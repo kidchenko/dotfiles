@@ -10,6 +10,8 @@
 # Options:
 #   -m, --message <msg>   Commit message (default: "chore: auto-push")
 #   -p, --push            Push after committing
+#   -r, --remove-after-push   Remove repository after successful push (DESTRUCTIVE!)
+#   -f, --force           Skip confirmation prompts
 #   -d, --dry-run         Show what would be done without making changes
 #   -v, --verbose         Verbose output
 #   -h, --help            Show this help message
@@ -19,6 +21,8 @@ set -e
 # --- Configuration ---
 COMMIT_MESSAGE="chore: auto-push"
 PUSH_AFTER_COMMIT=false
+REMOVE_AFTER_PUSH=false
+FORCE=false
 DRY_RUN=false
 VERBOSE=false
 TARGET_DIR=""
@@ -62,11 +66,13 @@ Batch commit script for multiple git repositories.
 Goes through all subdirectories in a given folder and commits changes in git repositories.
 
 OPTIONS:
-    -m, --message <msg>   Commit message (default: "chore: auto-push")
-    -p, --push            Push after committing
-    -d, --dry-run         Show what would be done without making changes
-    -v, --verbose         Verbose output
-    -h, --help            Show this help message
+    -m, --message <msg>       Commit message (default: "chore: auto-push")
+    -p, --push                Push after committing
+    -r, --remove-after-push   Remove repository after successful push (DESTRUCTIVE!)
+    -f, --force               Skip confirmation prompts
+    -d, --dry-run             Show what would be done without making changes
+    -v, --verbose             Verbose output
+    -h, --help                Show this help message
 
 EXAMPLES:
     # Commit all changes in ~/projects subdirectories
@@ -78,8 +84,19 @@ EXAMPLES:
     # Commit and push
     $0 -p ~/projects
 
+    # Commit, push, and remove repositories (DANGEROUS!)
+    $0 -p -r ~/projects
+
+    # Same as above but skip confirmations
+    $0 -p -r -f ~/projects
+
     # Dry run to see what would happen
     $0 -d ~/projects
+
+WARNING:
+    --remove-after-push is a DESTRUCTIVE operation that will permanently delete
+    the local repository directory after successfully pushing changes.
+    Use with extreme caution!
 
 EOF
 }
@@ -98,6 +115,14 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -p|--push)
             PUSH_AFTER_COMMIT=true
+            shift
+            ;;
+        -r|--remove-after-push)
+            REMOVE_AFTER_PUSH=true
+            shift
+            ;;
+        -f|--force)
+            FORCE=true
             shift
             ;;
         -d|--dry-run)
@@ -137,6 +162,12 @@ if [ ! -d "$TARGET_DIR" ]; then
     exit 1
 fi
 
+# Validate remove-after-push requires push
+if [ "$REMOVE_AFTER_PUSH" = true ] && [ "$PUSH_AFTER_COMMIT" = false ]; then
+    say_error "--remove-after-push requires --push to be enabled"
+    exit 1
+fi
+
 # --- Main Logic ---
 main() {
     say "Starting batch commit process..."
@@ -145,6 +176,20 @@ main() {
 
     if [ "$PUSH_AFTER_COMMIT" = true ]; then
         say "Push after commit: ${GREEN}enabled${NC}"
+    fi
+
+    if [ "$REMOVE_AFTER_PUSH" = true ]; then
+        say_warning "Remove after push: ${RED}enabled (DESTRUCTIVE!)${NC}"
+
+        if [ "$FORCE" = false ] && [ "$DRY_RUN" = false ]; then
+            echo ""
+            say_error "WARNING: This will PERMANENTLY DELETE repositories after pushing!"
+            read -p "Are you sure you want to continue? Type 'yes' to confirm: " confirm
+            if [ "$confirm" != "yes" ]; then
+                say "Operation cancelled."
+                exit 0
+            fi
+        fi
     fi
 
     if [ "$DRY_RUN" = true ]; then
@@ -158,6 +203,7 @@ main() {
     local committed_repos=0
     local skipped_repos=0
     local failed_repos=0
+    local removed_repos=0
 
     # Find all directories (one level deep)
     # If you want to search recursively, change -maxdepth 1 to -maxdepth <n>
@@ -222,20 +268,40 @@ main() {
         fi
 
         # Push if requested
+        local push_successful=false
         if [ "$PUSH_AFTER_COMMIT" = true ]; then
             if [ "$DRY_RUN" = true ]; then
                 say_verbose "  Would run: git push"
+                push_successful=true
             else
                 say_verbose "  Pushing..."
-                if git push 2>&1 | grep -q "error\|fatal"; then
+                local push_output=$(git push 2>&1)
+                if echo "$push_output" | grep -q "error\|fatal"; then
                     say_warning "  Failed to push '$repo_name' (might need to set upstream)"
+                    push_successful=false
                 else
                     say_verbose "  ✓ Pushed successfully"
+                    push_successful=true
                 fi
             fi
         fi
 
         popd > /dev/null 2>&1
+
+        # Remove repository after successful push if requested
+        if [ "$REMOVE_AFTER_PUSH" = true ] && [ "$push_successful" = true ]; then
+            if [ "$DRY_RUN" = true ]; then
+                say_warning "  Would remove: $dir"
+            else
+                say_warning "  Removing repository: $repo_name"
+                if rm -rf "$dir"; then
+                    say_success "  ✓ Removed '$repo_name'"
+                    removed_repos=$((removed_repos + 1))
+                else
+                    say_error "  Failed to remove '$repo_name'"
+                fi
+            fi
+        fi
 
     done < <(find "$TARGET_DIR" -maxdepth 1 -mindepth 1 -type d -print0)
 
@@ -251,6 +317,10 @@ main() {
 
     if [ "$failed_repos" -gt 0 ]; then
         say_error "Failed:                    $failed_repos"
+    fi
+
+    if [ "$REMOVE_AFTER_PUSH" = true ] && [ "$removed_repos" -gt 0 ]; then
+        say_warning "Removed:                   $removed_repos"
     fi
 
     echo ""
