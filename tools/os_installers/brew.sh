@@ -23,7 +23,7 @@ brew install moreutils
 # Install GNU `find`, `locate`, `updatedb`, and `xargs`, `g`-prefixed.
 brew install findutils
 # Install GNU `sed`, overwriting the built-in `sed`.
-brew install gnu-sed --with-default-names
+brew install gnu-sed
 
 # Install a modern version of Bash.
 brew install bash
@@ -39,13 +39,13 @@ if ! fgrep -q "${BREW_PREFIX}/bin/zsh" /etc/shells; then
 fi;
 
 # Install `wget` with IRI support.
-brew install wget --with-iri
+brew install wget
 
 # Install GnuPG to enable PGP-signing commits.
 brew install gnupg
 
 # Install more recent versions of some macOS tools.
-brew install vim --with-override-system-vi
+brew install vim
 brew install grep
 brew install openssh
 brew install screen
@@ -90,7 +90,7 @@ brew install ack
 brew install git
 brew install git-lfs
 brew install gs
-brew install imagemagick --with-webp
+brew install imagemagick
 brew install lua
 brew install lynx
 brew install p7zip
@@ -108,6 +108,7 @@ brew install z
 brew tap homebrew/cask-fonts
 brew install font-hack-nerd-font
 
+# Modern CLI replacements and tools
 brew install lsd
 brew install bat
 brew install fzf
@@ -118,24 +119,68 @@ brew install java
 brew install ruby
 brew install kdoctor
 
+# Development tools
+brew install chezmoi
+brew install gh
+brew install go
+brew install node
+brew install nvm
+brew install yarn
+brew install yq
+brew install shellcheck
+brew install terraform
+
+# CLI tools
+brew install chatgpt-cli
+brew install gemini-cli
+brew install jira-cli
+brew install stripe-cli
+
+# PHP tools
+brew install composer
+
+# Tesseract OCR
+brew install tesseract
+
 # Cask
+# Development tools
 brew install --cask dotnet-sdk
-brew install --cask hyper
 brew install --cask docker
-brew install --cask brave-browser
-brew install --cask flux
-brew install --cask rescuetime
-brew install --cask spotify
+brew install --cask docker-desktop
 brew install --cask visual-studio-code
+brew install --cask jetbrains-toolbox
+brew install --cask rider
+
+# Terminals
+brew install --cask hyper
 brew install --cask iterm2
+brew install --cask powershell
+
+# Browsers
+brew install --cask brave-browser
+brew install --cask google-chrome
+
+# AI Tools
+brew install --cask claude
+brew install --cask cursor
+
+# Database tools
+brew install --cask dbeaver-community
+brew install --cask mysqlworkbench
+
+# Productivity
 brew install --cask 1password
 brew install --cask slack
 brew install --cask notion
 brew install --cask postman
 brew install --cask spectacle
 brew install --cask discord
-brew install --cask powershell
-brew install --cask jetbrains-toolbox
+brew install --cask grammarly-desktop
+
+# Utilities
+brew install --cask flux
+brew install --cask rescuetime
+brew install --cask spotify
 
 
 # Remove outdated versions from the cellar.
