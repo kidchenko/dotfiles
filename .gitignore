@@ -69,3 +69,4 @@ build/
 dist/
 out/
 target/ # Common for Java/Rust
+.claude/
