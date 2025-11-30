@@ -229,7 +229,7 @@ main() {
 
     if [ "$DRY_RUN" = true ]; then
         say "DRY RUN: Would initialize/apply Chezmoi."
-        say "DRY RUN: Chezmoi command would be something like: chezmoi init --apply $DOTFILES_REPO_URL ${chezmoi_cmd_args[*]}"
+        say "DRY RUN: Chezmoi command would be something like: chezmoi init --apply --branch main $DOTFILES_REPO_URL ${chezmoi_cmd_args[*]}"
         # In dry run, we can't easily check if it *would* apply changes,
         # but `chezmoi -n apply` can show what would happen.
         if command_exists chezmoi; then
@@ -238,8 +238,8 @@ main() {
         fi
     else
         if [ "$FORCE_CHEZMOI_INIT" = true ] || [ ! -d "$CHEZMOI_SOURCE_DIR_PATH/.git" ] || [ ! -f "$CHEZMOI_CONFIG_FILE_PATH" ]; then
-            say "Chezmoi not initialized or forcing init. Running 'chezmoi init --apply $DOTFILES_REPO_URL'..."
-            if chezmoi init --apply "$DOTFILES_REPO_URL" "${chezmoi_cmd_args[@]}"; then
+            say "Chezmoi not initialized or forcing init. Running 'chezmoi init --apply --branch main $DOTFILES_REPO_URL'..."
+            if chezmoi init --apply --branch main "$DOTFILES_REPO_URL" "${chezmoi_cmd_args[@]}"; then
                 say "Chezmoi initialized and applied successfully."
             else
                 say_error "Chezmoi init --apply failed."

@@ -15,8 +15,13 @@ if (Test-Path "$DOTFILES_DIR/.git") {
     $fetch = git fetch --dry-run 2>&1
     if ($fetch) {
         Write-Host "[dotfiles] New version available."
-        # Uncomment to enable auto-update on login
-        # chezmoi update
+        # Automatically apply updates
+        $updateOutput = chezmoi update --verbose 2>&1 | Out-String
+        if ($updateOutput -match "error") {
+            Write-Host "[dotfiles] Update failed. Run 'chezmoi update' manually to see details."
+        } else {
+            Write-Host "[dotfiles] Updated and applied successfully."
+        }
     }
     Pop-Location
 }
