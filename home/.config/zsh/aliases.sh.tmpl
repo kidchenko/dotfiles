@@ -258,9 +258,6 @@ fi
 alias gps="git push"
 alias gpl="git pull"
 
-# The 'pavels=git' alias is likely a typo or personal joke, I'll keep it commented
-# alias pavels=git
-
 # Quick way to get to config folder for these dotfiles
 alias dotconfig="cd \"${XDG_CONFIG_HOME:-\$HOME/.config}/dotfiles\" && ls -la"
 alias zshhome="cd \"${ZDOTDIR:-\$HOME/.config/zsh}\" && ls -la"
@@ -326,3 +323,5 @@ fi
 if command -v http &> /dev/null; then
     alias https='http --default-scheme=https' # Default to https
 fi
+
+alias babe=git
