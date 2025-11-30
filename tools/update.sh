@@ -1,39 +1,73 @@
 #!/bin/bash
 
-# Default settings
-DOTFILES_DIR=~/.kidchenko/dotfiles
+# tools/update.sh
+#
+# Update script for Chezmoi-managed dotfiles
+# This script checks for updates and applies them using Chezmoi
+
+# Chezmoi source directory (where the git repo is cloned)
+DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+
+say() {
+    echo "[dotfiles] $1"
+}
 
 runUpdate() {
-    echo "[dotfiles] New version available."
+    say "New version available."
     read -p $"[dotfiles] Would you like to update? [y/n]: " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "[dotfiles] Updating..."
+        say "Updating..."
         echo
+
+        # Pull changes from remote
         git pull -r
         popd >/dev/null || exit
-        echo "Ready to go!"
-        echo
-        # . "$DOTFILES_DIR/setup.sh" # script ends here - setup.sh is removed by bootstrap.sh
-        # Consider re-running parts of bootstrap.sh or `chezmoi apply` if configurations need to be reapplied after update.
+
+        # Apply changes using Chezmoi
+        say "Applying changes with Chezmoi..."
+        if chezmoi apply --verbose; then
+            say "Ready to go!"
+            echo
+        else
+            say "ERROR: Failed to apply changes. Run 'chezmoi diff' to see what changed."
+            return 1
+        fi
+    else
+        popd >/dev/null || exit
+        say "Update skipped."
     fi
 }
 
 main() {
+    # Check if Chezmoi is installed
+    if ! command -v chezmoi &> /dev/null; then
+        say "ERROR: Chezmoi is not installed. Please install it first."
+        exit 1
+    fi
+
+    # Check if dotfiles directory exists
+    if [[ ! -d "$DOTFILES_DIR" ]]; then
+        say "ERROR: Dotfiles directory not found at $DOTFILES_DIR"
+        say "Run 'tools/bootstrap.sh' to initialize your dotfiles."
+        exit 1
+    fi
+
     echo
-    pushd $DOTFILES_DIR >/dev/null || exit
-    # check for updates
+    pushd "$DOTFILES_DIR" >/dev/null || exit
+
+    # Check for updates
     local fetch
-    
     fetch=$(git fetch --dry-run 2>&1)
+
     if [ -z "$fetch" ]; then
-        # no updates
+        # No updates available
         popd >/dev/null || exit
-        echo "[dotfiles] Using last version."
+        say "Using last version."
         echo
     else
         unset fetch
-        runUpdate # warning, script finish here
+        runUpdate
     fi
 }
 
