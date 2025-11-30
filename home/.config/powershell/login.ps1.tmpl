@@ -1,12 +1,24 @@
-$REPO="kidchenko/dotfiles"
-$DOTFILES_DIR="~/.$REPO"
+# Chezmoi source directory (where dotfiles are managed)
+$DOTFILES_DIR = if ($env:XDG_DATA_HOME) {
+    Join-Path $env:XDG_DATA_HOME "chezmoi"
+} else {
+    Join-Path $HOME ".local/share/chezmoi"
+}
 
 $Hour = (Get-Date).Hour
 $Name = "Jose"
 $Theme = "robbyrussel.omp.json"
 
-if (Test-Path "$DOTFILES_DIR/tools/update.ps1") {
-    . "$DOTFILES_DIR/tools/update.ps1"
+# Auto-update dotfiles (similar to Zsh .zlogin)
+if (Test-Path "$DOTFILES_DIR/.git") {
+    Push-Location $DOTFILES_DIR
+    $fetch = git fetch --dry-run 2>&1
+    if ($fetch) {
+        Write-Host "[dotfiles] New version available."
+        # Uncomment to enable auto-update on login
+        # chezmoi update
+    }
+    Pop-Location
 }
 
 If ($Hour -lt 12) {"Good Morning $Name!"}

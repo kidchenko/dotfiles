@@ -1,0 +1,14 @@
+# PowerShell profile - sources modular config files
+# This file can be sourced from the actual PowerShell profile location
+
+# Determine config directory (XDG-aware)
+$ConfigDir = if ($env:XDG_CONFIG_HOME) {
+    Join-Path $env:XDG_CONFIG_HOME "powershell"
+} else {
+    Join-Path $HOME ".config/powershell"
+}
+
+# Source the main files from XDG location
+. (Join-Path $ConfigDir "login.ps1")
+. (Join-Path $ConfigDir "modules.ps1")
+. (Join-Path $ConfigDir "aliases.ps1")
