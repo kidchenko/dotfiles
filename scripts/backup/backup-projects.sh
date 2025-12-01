@@ -43,7 +43,7 @@ CRON_SCHEDULE="0 2 * * 0"
 # Runtime options
 DRY_RUN=false
 VERBOSE=false
-LOCAL_ONLY=false
+UPLOAD=false
 COMMAND="backup"
 
 # Colors
@@ -92,11 +92,12 @@ show_help() {
     echo -e "${BOLD}Options:${NC}"
     echo "  --dry-run    Show what would be done without doing it"
     echo "  --verbose    Show detailed output"
-    echo "  --local      Only backup locally (skip remote upload)"
+    echo "  --upload     Upload to remote storage (Google Drive via rclone)"
     echo "  --config     Path to config file"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
-    echo "  backup-projects.sh                  # Create backup"
+    echo "  backup-projects.sh                  # Create local backup"
+    echo "  backup-projects.sh --upload         # Create backup and upload to Google Drive"
     echo "  backup-projects.sh --dry-run        # Preview backup"
     echo "  backup-projects.sh restore          # Restore from backup"
     echo "  backup-projects.sh list             # List backups"
@@ -207,8 +208,8 @@ parse_args() {
             --verbose|-v)
                 VERBOSE=true
                 ;;
-            --local)
-                LOCAL_ONLY=true
+            --upload)
+                UPLOAD=true
                 ;;
             --config)
                 shift
@@ -324,10 +325,11 @@ cmd_backup() {
         say "Archive created: $archive_size"
     fi
 
-    # Upload to remote
-    if [[ "$REMOTE_ENABLED" == true && "$LOCAL_ONLY" != true ]]; then
+    # Upload to remote (only if --upload flag is provided)
+    if [[ "$UPLOAD" == true ]]; then
         if ! command -v rclone &>/dev/null; then
-            warn "rclone not installed, skipping remote upload"
+            warn "rclone not installed. Install with: brew install rclone"
+            warn "Then configure: rclone config"
         else
             say "Uploading to ${RCLONE_REMOTE_NAME}:${RCLONE_REMOTE_PATH}..."
             if [[ "$DRY_RUN" == true ]]; then
@@ -340,8 +342,6 @@ cmd_backup() {
                 fi
             fi
         fi
-    elif [[ "$LOCAL_ONLY" == true ]]; then
-        debug "Skipping remote upload (--local flag)"
     fi
 
     # Cleanup old backups

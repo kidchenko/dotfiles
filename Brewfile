@@ -55,6 +55,7 @@ brew "ruby"               # Ruby
 brew "azure-cli"          # Azure CLI
 brew "flyctl"             # Fly.io CLI
 brew "graphviz"           # Graph visualization
+brew "rclone"             # Sync files to cloud storage (Google Drive, S3, etc.)
 
 # Security
 brew "nmap"               # Network scanner
