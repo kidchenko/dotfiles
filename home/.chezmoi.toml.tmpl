@@ -1,0 +1,16 @@
+# Chezmoi configuration file
+# https://www.chezmoi.io/reference/configuration-file/
+
+sourceDir = "{{ .chezmoi.homeDir }}/.local/share/chezmoi"
+
+# Data for templates (prompted during chezmoi init)
+[data]
+    name = "{{ promptStringOnce . "name" "Git name" }}"
+    email = "{{ promptStringOnce . "email" "Git email" }}"
+    editor = "{{ promptStringOnce . "editor" "Preferred editor (vim/code/nvim)" }}"
+
+[git]
+    autoCommit = false
+    autoPush = false
+
+# vim:ft=toml
