@@ -14,11 +14,13 @@
 #   diff        Show pending changes (chezmoi diff)
 #   edit        Edit dotfiles source (chezmoi edit)
 #   cd          Print path to dotfiles source
+#   backup      Backup project folders
 #   help        Show this help message
 #
 
 DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
 TOOLS_DIR="$DOTFILES_DIR/tools"
+SCRIPTS_DIR="$DOTFILES_DIR/scripts"
 
 # Colors
 if [[ -t 1 ]]; then
@@ -50,6 +52,7 @@ show_help() {
     echo "  edit [file]              Edit dotfiles source"
     echo "  cd                       Print path to dotfiles source"
     echo "  status                   Show git status of dotfiles"
+    echo "  backup [cmd]             Backup project folders"
     echo "  help                     Show this help message"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
@@ -59,6 +62,12 @@ show_help() {
     echo "  dotfiles apply           # Apply pending changes"
     echo "  dotfiles edit            # Open dotfiles in editor"
     echo "  cd \$(dotfiles cd)        # Navigate to dotfiles"
+    echo ""
+    echo -e "${BOLD}Backup commands:${NC}"
+    echo "  dotfiles backup          # Create a backup"
+    echo "  dotfiles backup list     # List available backups"
+    echo "  dotfiles backup restore  # Restore from backup"
+    echo "  dotfiles backup setup-cron  # Setup scheduled backups"
     echo ""
 }
 
@@ -123,6 +132,15 @@ cmd_status() {
     git -C "$DOTFILES_DIR" status "$@"
 }
 
+cmd_backup() {
+    local backup_script="$SCRIPTS_DIR/backup/backup-projects.sh"
+    if [[ -f "$backup_script" ]]; then
+        bash "$backup_script" "$@"
+    else
+        error "backup-projects.sh not found in $SCRIPTS_DIR/backup"
+    fi
+}
+
 # Main
 case "${1:-help}" in
     doctor)
@@ -159,6 +177,10 @@ case "${1:-help}" in
     status)
         shift
         cmd_status "$@"
+        ;;
+    backup)
+        shift
+        cmd_backup "$@"
         ;;
     help|--help|-h)
         show_help

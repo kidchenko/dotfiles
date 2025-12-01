@@ -70,3 +70,63 @@ work_specific_tools:
   pip:
     - work-python-utility
 {{ end }}
+
+# Backup configuration
+backup:
+  # Folders to backup (relative to $HOME or absolute paths)
+  folders:
+    - kidchenko
+    - lambda3
+    - jetabroad
+    - thoughtworks
+    - sevenpeaks
+    - isho
+    - Documents/Screenshots
+
+  # Patterns to exclude from backup
+  exclude:
+    - node_modules
+    - .git
+    - vendor
+    - .venv
+    - __pycache__
+    - .pytest_cache
+    - .mypy_cache
+    - .tox
+    - dist
+    - build
+    - "*.pyc"
+    - ".DS_Store"
+    - Thumbs.db
+    - .idea
+    - .vs
+    - bin
+    - obj
+    - packages
+    - .nuget
+    - .npm
+    - .yarn
+    - .pnpm-store
+
+  # Local backup settings
+  local:
+    base_dir: ~/Backups
+    retention_days: 7
+
+  # Remote backup settings (rclone)
+  remote:
+    enabled: true
+    rclone_remote: GoogleDrive
+    rclone_path: DotfilesBackups/
+
+  # Logging
+  logging:
+    enabled: true
+    dir: ~/.local/log
+    retention_days: 30
+
+  # Schedule (cron)
+  schedule:
+    enabled: false
+    # Runs every Sunday at 2am
+    cron: "0 2 * * 0"
