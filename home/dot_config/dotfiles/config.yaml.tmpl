@@ -61,7 +61,7 @@ global_tools:
 #   show_warnings_for_missing_managers: true
 #   dry_run_default: false
 #   verbose_default: true
-{{ if .is_work_machine }}
+{{ if and (hasKey . "is_work_machine") .is_work_machine }}
 # Example of conditional configuration using chezmoi templates
 # This section would only be included if 'is_work_machine' is true in chezmoi data.
 work_specific_tools:

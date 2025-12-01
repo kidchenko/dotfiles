@@ -91,7 +91,7 @@ redhat.vscode-yaml
 # example.macos-utility-extension
 {{ end }}
 
-{{ if .is_work_machine }}
+{{ if and (hasKey . "is_work_machine") .is_work_machine }}
 # Work specific extensions
 # internal-publisher.work-specific-extension
 {{ end }}

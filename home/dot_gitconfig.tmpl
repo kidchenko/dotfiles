@@ -45,7 +45,7 @@
     attributesfile = {{ .chezmoi.homeDir }}/.config/git/attributes
 
     # Editor - uses $VISUAL or $EDITOR by default. Explicitly:
-    editor = {{ .editor | default "vim" }}
+    editor = {{ if hasKey . "editor" }}{{ .editor }}{{ else }}vim{{ end }}
 
 	# Detect whitespace errors when applying a patch
 	whitespace = fix

@@ -30,7 +30,7 @@ data = { }
 # Merge settings (for handling conflicts when applying changes)
 [merge]
     # command = "vimdiff" # or your preferred merge tool
-    # args = ["{{ .Destination }}", "{{ .Source }}", "{{ .Target }}"]
+    # args = ["$DESTINATION", "$SOURCE", "$TARGET"]
 
 # Script settings
 [script]
@@ -60,7 +60,7 @@ data = { }
 # Settings for 'chezmoi diff'
 [diff]
     # command = "diff"
-    # args = ["-u", "{{ .Destination }}", "{{ .Target }}"]
+    # args = ["-u", "$DESTINATION", "$TARGET"]
     # Use pager for diff output.
     # pager = "less"
 
