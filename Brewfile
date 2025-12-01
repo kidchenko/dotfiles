@@ -7,7 +7,9 @@
 tap "bramstein/webfonttools"
 
 # CLI Tools
+brew "zsh"                  # Z shell
 brew "z"                    # Directory jumping
+brew "curl"                 # HTTP client
 brew "coreutils"          # GNU core utilities
 brew "moreutils"          # Additional unix utilities
 brew "findutils"          # GNU find, locate, updatedb, xargs
@@ -28,6 +30,12 @@ brew "bat"                # Modern cat
 brew "fzf"                # Fuzzy finder
 brew "jq"                 # JSON processor
 brew "yq"                 # YAML processor
+brew "ripgrep"            # Fast code search (rg)
+brew "fd"                 # Modern find
+brew "htop"               # Interactive process viewer
+brew "tldr"               # Simplified man pages
+brew "tmux"               # Terminal multiplexer
+brew "delta"              # Better git diffs
 
 # Development tools
 brew "chezmoi"            # Dotfiles manager
@@ -36,6 +44,7 @@ brew "go"                 # Go language
 brew "node"               # Node.js
 brew "nvm"                # Node version manager
 brew "yarn"               # JS package manager
+brew "pnpm"               # Fast JS package manager
 brew "shellcheck"         # Shell script linter
 brew "terraform"          # Infrastructure as code
 
@@ -44,20 +53,28 @@ brew "ruby"               # Ruby
 
 # Cloud & DevOps
 brew "azure-cli"          # Azure CLI
+brew "flyctl"             # Fly.io CLI
 brew "graphviz"           # Graph visualization
+
+# Security
+brew "nmap"               # Network scanner
 
 # CLI apps
 # brew "chatgpt-cli"        # ChatGPT CLI - not available in Homebrew
 # brew "gemini-cli"         # Gemini CLI - not available in Homebrew
 brew "jira-cli"           # Jira CLI
 brew "stripe-cli"         # Stripe CLI
+brew "mas"                # Mac App Store CLI
+brew "lazygit"            # Terminal UI for git
+brew "neovim"             # Modern vim
+brew "watch"              # Run commands periodically
 
 # Casks - Development
 # cask "visual-studio-code" # VS Code - conflicts_with bug, install manually
 # cask "docker"             # Docker - conflicts_with bug, install manually
 cask "jetbrains-toolbox"  # JetBrains tools
 cask "rider"              # .NET IDE
-# cask "dotnet-sdk"         # .NET SDK - conflicts_with bug, install manually
+cask "dotnet-sdk"         # .NET SDK - conflicts_with bug, install manually
 
 # Casks - Terminals
 cask "iterm2"             # iTerm2
@@ -81,7 +98,9 @@ cask "1password"          # Password manager
 cask "slack"              # Chat
 cask "notion"             # Notes
 cask "postman"            # API testing
-cask "spectacle"          # Window management
+cask "rectangle"          # Window management
+cask "raycast"            # Spotlight replacement
+cask "alt-tab"            # Windows-like alt-tab
 cask "discord"            # Chat
 # cask "grammarly-desktop"  # Writing assistant - permission issues
 
