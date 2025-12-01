@@ -178,6 +178,23 @@ setup_cron() {
     fi
 }
 
+# Setup 1Password CLI (required for secrets in chezmoi templates)
+setup_1password_cli() {
+    if ! command -v op >/dev/null 2>&1; then
+        say "1Password CLI not installed yet (will be installed with Brewfile)"
+        return 0
+    fi
+
+    # Check if already signed in
+    if op account list &>/dev/null; then
+        say "1Password CLI already configured"
+        return 0
+    fi
+
+    say "1Password CLI detected. Sign in to enable secrets in dotfiles."
+    say "Run 'op signin' manually after bootstrap, then 'chezmoi apply' again."
+}
+
 # Main
 main() {
     echo
@@ -186,8 +203,9 @@ main() {
 
     install_homebrew
     install_chezmoi
-    apply_dotfiles
-    install_brew_packages
+    install_brew_packages      # Moved before apply_dotfiles (installs 1password-cli)
+    setup_1password_cli        # Prompt user to sign in if needed
+    apply_dotfiles             # Now 1password-cli is available for templates
     install_oh_my_zsh
     install_zsh_plugins
     setup_cron

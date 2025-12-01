@@ -58,6 +58,7 @@ brew "graphviz"           # Graph visualization
 
 # Security
 brew "nmap"               # Network scanner
+cask "1password-cli"      # 1Password CLI (op) for secrets in dotfiles
 
 # CLI apps
 # brew "chatgpt-cli"        # ChatGPT CLI - not available in Homebrew
