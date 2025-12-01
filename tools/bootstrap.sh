@@ -50,7 +50,7 @@ install_homebrew() {
     say "Homebrew installed successfully"
 }
 
-# Install Homebrew packages
+# Install Homebrew packages from Brewfile
 install_brew_packages() {
     if ! command -v brew >/dev/null 2>&1; then
         say "Skipping Homebrew packages (Homebrew not installed)"
@@ -59,20 +59,20 @@ install_brew_packages() {
 
     # Try chezmoi source directory first
     local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
-    local BREW_SCRIPT="$CHEZMOI_SOURCE/tools/os_installers/brew.sh"
+    local BREWFILE="$CHEZMOI_SOURCE/Brewfile"
 
     # If not found, try local path (when running ./tools/bootstrap.sh directly)
-    if [[ ! -f "$BREW_SCRIPT" ]]; then
+    if [[ ! -f "$BREWFILE" ]]; then
         SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        BREW_SCRIPT="$SCRIPT_DIR/os_installers/brew.sh"
+        BREWFILE="$(dirname "$SCRIPT_DIR")/Brewfile"
     fi
 
-    if [[ -f "$BREW_SCRIPT" ]]; then
-        say "Installing Homebrew packages from: $BREW_SCRIPT"
-        bash "$BREW_SCRIPT"
+    if [[ -f "$BREWFILE" ]]; then
+        say "Installing Homebrew packages from Brewfile..."
+        brew bundle install --file="$BREWFILE"
         say "Homebrew packages installed"
     else
-        say "Skipping Homebrew packages (brew.sh not found)"
+        say "Skipping Homebrew packages (Brewfile not found)"
     fi
 }
 

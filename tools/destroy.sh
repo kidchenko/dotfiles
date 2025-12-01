@@ -31,7 +31,7 @@ for arg in "$@"; do
             echo ""
             echo "Options:"
             echo "  --force  Skip confirmation prompts"
-            echo "  --all    Remove dotfiles + chezmoi state + zsh data"
+            echo "  --all    Remove dotfiles + chezmoi state + zsh data + brew packages"
             echo "  --deep   Factory reset: remove all dev tools, caches, histories"
             echo "           WARNING: This removes npm, cargo, gems, etc."
             echo ""
@@ -190,6 +190,70 @@ deep_clean() {
     say "Deep clean complete!"
 }
 
+# Uninstall Homebrew packages declared in Brewfile
+uninstall_brew_packages() {
+    if ! command -v brew >/dev/null 2>&1; then
+        say "Skipping Homebrew packages (Homebrew not installed)"
+        return 0
+    fi
+
+    # Find Brewfile
+    local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+    local BREWFILE="$CHEZMOI_SOURCE/Brewfile"
+
+    if [[ ! -f "$BREWFILE" ]]; then
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        BREWFILE="$(dirname "$SCRIPT_DIR")/Brewfile"
+    fi
+
+    if [[ ! -f "$BREWFILE" ]]; then
+        say "Skipping Homebrew packages (Brewfile not found)"
+        return 0
+    fi
+
+    say "Uninstalling Homebrew packages from Brewfile..."
+
+    # Extract uncommented brew/cask lines and uninstall
+    grep -E '^[^#]*(brew|cask) "' "$BREWFILE" | while read -r line; do
+        local pkg
+        pkg=$(echo "$line" | sed -E 's/.*"([^"]+)".*/\1/')
+
+        if [[ "$line" =~ ^[^#]*cask ]]; then
+            if brew list --cask "$pkg" &>/dev/null; then
+                echo "  Uninstalling cask: $pkg"
+                brew uninstall --cask "$pkg" 2>/dev/null || true
+            fi
+        else
+            if brew list "$pkg" &>/dev/null; then
+                echo "  Uninstalling formula: $pkg"
+                brew uninstall "$pkg" 2>/dev/null || true
+            fi
+        fi
+    done
+
+    say "Homebrew packages uninstalled"
+}
+
+# Uninstall ALL Homebrew packages (for deep clean)
+uninstall_all_brew() {
+    if ! command -v brew >/dev/null 2>&1; then
+        return 0
+    fi
+
+    say "Removing all Homebrew packages..."
+
+    # Remove all casks
+    brew list --cask 2>/dev/null | xargs -r brew uninstall --cask 2>/dev/null || true
+
+    # Remove all formulae
+    brew list --formula 2>/dev/null | xargs -r brew uninstall 2>/dev/null || true
+
+    # Cleanup
+    brew cleanup --prune=all 2>/dev/null || true
+
+    say "All Homebrew packages removed"
+}
+
 # Purge chezmoi state
 purge_chezmoi() {
     say "Purging chezmoi state..."
@@ -220,10 +284,12 @@ main() {
     purge_chezmoi
 
     if [[ "$CLEAN_ALL" == true ]]; then
+        uninstall_brew_packages
         clean_all
     fi
 
     if [[ "$DEEP_CLEAN" == true ]]; then
+        uninstall_all_brew
         deep_clean
     fi
 
