@@ -2,31 +2,10 @@
 
 # .zlogin executed for login shells, after .zshrc
 
-# Auto-update dotfiles using Chezmoi
-# This checks for updates in the dotfiles repository and applies them automatically on login
-if command -v chezmoi &> /dev/null; then
-    CHEZMOI_SOURCE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
-
-    # Only check for updates if the source directory exists and is a git repo
-    if [[ -d "$CHEZMOI_SOURCE_DIR/.git" ]]; then
-        # Fetch updates silently
-        pushd "$CHEZMOI_SOURCE_DIR" > /dev/null 2>&1
-        git fetch --quiet 2>/dev/null
-
-        # Check if there are new commits
-        LOCAL=$(git rev-parse @ 2>/dev/null)
-        REMOTE=$(git rev-parse @{u} 2>/dev/null)
-
-        if [[ -n "$REMOTE" && "$LOCAL" != "$REMOTE" ]]; then
-            echo "[dotfiles] New version available. Updating..."
-            if chezmoi update --apply; then
-                echo "[dotfiles] Updated successfully!"
-            else
-                echo "[dotfiles] Update failed. Run 'chezmoi update' manually."
-            fi
-        fi
-        popd > /dev/null 2>&1
-    fi
+# Check for dotfiles updates on login
+DOTFILES_UPDATE_SCRIPT="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi/tools/update.sh"
+if [[ -x "$DOTFILES_UPDATE_SCRIPT" ]]; then
+    "$DOTFILES_UPDATE_SCRIPT"
 fi
 
 h=$(date +%H)

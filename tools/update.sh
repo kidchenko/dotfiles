@@ -1,74 +1,39 @@
 #!/bin/bash
-
-# tools/update.sh
 #
-# Update script for Chezmoi-managed dotfiles
-# This script checks for updates and applies them using Chezmoi
+# update.sh - Check for dotfiles updates and prompt user to apply
+#
+# Called on shell login via .zlogin
+#
 
-# Chezmoi source directory (where the git repo is cloned)
 DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
 
-say() {
-    echo "[dotfiles] $1"
-}
+say() { echo "[dotfiles] $1"; }
 
-runUpdate() {
-    say "New version available."
-    read -p $"[dotfiles] Would you like to update? [y/n]: " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        say "Updating..."
-        echo
+# Check prerequisites
+command -v chezmoi &>/dev/null || { say "chezmoi not installed"; exit 1; }
+[[ -d "$DOTFILES_DIR/.git" ]] || exit 0
 
-        # Pull changes from remote
-        git pull -r
-        popd >/dev/null || exit
+# Check if remote has updates
+git -C "$DOTFILES_DIR" fetch --quiet 2>/dev/null
+LOCAL=$(git -C "$DOTFILES_DIR" rev-parse @ 2>/dev/null)
+REMOTE=$(git -C "$DOTFILES_DIR" rev-parse @{u} 2>/dev/null)
 
-        # Apply changes using Chezmoi
-        say "Applying changes with Chezmoi..."
-        if chezmoi apply --verbose; then
-            say "Ready to go!"
-            echo
-        else
-            say "ERROR: Failed to apply changes. Run 'chezmoi diff' to see what changed."
-            return 1
-        fi
+if [[ -z "$REMOTE" || "$LOCAL" == "$REMOTE" ]]; then
+    say "Already up to date."
+    exit 0
+fi
+
+# Prompt user
+say "New version available."
+read -p "[dotfiles] Would you like to update? [y/n]: " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if chezmoi update; then
+        say "Updated successfully!"
     else
-        popd >/dev/null || exit
-        say "Update skipped."
+        say "Update failed. Run 'chezmoi update' manually."
     fi
-}
-
-main() {
-    # Check if Chezmoi is installed
-    if ! command -v chezmoi &> /dev/null; then
-        say "ERROR: Chezmoi is not installed. Please install it first."
-        exit 1
-    fi
-
-    # Check if dotfiles directory exists
-    if [[ ! -d "$DOTFILES_DIR" ]]; then
-        say "ERROR: Dotfiles directory not found at $DOTFILES_DIR"
-        say "Run 'tools/bootstrap.sh' to initialize your dotfiles."
-        exit 1
-    fi
-
-    echo
-    pushd "$DOTFILES_DIR" >/dev/null || exit
-
-    # Check for updates
-    local fetch
-    fetch=$(git fetch --dry-run 2>&1)
-
-    if [ -z "$fetch" ]; then
-        # No updates available
-        popd >/dev/null || exit
-        say "Using last version."
-        echo
-    else
-        unset fetch
-        runUpdate
-    fi
-}
-
-main
+else
+    say "Update skipped."
+fi
