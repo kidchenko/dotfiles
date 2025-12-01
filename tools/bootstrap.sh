@@ -152,6 +152,32 @@ apply_dotfiles() {
     say "Dotfiles applied successfully!"
 }
 
+# Setup cron jobs
+setup_cron() {
+    if [[ "$(uname -s)" != "Darwin" ]]; then
+        say "Skipping cron setup (not macOS)"
+        return 0
+    fi
+
+    # Try chezmoi source directory first
+    local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+    local CRON_SETUP="$CHEZMOI_SOURCE/cron/setup-cron.sh"
+
+    # If not found, try local path
+    if [[ ! -f "$CRON_SETUP" ]]; then
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        CRON_SETUP="$(dirname "$SCRIPT_DIR")/cron/setup-cron.sh"
+    fi
+
+    if [[ -f "$CRON_SETUP" ]]; then
+        say "Setting up cron jobs..."
+        bash "$CRON_SETUP"
+        say "Cron jobs configured"
+    else
+        say "Skipping cron setup (setup-cron.sh not found)"
+    fi
+}
+
 # Main
 main() {
     echo
@@ -164,6 +190,7 @@ main() {
     install_brew_packages
     install_oh_my_zsh
     install_zsh_plugins
+    setup_cron
 
     echo
     say "Bootstrap complete!"

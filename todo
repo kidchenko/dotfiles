@@ -1,6 +1,0 @@
-[x] fix reload
-[ ] install oh-my-sh plugins
-[ ] do a buckup from .zhrc
-[ ] create folder custom where users can add customizations only for them
-[ ] move powershell  functions from .alias.ps1 to .functions.ps1
-[ ] full install
