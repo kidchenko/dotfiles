@@ -3,7 +3,7 @@
 # Disk Space Analyzer for macOS
 # Helps identify what's taking up space in System Data and other areas
 
-set -e
+# Note: Not using set -e to allow script to continue despite minor errors
 
 # Colors for output
 RED='\033[0;31m'
