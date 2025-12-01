@@ -1,5 +1,9 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+# PATH configuration
+export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
+
+# VS Code command line
+[[ -d "/Applications/Visual Studio Code.app/Contents/Resources/app/bin" ]] && \
+    export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 # Path to your oh-my-zsh installation.
 # This will need to be XDG compliant if Oh My Zsh supports it,
@@ -124,3 +128,9 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 # Zsh history - store in XDG location
 export HISTFILE="${XDG_DATA_HOME}/zsh/history"
 mkdir -p "$(dirname "$HISTFILE")"
+
+# z.sh for directory jumping
+if command -v brew &> /dev/null; then
+    Z_SH_PATH="$(brew --prefix)/etc/profile.d/z.sh"
+    [[ -f "$Z_SH_PATH" ]] && source "$Z_SH_PATH"
+fi

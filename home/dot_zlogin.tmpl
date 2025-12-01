@@ -38,7 +38,7 @@ if command -v brew &> /dev/null && [[ "$(uname)" == "Darwin" ]]; then
     else
         echo "WARN: z.sh not found at Homebrew path: $Z_SH_PATH"
     fi
-elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+elif [[ "$(uname -s)" == "Linux" ]]; then
     # For Linux, z.sh might be installed elsewhere, e.g., /usr/share/z/z.sh or via a plugin manager
     # This part might need user configuration or a more robust detection method.
     # As a placeholder:
