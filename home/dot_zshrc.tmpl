@@ -109,71 +109,18 @@ fi
 # alias zshconfig="mate ~/.config/zsh/.zshrc" # Updated to XDG path
 # alias ohmyzsh="mate ~/.oh-my-zsh" # Path to OMZ
 
-# Source user's custom files from XDG Zsh config directory
-ZDOTDIR_USER_CONFIG="${ZDOTDIR:-$HOME/.config/zsh}"
+# Source user's custom files from ~/.config/zsh/
+ZSH_CONFIG_DIR="$HOME/.config/zsh"
 
-if [ -f "$ZDOTDIR_USER_CONFIG/exports.sh" ]; then # Renamed to .sh for clarity, was .exports
-    source "$ZDOTDIR_USER_CONFIG/exports.sh"
-fi
-if [ -f "$ZDOTDIR_USER_CONFIG/aliases.sh" ]; then # Renamed to .sh, was .aliases
-    source "$ZDOTDIR_USER_CONFIG/aliases.sh"
-fi
-if [ -f "$ZDOTDIR_USER_CONFIG/functions.sh" ]; then # Renamed to .sh, was .functions
-    source "$ZDOTDIR_USER_CONFIG/functions.sh"
-fi
+[ -f "$ZSH_CONFIG_DIR/exports.sh" ] && source "$ZSH_CONFIG_DIR/exports.sh"
+[ -f "$ZSH_CONFIG_DIR/aliases.sh" ] && source "$ZSH_CONFIG_DIR/aliases.sh"
+[ -f "$ZSH_CONFIG_DIR/functions.sh" ] && source "$ZSH_CONFIG_DIR/functions.sh"
 
-# XDG Base Directory environment variables setup
-# This should ideally be in a more global profile file like /etc/profile.d or ~/.profile
-# but for zsh-specific setup, we can ensure they are defined here.
-# This will be part of the xdg_setup.sh script's responsibility to add to shell profiles.
-if [ -z "$XDG_CONFIG_HOME" ]; then
-    export XDG_CONFIG_HOME="$HOME/.config"
-fi
-if [ -z "$XDG_CACHE_HOME" ]; then
-    export XDG_CACHE_HOME="$HOME/.cache"
-fi
-if [ -z "$XDG_DATA_HOME" ]; then
-    export XDG_DATA_HOME="$HOME/.local/share"
-fi
+# XDG Base Directory environment variables
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 
-# Set ZDOTDIR if not already set by user/system
-# This tells Zsh where to find its config files like .zshrc, .zlogin etc.
-if [ -z "$ZDOTDIR" ]; then
-    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-fi
-
-# Ensure the ZDOTDIR exists
-mkdir -p "$ZDOTDIR"
-
-# Oh My Zsh XDG Compliance (Experimental - OMZ might not fully support this easily)
-# If you want to try moving Oh My Zsh itself to XDG_DATA_HOME:
-# export ZSH="$XDG_DATA_HOME/oh-my-zsh"
-# You would need to clone/install OMZ to this location.
-# The default ZSH variable is usually "$HOME/.oh-my-zsh".
-
-# For zsh history
-# Default is ~/.zsh_history. Let's move it to XDG_STATE_HOME or XDG_DATA_HOME.
-# XDG_STATE_HOME is more appropriate for history files. If not set, fallback to XDG_DATA_HOME/zsh.
-if [ -z "$XDG_STATE_HOME" ]; then
-    export HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
-else
-    export HISTFILE="${XDG_STATE_HOME}/zsh/history"
-fi
+# Zsh history - store in XDG location
+export HISTFILE="${XDG_DATA_HOME}/zsh/history"
 mkdir -p "$(dirname "$HISTFILE")"
-
-# Source any custom environment settings managed by dotfiles
-if [ -f "$XDG_CONFIG_HOME/dotfiles/env.sh" ]; then
-    source "$XDG_CONFIG_HOME/dotfiles/env.sh"
-fi
-
-
-# To customize your prompt, edit ~/.config/zsh/themes/your-theme.zsh-theme
-# Or, if using a standard OMZ theme, it's sourced from $ZSH/themes/
-
-# Example of sourcing a custom prompt if you choose to manage it separately
-# if [ -f "$ZDOTDIR_USER_CONFIG/prompt.zsh" ]; then
-#   source "$ZDOTDIR_USER_CONFIG/prompt.zsh"
-# fi
-
-
-echo "juca from"
