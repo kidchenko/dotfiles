@@ -18,12 +18,11 @@ if command -v chezmoi &> /dev/null; then
         REMOTE=$(git rev-parse @{u} 2>/dev/null)
 
         if [[ -n "$REMOTE" && "$LOCAL" != "$REMOTE" ]]; then
-            echo "[dotfiles] New version available."
-            # Automatically apply updates
-            if chezmoi update --verbose 2>&1 | grep -q "error"; then
-                echo "[dotfiles] Update failed. Run 'chezmoi update' manually to see details."
+            echo "[dotfiles] New version available. Updating..."
+            if chezmoi update --apply; then
+                echo "[dotfiles] Updated successfully!"
             else
-                echo "[dotfiles] Updated and applied successfully."
+                echo "[dotfiles] Update failed. Run 'chezmoi update' manually."
             fi
         fi
         popd > /dev/null 2>&1
