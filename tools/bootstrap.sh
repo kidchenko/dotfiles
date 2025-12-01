@@ -195,6 +195,23 @@ setup_1password_cli() {
     say "Run 'op signin' manually after bootstrap, then 'chezmoi apply' again."
 }
 
+# Setup dotfiles CLI command
+setup_dotfiles_cli() {
+    local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+    local BIN_DIR="$HOME/.local/bin"
+    local CLI_SOURCE="$CHEZMOI_SOURCE/tools/dotfiles"
+    local CLI_TARGET="$BIN_DIR/dotfiles"
+
+    if [[ ! -f "$CLI_SOURCE" ]]; then
+        say "Skipping dotfiles CLI (not found in source)"
+        return 0
+    fi
+
+    mkdir -p "$BIN_DIR"
+    ln -sf "$CLI_SOURCE" "$CLI_TARGET"
+    say "dotfiles CLI installed (run 'dotfiles help' for usage)"
+}
+
 # Main
 main() {
     echo
@@ -209,10 +226,12 @@ main() {
     install_oh_my_zsh
     install_zsh_plugins
     setup_cron
+    setup_dotfiles_cli         # Install dotfiles CLI command
 
     echo
     say "Bootstrap complete!"
     say "Restart your shell for all changes to take effect."
+    say "Run 'dotfiles doctor' to verify your setup."
     echo
 }
 
