@@ -51,7 +51,7 @@ if command -v lsd &> /dev/null; then
     alias ll='lsd -alF' # Show almost all, classify
     alias lt='lsd --tree'
     # List only directories
-    alias lsd='lsd --directory-only */' # This lsd specific syntax might need adjustment based on lsd version
+    alias ld='lsd --directory-only */' # renamed from lsd to avoid shadowing the lsd command
     # List only files (more complex with lsd, might need a function or find)
     # alias lsf='lsd -d (.*|*)(^/)' # Original, might not work with lsd, better use find
     # List only list hidden files
