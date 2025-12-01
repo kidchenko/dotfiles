@@ -19,6 +19,20 @@
 DOTFILES_REPO_URL="https://github.com/kidchenko/dotfiles.git" # <<< REPLACE THIS
 
 # Script self-awareness
+# Handle case where script is run via curl (BASH_SOURCE won't be a real path)
+if [[ "${BASH_SOURCE[0]}" == "environment" ]] || [[ ! -f "${BASH_SOURCE[0]}" ]]; then
+    # Running via curl - need to clone repo first
+    TEMP_CLONE_DIR="$(mktemp -d)"
+    echo "bootstrap: Running via curl, cloning repository first..."
+    git clone --depth 1 --branch main "$DOTFILES_REPO_URL" "$TEMP_CLONE_DIR" || {
+        echo "bootstrap: ERROR: Failed to clone repository"
+        rm -rf "$TEMP_CLONE_DIR"
+        exit 1
+    }
+    # Re-execute from the cloned repo
+    exec bash "$TEMP_CLONE_DIR/tools/bootstrap.sh" "$@"
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 REPO_ROOT_DIR="$(dirname "$SCRIPT_DIR")" # Assumes tools/ is one level down from repo root
 
