@@ -17,6 +17,8 @@
 #   backup      Backup project folders
 #   cron        Manage scheduled tasks
 #   install     Install packages (brew bundle)
+#   cleanup     Remove packages not in Brewfile
+#   logs        View cron job logs
 #   help        Show this help message
 #
 
@@ -57,6 +59,8 @@ show_help() {
     echo "  backup [cmd]             Backup project folders"
     echo "  cron [list|setup]        Manage scheduled tasks"
     echo "  install                  Install packages (brew bundle)"
+    echo "  cleanup                  Remove packages not in Brewfile"
+    echo "  logs [backup|brew]       View cron job logs"
     echo "  help                     Show this help message"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
@@ -160,6 +164,57 @@ cmd_install() {
     say "Done!"
 }
 
+cmd_cleanup() {
+    local BREWFILE="$DOTFILES_DIR/Brewfile"
+
+    if [[ ! -f "$BREWFILE" ]]; then
+        error "Brewfile not found at $BREWFILE"
+    fi
+
+    say "Checking for packages not in Brewfile..."
+    brew bundle cleanup --file="$BREWFILE" "$@"
+}
+
+cmd_logs() {
+    local LOG_DIR="${HOME}/.local/log"
+
+    case "${1:-list}" in
+        backup)
+            if [[ -f "$LOG_DIR/backup.log" ]]; then
+                less +G "$LOG_DIR/backup.log"
+            elif [[ -f "$LOG_DIR/backup-cron.log" ]]; then
+                less +G "$LOG_DIR/backup-cron.log"
+            else
+                echo "No backup logs found in $LOG_DIR"
+            fi
+            ;;
+        brew|bundle)
+            if [[ -f "$LOG_DIR/brew-bundle.log" ]]; then
+                less +G "$LOG_DIR/brew-bundle.log"
+            else
+                echo "No brew bundle logs found in $LOG_DIR"
+            fi
+            ;;
+        list|*)
+            echo -e "${BOLD}Available Logs${NC}"
+            echo ""
+            if [[ -d "$LOG_DIR" ]]; then
+                for log in "$LOG_DIR"/*.log; do
+                    [[ -f "$log" ]] || continue
+                    local name=$(basename "$log" .log)
+                    local size=$(du -h "$log" | cut -f1)
+                    local modified=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$log" 2>/dev/null)
+                    echo -e "  ${GREEN}$name${NC} ($size) - $modified"
+                done
+                echo ""
+                echo "View a log: dotfiles logs <name>"
+            else
+                echo "  No logs directory found"
+            fi
+            ;;
+    esac
+}
+
 cmd_cron() {
     local CRON_DIR="$DOTFILES_DIR/cron"
 
@@ -257,6 +312,14 @@ case "${1:-help}" in
     install)
         shift
         cmd_install "$@"
+        ;;
+    cleanup)
+        shift
+        cmd_cleanup "$@"
+        ;;
+    logs)
+        shift
+        cmd_logs "$@"
         ;;
     help|--help|-h)
         show_help

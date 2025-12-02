@@ -1,0 +1,76 @@
+#compdef dotfiles
+
+# Zsh completion for dotfiles CLI
+
+_dotfiles() {
+    local -a commands
+    commands=(
+        'doctor:Run health checks'
+        'bootstrap:Bootstrap dotfiles on new machine'
+        'destroy:Remove dotfiles and state'
+        'update:Pull and apply latest changes'
+        'apply:Apply dotfiles (chezmoi apply)'
+        'diff:Show pending changes'
+        'edit:Edit dotfiles source'
+        'cd:Print path to dotfiles source'
+        'status:Show git status of dotfiles'
+        'backup:Backup project folders'
+        'cron:Manage scheduled tasks'
+        'install:Install packages (brew bundle)'
+        'cleanup:Remove packages not in Brewfile'
+        'logs:View cron job logs'
+        'help:Show help message'
+    )
+
+    local -a doctor_opts
+    doctor_opts=(
+        '--quick:Skip slow checks'
+        '--fix:Auto-fix issues'
+    )
+
+    local -a backup_cmds
+    backup_cmds=(
+        'backup:Create a backup'
+        'list:List available backups'
+        'restore:Restore from backup'
+    )
+
+    local -a cron_cmds
+    cron_cmds=(
+        'list:Show configured cron jobs'
+        'setup:Install/update all cron jobs'
+    )
+
+    local -a logs_cmds
+    logs_cmds=(
+        'backup:View backup logs'
+        'brew:View brew bundle logs'
+    )
+
+    case $state in
+        (command)
+            _describe -t commands 'dotfiles command' commands
+            ;;
+    esac
+
+    if (( CURRENT == 2 )); then
+        _describe -t commands 'dotfiles command' commands
+    elif (( CURRENT == 3 )); then
+        case "${words[2]}" in
+            doctor)
+                _describe -t options 'doctor options' doctor_opts
+                ;;
+            backup)
+                _describe -t commands 'backup command' backup_cmds
+                ;;
+            cron)
+                _describe -t commands 'cron command' cron_cmds
+                ;;
+            logs)
+                _describe -t commands 'logs command' logs_cmds
+                ;;
+        esac
+    fi
+}
+
+_dotfiles "$@"

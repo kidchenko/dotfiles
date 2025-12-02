@@ -120,6 +120,12 @@ ZSH_CONFIG_DIR="$HOME/.config/zsh"
 [ -f "$ZSH_CONFIG_DIR/aliases.sh" ] && source "$ZSH_CONFIG_DIR/aliases.sh"
 [ -f "$ZSH_CONFIG_DIR/functions.sh" ] && source "$ZSH_CONFIG_DIR/functions.sh"
 
+# Custom completions
+if [[ -d "$ZSH_CONFIG_DIR/completions" ]]; then
+    fpath=("$ZSH_CONFIG_DIR/completions" $fpath)
+    autoload -Uz compinit && compinit
+fi
+
 # XDG Base Directory environment variables
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
