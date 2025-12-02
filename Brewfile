@@ -7,6 +7,7 @@
 tap "bramstein/webfonttools"
 
 # CLI Tools
+brew "bash"                 # Bash 5.x (macOS ships with 3.x)
 brew "zsh"                  # Z shell
 brew "z"                    # Directory jumping
 brew "curl"                 # HTTP client
@@ -98,6 +99,7 @@ cask "dbeaver-community"  # Database tool
 # Casks - Productivity
 cask "1password"          # Password manager
 cask "slack"              # Chat
+cask "whatsapp"           # Messaging
 cask "notion"             # Notes
 cask "postman"            # API testing
 cask "rectangle"          # Window management
@@ -107,9 +109,12 @@ cask "discord"            # Chat
 # cask "grammarly-desktop"  # Writing assistant - permission issues
 
 # Casks - Utilities
-cask "flux"               # Screen color
+cask "flux-app"           # Screen color
 cask "rescuetime"         # Time tracking
 cask "spotify"            # Music
 
 # Fonts
 cask "font-hack-nerd-font"
+
+# Mac App Store apps (requires: brew install mas)
+mas "Line", id: 539883307

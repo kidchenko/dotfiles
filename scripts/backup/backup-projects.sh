@@ -422,6 +422,8 @@ cmd_restore() {
     local i=1
 
     echo -e "${BOLD}Available local backups:${NC}"
+    echo -e "  Location: $BACKUP_TEMP_DIR"
+    echo ""
     if [[ -d "$BACKUP_TEMP_DIR" ]]; then
         while IFS= read -r file; do
             [[ -z "$file" ]] && continue
@@ -432,7 +434,7 @@ cmd_restore() {
             echo "  $i) $(basename "$file") ($size) - $date"
             backups+=("$file")
             ((i++))
-        done < <(find "$BACKUP_TEMP_DIR" -name "*.zip" -type f 2>/dev/null | sort -r)
+        done < <(find "$BACKUP_TEMP_DIR" -maxdepth 1 -name "project-backup-*.zip" -type f 2>/dev/null | sort -r)
     fi
 
     if [[ ${#backups[@]} -eq 0 ]]; then
@@ -500,6 +502,12 @@ cmd_restore() {
     if [[ "$DRY_RUN" == true ]]; then
         debug "Would extract $selected_backup to $restore_dir"
     else
+        # Create restore directory if it doesn't exist
+        if [[ ! -d "$restore_dir" ]]; then
+            say "Creating directory: $restore_dir"
+            mkdir -p "$restore_dir"
+        fi
+
         if unzip -o "$selected_backup" -d "$restore_dir"; then
             say "Restore complete!"
         else
