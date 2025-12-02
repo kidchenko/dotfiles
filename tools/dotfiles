@@ -19,6 +19,9 @@
 #   install     Install packages (brew bundle)
 #   cleanup     Remove packages not in Brewfile
 #   logs        View cron job logs
+#   extensions  Install VS Code extensions
+#   defaults    Apply macOS system defaults
+#   ssh         Setup SSH keys with 1Password
 #   help        Show this help message
 #
 
@@ -61,6 +64,9 @@ show_help() {
     echo "  install                  Install packages (brew bundle)"
     echo "  cleanup                  Remove packages not in Brewfile"
     echo "  logs [backup|brew]       View cron job logs"
+    echo "  extensions               Install VS Code extensions"
+    echo "  defaults                 Apply macOS system defaults"
+    echo "  ssh                      Setup SSH keys with 1Password"
     echo "  help                     Show this help message"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
@@ -264,6 +270,41 @@ cmd_cron() {
     esac
 }
 
+cmd_extensions() {
+    local extensions_script="$TOOLS_DIR/install_vscode_extensions.sh"
+
+    if [[ -f "$extensions_script" ]]; then
+        bash "$extensions_script" "$@"
+    else
+        error "install_vscode_extensions.sh not found in $TOOLS_DIR"
+    fi
+}
+
+cmd_defaults() {
+    local defaults_script="$TOOLS_DIR/os_setup/macos_config.sh"
+
+    if [[ ! "$(uname -s)" == "Darwin" ]]; then
+        error "This command is only available on macOS"
+    fi
+
+    if [[ -f "$defaults_script" ]]; then
+        say "Applying macOS defaults..."
+        bash "$defaults_script" "$@"
+    else
+        error "macos_config.sh not found in $TOOLS_DIR/os_setup"
+    fi
+}
+
+cmd_ssh() {
+    local ssh_script="$TOOLS_DIR/setup-ssh-keys.sh"
+
+    if [[ -f "$ssh_script" ]]; then
+        bash "$ssh_script" "$@"
+    else
+        error "setup-ssh-keys.sh not found in $TOOLS_DIR"
+    fi
+}
+
 # Main
 case "${1:-help}" in
     doctor)
@@ -320,6 +361,18 @@ case "${1:-help}" in
     logs)
         shift
         cmd_logs "$@"
+        ;;
+    extensions)
+        shift
+        cmd_extensions "$@"
+        ;;
+    defaults)
+        shift
+        cmd_defaults "$@"
+        ;;
+    ssh)
+        shift
+        cmd_ssh "$@"
         ;;
     help|--help|-h)
         show_help

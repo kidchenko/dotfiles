@@ -127,6 +127,37 @@ else
 fi
 
 # =============================================================================
+# SSH Keys
+# =============================================================================
+header "SSH Keys"
+
+if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+    pass "SSH key exists (~/.ssh/id_ed25519)"
+elif [[ -f "$HOME/.ssh/id_rsa" ]]; then
+    pass "SSH key exists (~/.ssh/id_rsa)"
+else
+    warn "No SSH key found (run: dotfiles ssh)"
+fi
+
+if [[ -f "$HOME/.ssh/config" ]]; then
+    pass "SSH config exists"
+    if grep -q "1password" "$HOME/.ssh/config" 2>/dev/null; then
+        pass "1Password SSH agent configured"
+    fi
+else
+    warn "SSH config missing"
+fi
+
+# Test GitHub SSH connection (only if key exists)
+if [[ -f "$HOME/.ssh/id_ed25519" ]] || [[ -f "$HOME/.ssh/id_rsa" ]]; then
+    if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        pass "GitHub SSH connection working"
+    else
+        warn "GitHub SSH not configured (add public key to GitHub)"
+    fi
+fi
+
+# =============================================================================
 # XDG Directories
 # =============================================================================
 header "XDG Directories"

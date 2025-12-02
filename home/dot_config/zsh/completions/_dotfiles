@@ -19,6 +19,9 @@ _dotfiles() {
         'install:Install packages (brew bundle)'
         'cleanup:Remove packages not in Brewfile'
         'logs:View cron job logs'
+        'extensions:Install VS Code extensions'
+        'defaults:Apply macOS system defaults'
+        'ssh:Setup SSH keys with 1Password'
         'help:Show help message'
     )
 

@@ -195,6 +195,47 @@ setup_1password_cli() {
     say "Run 'op signin' manually after bootstrap, then 'chezmoi apply' again."
 }
 
+# Setup SSH keys (generate if not in 1Password, or restore from 1Password)
+setup_ssh_keys() {
+    # Skip if no SSH directory and no 1Password
+    if [[ ! -d "$HOME/.ssh" ]] && ! command -v op >/dev/null 2>&1; then
+        say "Skipping SSH setup (no 1Password CLI)"
+        return 0
+    fi
+
+    # If SSH key already exists locally, skip
+    if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+        say "SSH key already exists"
+        return 0
+    fi
+
+    # If 1Password is signed in, check if key exists there
+    if command -v op >/dev/null 2>&1 && op account list &>/dev/null; then
+        if op item get "SSH Key" --vault development &>/dev/null; then
+            say "SSH key found in 1Password (will be restored by chezmoi apply)"
+            return 0
+        fi
+    fi
+
+    # No SSH key anywhere - offer to generate one
+    say "No SSH key found."
+    echo ""
+    read -p "Generate SSH key and store in 1Password? [y/N]: " generate_key
+
+    if [[ "$generate_key" == "y" || "$generate_key" == "Y" ]]; then
+        local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+        local SSH_SCRIPT="$CHEZMOI_SOURCE/tools/setup-ssh-keys.sh"
+
+        if [[ -f "$SSH_SCRIPT" ]]; then
+            bash "$SSH_SCRIPT"
+        else
+            say "SSH setup script not found. Run 'dotfiles ssh' after bootstrap."
+        fi
+    else
+        say "Skipping SSH key generation. Run 'dotfiles ssh' later to set up."
+    fi
+}
+
 # Setup dotfiles CLI command
 setup_dotfiles_cli() {
     local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
@@ -222,6 +263,7 @@ main() {
     install_chezmoi
     install_brew_packages      # Moved before apply_dotfiles (installs 1password-cli)
     setup_1password_cli        # Prompt user to sign in if needed
+    setup_ssh_keys             # Generate or restore SSH keys
     apply_dotfiles             # Now 1password-cli is available for templates
     install_oh_my_zsh
     install_zsh_plugins
