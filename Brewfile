@@ -73,7 +73,7 @@ brew "neovim"             # Modern vim
 brew "watch"              # Run commands periodically
 
 # Casks - Development
-# cask "visual-studio-code" # VS Code - conflicts_with bug, install manually
+cask "visual-studio-code"  # VS Code
 # cask "docker"             # Docker - conflicts_with bug, install manually
 cask "jetbrains-toolbox"  # JetBrains tools
 cask "rider"              # .NET IDE
@@ -89,6 +89,7 @@ cask "brave-browser"      # Brave
 cask "google-chrome"      # Chrome
 
 # Casks - AI Tools
+cask "chatgpt"            # ChatGPT desktop
 cask "claude"             # Claude desktop
 cask "cursor"             # Cursor IDE
 
@@ -106,7 +107,7 @@ cask "rectangle"          # Window management
 cask "raycast"            # Spotlight replacement
 cask "alt-tab"            # Windows-like alt-tab
 cask "discord"            # Chat
-# cask "grammarly-desktop"  # Writing assistant - permission issues
+cask "grammarly-desktop"   # Writing assistant
 
 # Casks - Utilities
 cask "flux-app"           # Screen color

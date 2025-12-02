@@ -16,6 +16,7 @@
 #   cd          Print path to dotfiles source
 #   backup      Backup project folders
 #   cron        Manage scheduled tasks
+#   install     Install packages (brew bundle)
 #   help        Show this help message
 #
 
@@ -55,6 +56,7 @@ show_help() {
     echo "  status                   Show git status of dotfiles"
     echo "  backup [cmd]             Backup project folders"
     echo "  cron [list|setup]        Manage scheduled tasks"
+    echo "  install                  Install packages (brew bundle)"
     echo "  help                     Show this help message"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
@@ -144,6 +146,18 @@ cmd_backup() {
     else
         error "backup-projects.sh not found in $SCRIPTS_DIR/backup"
     fi
+}
+
+cmd_install() {
+    local BREWFILE="$DOTFILES_DIR/Brewfile"
+
+    if [[ ! -f "$BREWFILE" ]]; then
+        error "Brewfile not found at $BREWFILE"
+    fi
+
+    say "Installing packages from Brewfile..."
+    brew bundle install --file="$BREWFILE" "$@"
+    say "Done!"
 }
 
 cmd_cron() {
@@ -239,6 +253,10 @@ case "${1:-help}" in
     cron)
         shift
         cmd_cron "$@"
+        ;;
+    install)
+        shift
+        cmd_install "$@"
         ;;
     help|--help|-h)
         show_help
