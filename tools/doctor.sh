@@ -164,7 +164,7 @@ if [[ -d "$CHEZMOI_SOURCE" ]]; then
 
     # Check for uncommitted changes
     if command -v chezmoi >/dev/null 2>&1; then
-        if chezmoi diff --exit-code >/dev/null 2>&1; then
+        if [[ -z "$(chezmoi diff 2>/dev/null)" ]]; then
             pass "dotfiles in sync (no pending changes)"
         else
             warn "dotfiles have pending changes (run: chezmoi diff)"
@@ -188,9 +188,8 @@ fi
 header "Shell Configuration"
 
 # Zsh config files
-ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
 ZSH_FILES=(
-    "$ZDOTDIR/.zshrc:zshrc"
+    "$HOME/.zshrc:zshrc"
     "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.sh:aliases"
     "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/exports.sh:exports"
     "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/functions.sh:functions"
@@ -415,11 +414,18 @@ done
 if [[ "$(uname -s)" == "Darwin" ]]; then
     header "Scheduled Tasks"
 
-    if crontab -l 2>/dev/null | grep -q "brew-bundle"; then
+    if crontab -l 2>/dev/null | grep -qE "cron/update\.sh"; then
         pass "brew bundle cron job configured"
     else
         warn "brew bundle cron job not configured"
-        info "Run: bash ~/.local/share/chezmoi/cron/setup-cron.sh"
+        info "Run: dotfiles cron setup"
+    fi
+
+    if crontab -l 2>/dev/null | grep -qE "cron/backup\.sh"; then
+        pass "backup cron job configured"
+    else
+        warn "backup cron job not configured"
+        info "Run: dotfiles cron setup"
     fi
 fi
 

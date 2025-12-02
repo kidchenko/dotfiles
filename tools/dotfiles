@@ -15,6 +15,7 @@
 #   edit        Edit dotfiles source (chezmoi edit)
 #   cd          Print path to dotfiles source
 #   backup      Backup project folders
+#   cron        Manage scheduled tasks
 #   help        Show this help message
 #
 
@@ -53,6 +54,7 @@ show_help() {
     echo "  cd                       Print path to dotfiles source"
     echo "  status                   Show git status of dotfiles"
     echo "  backup [cmd]             Backup project folders"
+    echo "  cron [list|setup]        Manage scheduled tasks"
     echo "  help                     Show this help message"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
@@ -67,7 +69,10 @@ show_help() {
     echo "  dotfiles backup          # Create a backup"
     echo "  dotfiles backup list     # List available backups"
     echo "  dotfiles backup restore  # Restore from backup"
-    echo "  dotfiles backup setup-cron  # Setup scheduled backups"
+    echo ""
+    echo -e "${BOLD}Cron commands:${NC}"
+    echo "  dotfiles cron            # List scheduled tasks"
+    echo "  dotfiles cron setup      # Setup all cron jobs"
     echo ""
 }
 
@@ -141,6 +146,55 @@ cmd_backup() {
     fi
 }
 
+cmd_cron() {
+    local CRON_DIR="$DOTFILES_DIR/cron"
+
+    case "${1:-list}" in
+        list)
+            echo -e "${BOLD}Scheduled Tasks${NC}"
+            echo ""
+            # Match both chezmoi path and git repo path for cron scripts
+            if crontab -l 2>/dev/null | grep -qE "cron/(update|backup)\.sh"; then
+                crontab -l 2>/dev/null | grep -E "cron/(update|backup)\.sh" | while read -r line; do
+                    local schedule=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
+                    local script=$(echo "$line" | awk '{print $6}' | xargs basename)
+                    local desc=""
+                    case "$script" in
+                        update.sh) desc="Weekly brew bundle" ;;
+                        backup.sh) desc="Weekly backup" ;;
+                        *) desc="$script" ;;
+                    esac
+                    # Parse cron schedule to human readable
+                    case "$schedule" in
+                        "0 9 * * 1") echo -e "  ${GREEN}✓${NC} $desc (Monday 9am)" ;;
+                        "0 2 * * 0") echo -e "  ${GREEN}✓${NC} $desc (Sunday 2am)" ;;
+                        *) echo -e "  ${GREEN}✓${NC} $desc ($schedule)" ;;
+                    esac
+                done
+            else
+                echo -e "  ${YELLOW}No dotfiles cron jobs configured${NC}"
+                echo ""
+                echo "  Run: dotfiles cron setup"
+            fi
+            echo ""
+            ;;
+        setup)
+            if [[ -f "$CRON_DIR/setup-cron.sh" ]]; then
+                bash "$CRON_DIR/setup-cron.sh"
+            else
+                error "setup-cron.sh not found in $CRON_DIR"
+            fi
+            ;;
+        *)
+            echo "Usage: dotfiles cron [list|setup]"
+            echo ""
+            echo "Commands:"
+            echo "  list   Show configured cron jobs (default)"
+            echo "  setup  Install/update all cron jobs"
+            ;;
+    esac
+}
+
 # Main
 case "${1:-help}" in
     doctor)
@@ -181,6 +235,10 @@ case "${1:-help}" in
     backup)
         shift
         cmd_backup "$@"
+        ;;
+    cron)
+        shift
+        cmd_cron "$@"
         ;;
     help|--help|-h)
         show_help
