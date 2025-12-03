@@ -1,59 +1,199 @@
 # Repository Structure
 
-## Source Layout
+## Overview
 
 ```
 dotfiles/
-├── home/                    # Dotfile templates (managed by Chezmoi)
-│   ├── .config/             # XDG_CONFIG_HOME files
-│   │   ├── zsh/
-│   │   ├── nvim/
-│   │   ├── tmux/
-│   │   └── git/
-│   ├── dot_gitconfig.tmpl   # Becomes ~/.gitconfig
-│   └── .profile.tmpl        # Becomes ~/.profile
-├── tools/                   # Bootstrap & management scripts
-│   ├── bootstrap.sh         # Main entry point
-│   ├── os_installers/       # OS-specific package installers
-│   └── os_setup/            # OS-specific configurations
-├── scripts/                 # User utilities
-│   ├── backup/
-│   └── custom/
-├── tests/                   # Automated tests (Bats, Pester)
-└── .github/workflows/       # CI configuration
+├── home/                        # Chezmoi-managed dotfiles
+│   ├── dot_config/              # XDG_CONFIG_HOME (~/.config)
+│   │   ├── zsh/                 # Zsh configuration
+│   │   │   ├── aliases.sh       # Shell aliases
+│   │   │   ├── exports.sh       # Environment variables
+│   │   │   ├── functions.sh     # Shell functions
+│   │   │   └── completions/     # Custom completions
+│   │   ├── nvim/                # Neovim configuration
+│   │   ├── git/                 # Git configuration
+│   │   └── tmux/                # Tmux configuration
+│   ├── dot_zshrc.tmpl           # Main shell config → ~/.zshrc
+│   ├── dot_gitconfig.tmpl       # Git config → ~/.gitconfig
+│   ├── private_dot_ssh/         # SSH configuration
+│   │   ├── config.tmpl          # SSH client config
+│   │   ├── private_id_ed25519.tmpl    # Private key (from 1Password)
+│   │   └── id_ed25519.pub.tmpl  # Public key (from 1Password)
+│   ├── .chezmoi.toml.tmpl       # Chezmoi config template
+│   └── .chezmoiignore           # Files to ignore conditionally
+│
+├── tools/                       # Management scripts
+│   ├── dotfiles                 # CLI tool (main entry point)
+│   ├── bootstrap.sh             # One-line installer
+│   ├── doctor.sh                # Health checks
+│   ├── destroy.sh               # Uninstaller
+│   ├── update.sh                # Update checker
+│   ├── setup-ssh-keys.sh        # SSH key generation
+│   ├── install_global_tools.sh  # npm/pip/dotnet installer
+│   ├── install_vscode_extensions.sh  # VS Code extensions
+│   └── os_setup/
+│       └── macos_config.sh      # macOS defaults
+│
+├── cron/                        # Scheduled tasks
+│   ├── setup-cron.sh            # Cron installer
+│   ├── update.sh                # Homebrew update job
+│   └── backup.sh                # Backup job
+│
+├── scripts/                     # User scripts
+│   └── backup/
+│       └── backup-projects.sh   # Project backup script
+│
+├── Brewfile                     # Homebrew packages
+├── CLAUDE.md                    # AI assistant instructions
+└── README.md                    # Main documentation
 ```
 
-## Applied Structure (Your Machine)
+## File Naming Conventions
 
-| XDG Variable | Default Location | Purpose |
-|--------------|------------------|---------|
-| `XDG_CONFIG_HOME` | `~/.config` | App configurations |
-| `XDG_DATA_HOME` | `~/.local/share` | App data (Zsh history, NVM, SDKMAN) |
-| `XDG_CACHE_HOME` | `~/.cache` | Cache files |
-| `XDG_STATE_HOME` | `~/.local/state` | State files |
-| `XDG_BIN_HOME` | `~/.local/bin` | User binaries |
+Chezmoi uses prefixes to determine how files are processed:
 
-Chezmoi stores its data in:
-- **Source**: `~/.local/share/chezmoi`
-- **Config**: `~/.config/chezmoi/chezmoi.toml`
+| Prefix | Effect | Example |
+|--------|--------|---------|
+| `dot_` | Replaced with `.` | `dot_zshrc` → `.zshrc` |
+| `private_` | Permissions set to 0600 | `private_dot_ssh/` |
+| `executable_` | Permissions include +x | `executable_script.sh` |
+| `empty_` | Create empty file | `empty_dot_placeholder` |
+| `modify_` | Run script to modify existing | `modify_dot_config.sh` |
+| `run_` | Run script during apply | `run_setup.sh` |
 
-## Key Scripts
+| Suffix | Effect | Example |
+|--------|--------|---------|
+| `.tmpl` | Process as Go template | `dot_gitconfig.tmpl` |
 
-| Script | Purpose |
-|--------|---------|
-| `tools/bootstrap.sh` | Main setup entry point |
-| `tools/xdg_setup.sh` | Sets XDG environment variables |
-| `tools/install_global_tools.sh` | Installs npm/pip/dotnet tools |
-| `tools/install_vscode_extensions.sh` | Installs VS Code extensions |
+## XDG Base Directory
 
-## Troubleshooting
+All configurations follow the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/):
 
-Common Chezmoi commands:
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `XDG_CONFIG_HOME` | `~/.config` | User configuration files |
+| `XDG_DATA_HOME` | `~/.local/share` | User data files |
+| `XDG_CACHE_HOME` | `~/.cache` | Non-essential cached data |
+| `XDG_STATE_HOME` | `~/.local/state` | State data (logs, history) |
+| `XDG_BIN_HOME` | `~/.local/bin` | User executables |
+
+### Chezmoi Paths
+
+| Path | Purpose |
+|------|---------|
+| `~/.local/share/chezmoi` | Dotfiles source repository |
+| `~/.config/chezmoi/chezmoi.toml` | Chezmoi configuration |
+| `~/.cache/chezmoi` | Chezmoi cache |
+
+## Key Files Explained
+
+### `tools/dotfiles`
+
+The main CLI tool. Provides commands like `doctor`, `apply`, `update`, `ssh`, etc.
+
+### `tools/bootstrap.sh`
+
+One-line installer that:
+1. Installs Homebrew
+2. Installs Chezmoi
+3. Installs Brewfile packages
+4. Sets up 1Password CLI
+5. Generates/restores SSH keys
+6. Applies dotfiles
+7. Installs Oh My Zsh + plugins
+8. Sets up cron jobs
+9. Links the `dotfiles` CLI
+
+### `tools/doctor.sh`
+
+Health check script that verifies:
+- Core tools installation
+- 1Password CLI status
+- SSH key presence
+- XDG directories
+- Chezmoi state
+- Shell configuration
+- Git configuration
+- Symlink integrity
+- Disk space
+- Homebrew packages
+- Modern CLI tools
+- Development tools
+- Scheduled tasks
+
+### `tools/destroy.sh`
+
+Uninstaller with three levels:
+- **Default**: Remove managed dotfiles only
+- **`--all`**: Remove dotfiles + chezmoi state + brew packages
+- **`--deep`**: Factory reset (removes all dev tools, caches)
+
+### `home/.chezmoi.toml.tmpl`
+
+Template for Chezmoi config. Prompts for user data and auto-detects 1Password.
+
+### `home/.chezmoiignore`
+
+Conditionally ignores files. SSH keys are ignored when 1Password is not configured.
+
+## Uninstalling
+
+### Remove Dotfiles Only
+
 ```bash
-chezmoi doctor   # Check setup
-chezmoi diff     # Show pending changes
-chezmoi apply    # Apply changes
-chezmoi update   # Pull and apply from remote
+dotfiles destroy
 ```
 
-See [Chezmoi documentation](https://www.chezmoi.io/docs/) for more help.
+Removes all chezmoi-managed files from your home directory.
+
+### Full Cleanup
+
+```bash
+dotfiles destroy --all
+```
+
+Also removes:
+- Chezmoi source directory
+- Chezmoi config and cache
+- Zsh data and cache
+- Homebrew packages from Brewfile
+
+### Factory Reset
+
+```bash
+dotfiles destroy --deep
+```
+
+Additionally removes:
+- Oh My Zsh
+- Shell histories (zsh, bash, python, node, etc.)
+- Package manager caches (npm, yarn, pip, cargo, etc.)
+- Development tool data (.dotnet, .cargo, .rustup, etc.)
+- All XDG directories
+
+**Warning:** This is destructive and will require reinstalling development tools.
+
+## Adding to This Structure
+
+### New Dotfile
+
+```bash
+# Add existing file
+chezmoi add ~/.my-config
+
+# Add as template
+chezmoi add --template ~/.my-config
+```
+
+### New Script
+
+1. Create script in `tools/`
+2. Add command to `tools/dotfiles`
+3. Document in README
+
+### New Cron Job
+
+1. Create script in `cron/`
+2. Add entry to `CRON_JOBS` array in `cron/setup-cron.sh`
+3. Run `dotfiles cron setup`
