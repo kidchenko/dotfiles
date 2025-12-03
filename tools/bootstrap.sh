@@ -220,7 +220,7 @@ setup_ssh_keys() {
     # No SSH key anywhere - offer to generate one
     say "No SSH key found."
     echo ""
-    read -p "Generate SSH key and store in 1Password? [y/N]: " generate_key
+    read -rp "Generate SSH key and store in 1Password? [y/N]: " generate_key
 
     if [[ "$generate_key" == "y" || "$generate_key" == "Y" ]]; then
         local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"

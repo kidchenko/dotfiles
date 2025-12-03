@@ -46,6 +46,7 @@ if ! command -v chezmoi >/dev/null 2>&1; then
 fi
 
 # Directories to clean (managed by dotfiles)
+# shellcheck disable=SC2034  # Used via nameref in show_dirs/remove_dirs
 DOTFILES_DIRS=(
     "${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi:chezmoi source"
     "${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi:chezmoi config"
@@ -56,6 +57,7 @@ DOTFILES_DIRS=(
 )
 
 # Additional dirs for deep clean (dev tools, shells, etc.)
+# shellcheck disable=SC2034  # Used via nameref in show_dirs/remove_dirs
 DEEP_CLEAN_DIRS=(
     "$HOME/.oh-my-zsh:Oh My Zsh"
     "$HOME/.zsh_history:zsh history (legacy)"
@@ -89,8 +91,8 @@ DEEP_CLEAN_DIRS=(
 # Show directories from array that exist
 show_dirs() {
     local arr_name=$1
-    eval "local arr=(\"\${${arr_name}[@]}\")"
-    for entry in "${arr[@]}"; do
+    local -n arr_ref="$arr_name"  # nameref for array
+    for entry in "${arr_ref[@]}"; do
         local path="${entry%%:*}"
         local desc="${entry##*:}"
         # Handle glob patterns
@@ -162,8 +164,8 @@ destroy_dotfiles() {
 # Remove directories from array
 remove_dirs() {
     local arr_name=$1
-    eval "local arr=(\"\${${arr_name}[@]}\")"
-    for entry in "${arr[@]}"; do
+    local -n arr_ref="$arr_name"  # nameref for array
+    for entry in "${arr_ref[@]}"; do
         local path="${entry%%:*}"
         local desc="${entry##*:}"
         # Handle glob patterns

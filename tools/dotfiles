@@ -207,9 +207,12 @@ cmd_logs() {
             if [[ -d "$LOG_DIR" ]]; then
                 for log in "$LOG_DIR"/*.log; do
                     [[ -f "$log" ]] || continue
-                    local name=$(basename "$log" .log)
-                    local size=$(du -h "$log" | cut -f1)
-                    local modified=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$log" 2>/dev/null)
+                    local name
+                    local size
+                    local modified
+                    name=$(basename "$log" .log)
+                    size=$(du -h "$log" | cut -f1)
+                    modified=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$log" 2>/dev/null)
                     echo -e "  ${GREEN}$name${NC} ($size) - $modified"
                 done
                 echo ""
@@ -231,9 +234,11 @@ cmd_cron() {
             # Match both chezmoi path and git repo path for cron scripts
             if crontab -l 2>/dev/null | grep -qE "cron/(update|backup)\.sh"; then
                 crontab -l 2>/dev/null | grep -E "cron/(update|backup)\.sh" | while read -r line; do
-                    local schedule=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
-                    local script=$(echo "$line" | awk '{print $6}' | xargs basename)
+                    local schedule
+                    local script
                     local desc=""
+                    schedule=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
+                    script=$(echo "$line" | awk '{print $6}' | xargs basename)
                     case "$script" in
                         update.sh) desc="Weekly brew bundle" ;;
                         backup.sh) desc="Weekly backup" ;;

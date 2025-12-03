@@ -184,7 +184,7 @@ main() {
         if [ "$FORCE" = false ] && [ "$DRY_RUN" = false ]; then
             echo ""
             say_error "WARNING: This will PERMANENTLY DELETE repositories after pushing!"
-            read -p "Are you sure you want to continue? Type 'yes' to confirm: " confirm
+            read -rp "Are you sure you want to continue? Type 'yes' to confirm: " confirm
             if [ "$confirm" != "yes" ]; then
                 say "Operation cancelled."
                 exit 0
@@ -208,7 +208,8 @@ main() {
     # Find all directories (one level deep)
     # If you want to search recursively, change -maxdepth 1 to -maxdepth <n>
     while IFS= read -r -d '' dir; do
-        local repo_name=$(basename "$dir")
+        local repo_name
+        repo_name=$(basename "$dir")
 
         # Check if it's a git repository
         if [ ! -d "$dir/.git" ]; then
@@ -275,7 +276,8 @@ main() {
                 push_successful=true
             else
                 say_verbose "  Pushing..."
-                local push_output=$(git push 2>&1)
+                local push_output
+                push_output=$(git push 2>&1)
                 if echo "$push_output" | grep -q "error\|fatal"; then
                     say_warning "  Failed to push '$repo_name' (might need to set upstream)"
                     push_successful=false

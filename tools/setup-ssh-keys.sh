@@ -29,9 +29,7 @@ fi
 # Configuration
 VAULT="development"
 KEY_NAME="SSH Key"
-KEY_TYPE="ed25519"
 SSH_DIR="$HOME/.ssh"
-KEY_FILE="$SSH_DIR/id_$KEY_TYPE"
 
 say() { echo -e "${GREEN}[ssh]${NC} $1"; }
 info() { echo -e "${BLUE}→${NC} $1"; }
@@ -82,7 +80,7 @@ echo ""
 if op item get "$KEY_NAME" --vault "$VAULT" &>/dev/null; then
     warn "SSH key '$KEY_NAME' already exists in vault '$VAULT'"
     echo ""
-    read -p "Overwrite existing key? [y/N]: " confirm
+    read -rp "Overwrite existing key? [y/N]: " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
         say "Aborted"
         exit 0
@@ -131,7 +129,7 @@ echo -e "${BOLD}1Password SSH Agent:${NC}"
 echo "1Password can act as your SSH agent, so you never need the private key on disk."
 echo "This is more secure but requires 1Password to be running."
 echo ""
-read -p "Enable 1Password SSH agent? [Y/n]: " use_agent
+read -rp "Enable 1Password SSH agent? [Y/n]: " use_agent
 
 if [[ "$use_agent" != "n" && "$use_agent" != "N" ]]; then
     say "To enable 1Password SSH agent:"

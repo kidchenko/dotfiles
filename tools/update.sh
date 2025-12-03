@@ -15,8 +15,8 @@ command -v chezmoi &>/dev/null || { say "chezmoi not installed"; exit 1; }
 
 # Check if remote has updates
 git -C "$DOTFILES_DIR" fetch --quiet 2>/dev/null
-LOCAL=$(git -C "$DOTFILES_DIR" rev-parse @ 2>/dev/null)
-REMOTE=$(git -C "$DOTFILES_DIR" rev-parse @{u} 2>/dev/null)
+LOCAL=$(git -C "$DOTFILES_DIR" rev-parse '@' 2>/dev/null)
+REMOTE=$(git -C "$DOTFILES_DIR" rev-parse '@{u}' 2>/dev/null)
 
 if [[ -z "$REMOTE" || "$LOCAL" == "$REMOTE" ]]; then
     say "Already up to date."
