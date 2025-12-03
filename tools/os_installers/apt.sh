@@ -118,7 +118,7 @@ echo "Installing fd-find..."
 sudo apt install -y fd-find
 # Create symlink for 'fd' command if it doesn't exist
 if ! command -v fd &> /dev/null; then
-    sudo ln -sf $(which fdfind) /usr/local/bin/fd 2>/dev/null || true
+    sudo ln -sf "$(which fdfind)" /usr/local/bin/fd 2>/dev/null || true
 fi
 
 # Install fzf
@@ -133,7 +133,7 @@ elif apt-cache search --names-only '^batcat$' | grep -q '^batcat'; then
     sudo apt install -y batcat
     # Create symlink for 'bat' command if it doesn't exist
     if ! command -v bat &> /dev/null && command -v batcat &> /dev/null; then
-        sudo ln -sf $(which batcat) /usr/local/bin/bat 2>/dev/null || true
+        sudo ln -sf "$(which batcat)" /usr/local/bin/bat 2>/dev/null || true
     fi
 fi
 

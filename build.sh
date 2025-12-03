@@ -37,9 +37,9 @@ WARN=0
 
 say() { echo -e "${GREEN}[build]${NC} $1"; }
 info() { echo -e "${BLUE}→${NC} $1"; }
-warn() { echo -e "${YELLOW}!${NC} $1"; ((WARN++)); }
-fail() { echo -e "${RED}✗${NC} $1"; ((FAIL++)); }
-pass() { echo -e "${GREEN}✓${NC} $1"; ((PASS++)); }
+warn() { echo -e "${YELLOW}!${NC} $1"; WARN=$((WARN + 1)); }
+fail() { echo -e "${RED}✗${NC} $1"; FAIL=$((FAIL + 1)); }
+pass() { echo -e "${GREEN}✓${NC} $1"; PASS=$((PASS + 1)); }
 header() { echo -e "\n${BOLD}$1${NC}"; }
 
 show_help() {
@@ -67,6 +67,50 @@ has_cmd() {
     command -v "$1" &>/dev/null
 }
 
+# Get all shell scripts in the repo
+get_shell_scripts() {
+    # Known directories containing shell scripts
+    local dirs=(
+        "$ROOT_DIR/tools"
+        "$ROOT_DIR/tools/os_installers"
+        "$ROOT_DIR/tools/os_setup"
+        "$ROOT_DIR/scripts"
+        "$ROOT_DIR/scripts/backup"
+        "$ROOT_DIR/scripts/custom"
+        "$ROOT_DIR/cron"
+        "$ROOT_DIR/brave"
+        "$ROOT_DIR"
+    )
+
+    for dir in "${dirs[@]}"; do
+        [[ -d "$dir" ]] || continue
+        for f in "$dir"/*.sh; do
+            [[ -f "$f" ]] && echo "$f"
+        done
+    done
+}
+
+# Get all template files
+get_template_files() {
+    # Recursively find .tmpl files in home/
+    for dir in "$ROOT_DIR"/home "$ROOT_DIR"/home/*/ "$ROOT_DIR"/home/*/*/ "$ROOT_DIR"/home/*/*/*/; do
+        [[ -d "$dir" ]] || continue
+        for f in "$dir"/*.tmpl; do
+            [[ -f "$f" ]] && echo "$f"
+        done
+    done 2>/dev/null
+}
+
+# Get all markdown files
+get_markdown_files() {
+    for dir in "$ROOT_DIR" "$ROOT_DIR"/docs "$ROOT_DIR"/docs/commands; do
+        [[ -d "$dir" ]] || continue
+        for f in "$dir"/*.md; do
+            [[ -f "$f" ]] && echo "$f"
+        done
+    done
+}
+
 # Lint shell scripts
 do_lint() {
     header "Linting Shell Scripts"
@@ -76,26 +120,33 @@ do_lint() {
         return 0
     fi
 
-    local scripts=()
-    while IFS= read -r -d '' file; do
-        scripts+=("$file")
-    done < <(find "$ROOT_DIR" -name "*.sh" -type f -print0 2>/dev/null)
-
-    # Add dotfiles CLI
-    if [[ -f "$ROOT_DIR/tools/dotfiles" ]]; then
-        scripts+=("$ROOT_DIR/tools/dotfiles")
-    fi
-
     local failed=0
-    for script in "${scripts[@]}"; do
+    local scripts
+    scripts=$(get_shell_scripts)
+
+    local OLD_IFS="$IFS"
+    IFS=$'\n'
+    for script in $scripts; do
+        [[ -z "$script" ]] && continue
         local rel_path="${script#$ROOT_DIR/}"
         if shellcheck --severity=warning "$script" 2>/dev/null; then
             pass "$rel_path"
         else
             fail "$rel_path"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
+    IFS="$OLD_IFS"
+
+    # Add dotfiles CLI
+    if [[ -f "$ROOT_DIR/tools/dotfiles" ]]; then
+        if shellcheck --severity=warning "$ROOT_DIR/tools/dotfiles" 2>/dev/null; then
+            pass "tools/dotfiles"
+        else
+            fail "tools/dotfiles"
+            failed=$((failed + 1))
+        fi
+    fi
 
     if [[ $failed -eq 0 ]]; then
         say "All scripts passed linting"
@@ -108,26 +159,33 @@ do_lint() {
 do_syntax() {
     header "Checking Bash Syntax"
 
-    local scripts=()
-    while IFS= read -r -d '' file; do
-        scripts+=("$file")
-    done < <(find "$ROOT_DIR" -name "*.sh" -type f -print0 2>/dev/null)
-
-    # Add dotfiles CLI
-    if [[ -f "$ROOT_DIR/tools/dotfiles" ]]; then
-        scripts+=("$ROOT_DIR/tools/dotfiles")
-    fi
-
     local failed=0
-    for script in "${scripts[@]}"; do
+    local scripts
+    scripts=$(get_shell_scripts)
+
+    local OLD_IFS="$IFS"
+    IFS=$'\n'
+    for script in $scripts; do
+        [[ -z "$script" ]] && continue
         local rel_path="${script#$ROOT_DIR/}"
         if bash -n "$script" 2>/dev/null; then
             pass "$rel_path"
         else
             fail "$rel_path"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
+    IFS="$OLD_IFS"
+
+    # Add dotfiles CLI
+    if [[ -f "$ROOT_DIR/tools/dotfiles" ]]; then
+        if bash -n "$ROOT_DIR/tools/dotfiles" 2>/dev/null; then
+            pass "tools/dotfiles"
+        else
+            fail "tools/dotfiles"
+            failed=$((failed + 1))
+        fi
+    fi
 
     if [[ $failed -eq 0 ]]; then
         say "All scripts have valid syntax"
@@ -146,26 +204,32 @@ do_validate() {
         return 0
     fi
 
-    # Count templates
-    local template_count
-    template_count=$(find "$ROOT_DIR/home" -name "*.tmpl" 2>/dev/null | wc -l | tr -d ' ')
-    info "Found $template_count template files"
-
-    # Check each template for basic Go template syntax
+    # Get template files
+    local template_count=0
     local failed=0
-    while IFS= read -r -d '' tmpl; do
+    local templates
+    templates=$(get_template_files)
+
+    local OLD_IFS="$IFS"
+    IFS=$'\n'
+    for tmpl in $templates; do
+        [[ -z "$tmpl" ]] && continue
+        template_count=$((template_count + 1))
         local rel_path="${tmpl#$ROOT_DIR/}"
         # Basic check: look for unclosed {{ or }}
         if grep -qE '\{\{[^}]*$' "$tmpl" 2>/dev/null; then
             fail "$rel_path (unclosed template tag)"
-            ((failed++))
+            failed=$((failed + 1))
         elif grep -qE '^[^{]*\}\}' "$tmpl" 2>/dev/null; then
             fail "$rel_path (orphan closing tag)"
-            ((failed++))
+            failed=$((failed + 1))
         else
             pass "$rel_path"
         fi
-    done < <(find "$ROOT_DIR/home" -name "*.tmpl" -type f -print0 2>/dev/null)
+    done
+    IFS="$OLD_IFS"
+
+    info "Found $template_count template files"
 
     if [[ $failed -eq 0 ]]; then
         say "All templates look valid"
@@ -256,13 +320,13 @@ do_brewfile() {
         echo "$dupes" | while read -r line; do
             echo "    $line"
         done
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     # Check for empty quotes
     if grep -qE '(brew|cask) ""' "$brewfile"; then
         fail "Empty package name in Brewfile"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     # Validate with brew bundle if available
@@ -285,33 +349,37 @@ do_brewfile() {
 do_markdown() {
     header "Linting Markdown"
 
+    local md_count=0
+    local md_files
+    md_files=$(get_markdown_files)
+
     # Check if markdownlint is available
     if has_cmd markdownlint; then
-        local md_files
-        md_files=$(find "$ROOT_DIR" -name "*.md" -type f ! -path "*/node_modules/*" 2>/dev/null)
-
-        if [[ -z "$md_files" ]]; then
-            info "No markdown files found"
-            return 0
-        fi
-
-        local failed=0
-        while IFS= read -r md_file; do
+        local OLD_IFS="$IFS"
+        IFS=$'\n'
+        for md_file in $md_files; do
+            [[ -z "$md_file" ]] && continue
+            md_count=$((md_count + 1))
             local rel_path="${md_file#$ROOT_DIR/}"
             if markdownlint "$md_file" &>/dev/null; then
                 pass "$rel_path"
             else
                 warn "$rel_path (has lint warnings)"
             fi
-        done <<< "$md_files"
+        done
+        IFS="$OLD_IFS"
     elif has_cmd npx && [[ -f "$ROOT_DIR/node_modules/.bin/markdownlint" ]]; then
         info "Using npx markdownlint..."
         npx markdownlint "**/*.md" --ignore node_modules 2>/dev/null || warn "Markdown lint warnings found"
     else
+        # Count markdown files
+        local OLD_IFS="$IFS"
+        IFS=$'\n'
+        for _ in $md_files; do
+            md_count=$((md_count + 1))
+        done
+        IFS="$OLD_IFS"
         info "markdownlint not installed (npm install -g markdownlint-cli)"
-        # Basic checks without markdownlint
-        local md_count
-        md_count=$(find "$ROOT_DIR" -name "*.md" -type f ! -path "*/node_modules/*" 2>/dev/null | wc -l | tr -d ' ')
         info "Found $md_count markdown files (install markdownlint for detailed checks)"
     fi
 }
@@ -322,11 +390,33 @@ do_count() {
 
     cd "$ROOT_DIR"
 
-    local shell_count template_count doc_count total_lines
+    # Count files using helper functions
+    local shell_count=0
+    local template_count=0
+    local doc_count=0
+    local total_lines=0
 
-    shell_count=$(find . -name "*.sh" -type f 2>/dev/null | wc -l | tr -d ' ')
-    template_count=$(find . -name "*.tmpl" -type f 2>/dev/null | wc -l | tr -d ' ')
-    doc_count=$(find . -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+    local scripts templates docs
+    scripts=$(get_shell_scripts)
+    templates=$(get_template_files)
+    docs=$(get_markdown_files)
+
+    local OLD_IFS="$IFS"
+    IFS=$'\n'
+    for f in $scripts; do
+        [[ -z "$f" ]] && continue
+        shell_count=$((shell_count + 1))
+        [[ -f "$f" ]] && total_lines=$((total_lines + $(wc -l < "$f")))
+    done
+
+    for _ in $templates; do
+        template_count=$((template_count + 1))
+    done
+
+    for _ in $docs; do
+        doc_count=$((doc_count + 1))
+    done
+    IFS="$OLD_IFS"
 
     # Count Brewfile entries
     local brew_formulae brew_casks
@@ -341,9 +431,6 @@ do_count() {
     echo "  Brewfile formulae: $brew_formulae"
     echo "  Brewfile casks:    $brew_casks"
     echo ""
-
-    # Total lines of shell code
-    total_lines=$(find . -name "*.sh" -type f -exec cat {} \; 2>/dev/null | wc -l | tr -d ' ')
     echo "  Total shell lines: $total_lines"
 }
 
