@@ -1,8 +1,6 @@
 # Chezmoi ignore file
 # Files listed here will not be managed by chezmoi
 
-# Ignore SSH keys if 1Password is not configured or key doesn't exist
-{{ if not (and (index . "onepassword") .onepassword) }}
+# SSH keys are managed via `dotfiles ssh` command, not chezmoi
 .ssh/id_ed25519
 .ssh/id_ed25519.pub
-{{ end }}

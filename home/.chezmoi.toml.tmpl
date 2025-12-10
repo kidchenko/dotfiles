@@ -8,14 +8,9 @@ sourceDir = "{{ .chezmoi.homeDir }}/.local/share/chezmoi"
     name = "{{ promptStringOnce . "name" "Git name" }}"
     email = "{{ promptStringOnce . "email" "Git email" }}"
     editor = "{{ promptStringOnce . "editor" "Preferred editor (vim/code/nvim)" }}"
-    # Set to true if 1Password CLI is configured (enables secrets in templates)
-    onepassword = {{ eq (output "sh" "-c" "command -v op >/dev/null 2>&1 && op account list >/dev/null 2>&1 && echo true || echo false" | trim) "true" }}
 
 [git]
     autoCommit = false
     autoPush = false
-
-[onepassword]
-    command = "op"
 
 # vim:ft=toml
