@@ -14,6 +14,16 @@ BREWFILE="$DOTFILES_DIR/Brewfile"
 LOG_DIR="${HOME}/.local/log"
 LOG_FILE="$LOG_DIR/brew-bundle.log"
 
+# Find Homebrew (Apple Silicon or Intel Mac)
+if [[ -x "/opt/homebrew/bin/brew" ]]; then
+    BREW="/opt/homebrew/bin/brew"
+elif [[ -x "/usr/local/bin/brew" ]]; then
+    BREW="/usr/local/bin/brew"
+else
+    echo "ERROR: Homebrew not found" >&2
+    exit 1
+fi
+
 # Ensure log directory exists
 mkdir -p "$LOG_DIR"
 
@@ -25,14 +35,14 @@ log() {
 log "=== Starting brew bundle install ==="
 
 # Update Homebrew first
-if /opt/homebrew/bin/brew update >> "$LOG_FILE" 2>&1; then
+if "$BREW" update >> "$LOG_FILE" 2>&1; then
     log "Homebrew updated"
 else
     log "ERROR: Homebrew update failed"
 fi
 
 # Run brew bundle install
-if /opt/homebrew/bin/brew bundle install --file="$BREWFILE" --no-lock >> "$LOG_FILE" 2>&1; then
+if "$BREW" bundle install --file="$BREWFILE" --no-lock >> "$LOG_FILE" 2>&1; then
     log "Brew bundle install completed successfully"
 else
     log "ERROR: Brew bundle install failed"

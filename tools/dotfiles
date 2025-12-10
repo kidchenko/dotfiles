@@ -276,17 +276,17 @@ cmd_cron() {
 }
 
 cmd_extensions() {
-    local extensions_script="$TOOLS_DIR/install_vscode_extensions.sh"
+    local extensions_script="$TOOLS_DIR/install-vscode-extensions.sh"
 
     if [[ -f "$extensions_script" ]]; then
         bash "$extensions_script" "$@"
     else
-        error "install_vscode_extensions.sh not found in $TOOLS_DIR"
+        error "install-vscode-extensions.sh not found in $TOOLS_DIR"
     fi
 }
 
 cmd_defaults() {
-    local defaults_script="$TOOLS_DIR/os_setup/macos_config.sh"
+    local defaults_script="$TOOLS_DIR/os_setup/macos-config.sh"
 
     if [[ ! "$(uname -s)" == "Darwin" ]]; then
         error "This command is only available on macOS"
@@ -296,7 +296,7 @@ cmd_defaults() {
         say "Applying macOS defaults..."
         bash "$defaults_script" "$@"
     else
-        error "macos_config.sh not found in $TOOLS_DIR/os_setup"
+        error "macos-config.sh not found in $TOOLS_DIR/os_setup"
     fi
 }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# tools/install_vscode_extensions.sh
+# tools/install-vscode-extensions.sh
 #
 # Installs VS Code extensions listed in
 # ~/.config/dotfiles/vscode-extensions.txt (or $XDG_CONFIG_HOME/dotfiles/vscode-extensions.txt).
@@ -22,7 +22,7 @@ EXTENSIONS_FILE="$CONFIG_DIR/$EXTENSIONS_FILE_NAME"
 
 # --- Helper Functions ---
 say() {
-    echo "install_vscode_extensions: $1"
+    echo "install-vscode-extensions: $1"
 }
 
 say_verbose() {

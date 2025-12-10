@@ -30,10 +30,11 @@ dotfiles/
 │   ├── destroy.sh               # Uninstaller
 │   ├── update.sh                # Update checker
 │   ├── setup-ssh-keys.sh        # SSH key generation
-│   ├── install_global_tools.sh  # npm/pip/dotnet installer
-│   ├── install_vscode_extensions.sh  # VS Code extensions
+│   ├── install-global-tools.sh  # npm/pip/dotnet installer
+│   ├── install-vscode-extensions.sh  # VS Code extensions
+│   ├── install-brave-extensions.sh   # Brave browser extensions
 │   └── os_setup/
-│       └── macos_config.sh      # macOS defaults
+│       └── macos-config.sh      # macOS defaults
 │
 ├── cron/                        # Scheduled tasks
 │   ├── setup-cron.sh            # Cron installer

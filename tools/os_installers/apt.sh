@@ -192,11 +192,11 @@ if ! command -v node &> /dev/null; then
     sudo apt install -y nodejs
 fi
 
-# Install Yarn
+# Install Yarn (using signed-by method instead of deprecated apt-key)
 echo "Installing Yarn..."
 if ! command -v yarn &> /dev/null; then
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
     sudo apt update
     sudo apt install -y yarn
 fi
@@ -204,7 +204,7 @@ fi
 # Install Go
 echo "Installing Go..."
 if ! command -v go &> /dev/null; then
-    GO_VERSION="1.21.5"
+    GO_VERSION="1.23.4"
     wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
@@ -230,7 +230,7 @@ fi
 # Install yq
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
-    YQ_VERSION="v4.40.5"
+    YQ_VERSION="v4.44.6"
     wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
     sudo mv /tmp/yq /usr/local/bin/yq
     sudo chmod +x /usr/local/bin/yq
@@ -239,7 +239,7 @@ fi
 # Install lsd (LSDeluxe)
 echo "Installing lsd..."
 if ! command -v lsd &> /dev/null; then
-    LSD_VERSION="1.0.0"
+    LSD_VERSION="1.1.5"
     wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
     sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
     rm "lsd_${LSD_VERSION}_amd64.deb"
@@ -257,10 +257,8 @@ if ! command -v composer &> /dev/null; then
     ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
 
     if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
-        php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
-        RESULT=$?
+        sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
         rm composer-setup.php
-        exit $RESULT
     else
         >&2 echo 'ERROR: Invalid installer checksum for Composer'
         rm composer-setup.php

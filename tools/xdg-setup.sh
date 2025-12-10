@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# tools/xdg_setup.sh
+# tools/xdg-setup.sh
 #
 # Sets XDG Base Directory Specification environment variables for the current session
 # and ensures the base directories exist.
@@ -9,7 +9,7 @@
 
 # --- Helper function to print messages ---
 _xdg_say() {
-    echo "xdg_setup: $1"
+    echo "xdg-setup: $1"
 }
 
 # --- Define and export XDG variables with fallbacks ---
@@ -86,8 +86,8 @@ if [ -n "$ZSH_VERSION" ] && [ -n "$ZDOTDIR" ]; then
 fi
 
 # This script should be sourced, e.g.:
-# source ./tools/xdg_setup.sh
+# source ./tools/xdg-setup.sh
 # or
-# . ./tools/xdg_setup.sh
+# . ./tools/xdg-setup.sh
 # So that the exported variables are available in the calling shell.
 true # Ensure script exits with success if sourced.

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Cross-platform dotfiles (macOS & Linux) managed with [Chezmoi](https://chezmoi.io/), following XDG Base Directory conventions.
+Cross-platform dotfiles (macOS, Linux & Windows) managed with [Chezmoi](https://chezmoi.io/), following XDG Base Directory conventions.
 
 ## Common Commands
 
@@ -25,10 +25,10 @@ chezmoi doctor
 brew bundle install
 
 # Install global tools (npm/pip/dotnet)
-bash tools/install_global_tools.sh
+bash tools/install-global-tools.sh
 
 # Install VS Code extensions
-bash tools/install_vscode_extensions.sh
+bash tools/install-vscode-extensions.sh
 
 # Full bootstrap on new machine
 bash tools/bootstrap.sh
@@ -62,7 +62,15 @@ All configs follow XDG conventions:
 `tools/bootstrap.sh` runs: Homebrew install → Chezmoi install → Apply dotfiles → Brew bundle → Oh My Zsh → Zsh plugins → Cron setup
 
 ### Global Tools Config
-Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet global tools, then run `tools/install_global_tools.sh`.
+Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet global tools, then run `tools/install-global-tools.sh`.
 
 ### VS Code Extensions
-Edit `~/.config/dotfiles/vscode-extensions.txt` (one extension ID per line), then run `tools/install_vscode_extensions.sh`.
+Edit `~/.config/dotfiles/vscode-extensions.txt` (one extension ID per line), then run `tools/install-vscode-extensions.sh`.
+
+### Brave Extensions
+Edit `~/.config/dotfiles/brave-extensions.txt` (one extension ID per line), then run `tools/install-brave-extensions.sh`.
+
+### Windows Support
+- PowerShell profile at `~/Documents/PowerShell/` sources modular config from `~/.config/powershell/`
+- Windows bootstrap: `tools/os_installers/setup.ps1`
+- Chocolatey packages: `tools/os_installers/choco.ps1`

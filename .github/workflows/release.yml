@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0, 1.1.0, 2.0.0)'
+        required: true
+        type: string
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in format X.Y.Z (e.g., 1.0.0)"
+            exit 1
+          fi
+
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "v${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "Error: Tag v${{ inputs.version }} already exists"
+            exit 1
+          fi
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+
+          if [ -n "$LATEST_TAG" ]; then
+            echo "Changes since $LATEST_TAG:" >> release_notes.md
+            echo "" >> release_notes.md
+            git log ${LATEST_TAG}..HEAD --pretty=format:"- %s" >> release_notes.md
+          else
+            echo "Initial release" >> release_notes.md
+            git log --pretty=format:"- %s" >> release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...v${{ inputs.version }}" >> release_notes.md
+
+      - name: Create tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false

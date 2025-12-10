@@ -244,11 +244,19 @@ uninstall_all_brew() {
 
     say "Removing all Homebrew packages..."
 
-    # Remove all casks
-    brew list --cask 2>/dev/null | xargs -r brew uninstall --cask 2>/dev/null || true
+    # Remove all casks (compatible with both GNU and BSD xargs)
+    local casks
+    casks=$(brew list --cask 2>/dev/null)
+    if [[ -n "$casks" ]]; then
+        echo "$casks" | xargs brew uninstall --cask 2>/dev/null || true
+    fi
 
     # Remove all formulae
-    brew list --formula 2>/dev/null | xargs -r brew uninstall 2>/dev/null || true
+    local formulae
+    formulae=$(brew list --formula 2>/dev/null)
+    if [[ -n "$formulae" ]]; then
+        echo "$formulae" | xargs brew uninstall 2>/dev/null || true
+    fi
 
     # Cleanup
     brew cleanup --prune=all 2>/dev/null || true

@@ -6,14 +6,52 @@
 #   curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh | bash
 #   # or
 #   ./tools/bootstrap.sh
+#   ./tools/bootstrap.sh --dry-run    # Preview what would be installed
+#   ./tools/bootstrap.sh --help       # Show help
 #
 
 set -e
 
 DOTFILES_REPO="https://github.com/kidchenko/dotfiles.git"
+DRY_RUN=false
+
+# Parse arguments
+for arg in "$@"; do
+    case $arg in
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS]"
+            echo ""
+            echo "Bootstrap dotfiles on a new machine."
+            echo ""
+            echo "Options:"
+            echo "  --dry-run    Preview what would be installed without making changes"
+            echo "  --help, -h   Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0                    # Full installation"
+            echo "  $0 --dry-run          # Preview only"
+            echo ""
+            echo "For more information, see: https://github.com/kidchenko/dotfiles"
+            exit 0
+            ;;
+    esac
+done
 
 say() { echo "[dotfiles] $1"; }
+warn() { echo "[dotfiles] WARN: $1"; }
 error() { echo "[dotfiles] ERROR: $1" >&2; exit 1; }
+
+# Dry-run wrapper - executes command only if not in dry-run mode
+run() {
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: $*"
+    else
+        "$@"
+    fi
+}
 
 # Handle curl-based execution - chezmoi init handles cloning
 if [[ ! -f "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "environment" ]]; then
@@ -37,6 +75,11 @@ install_homebrew() {
     fi
 
     say "Installing Homebrew..."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would install Homebrew from https://brew.sh"
+        return 0
+    fi
+
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
     # Add Homebrew to PATH for this session
@@ -53,6 +96,10 @@ install_homebrew() {
 # Install Homebrew packages from Brewfile
 install_brew_packages() {
     if ! command -v brew >/dev/null 2>&1; then
+        if [[ "$DRY_RUN" == true ]]; then
+            say "DRY-RUN: Would install Homebrew packages (Homebrew not yet installed)"
+            return 0
+        fi
         say "Skipping Homebrew packages (Homebrew not installed)"
         return 0
     fi
@@ -69,6 +116,13 @@ install_brew_packages() {
 
     if [[ -f "$BREWFILE" ]]; then
         say "Installing Homebrew packages from Brewfile..."
+        if [[ "$DRY_RUN" == true ]]; then
+            local formulae casks
+            formulae=$(grep -cE "^brew " "$BREWFILE" 2>/dev/null || echo 0)
+            casks=$(grep -cE "^cask " "$BREWFILE" 2>/dev/null || echo 0)
+            say "DRY-RUN: Would install $formulae formulae and $casks casks from $BREWFILE"
+            return 0
+        fi
         brew bundle install --file="$BREWFILE"
         say "Homebrew packages installed"
     else
@@ -84,6 +138,11 @@ install_chezmoi() {
     fi
 
     say "Installing chezmoi..."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would install chezmoi from https://chezmoi.io"
+        return 0
+    fi
+
     mkdir -p "$HOME/.local/bin"
 
     if command -v brew >/dev/null 2>&1; then
@@ -105,6 +164,11 @@ install_oh_my_zsh() {
     fi
 
     say "Installing Oh My Zsh..."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would install Oh My Zsh from https://ohmyz.sh"
+        return 0
+    fi
+
     # RUNZSH=no prevents OMZ from launching zsh after install
     # CHSH=no prevents OMZ from changing the default shell
     export RUNZSH=no
@@ -116,13 +180,21 @@ install_oh_my_zsh() {
         # Remove the .zshrc created by OMZ (we have our own)
         [[ -f "$HOME/.zshrc" ]] && rm -f "$HOME/.zshrc"
     else
-        say "WARNING: Oh My Zsh installation may have failed"
+        warn "Oh My Zsh installation may have failed"
     fi
 }
 
 # Install zsh plugins
 install_zsh_plugins() {
     local ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would install zsh plugins:"
+        say "  - zsh-autosuggestions"
+        say "  - zsh-syntax-highlighting"
+        say "  - zsh-nvm"
+        return 0
+    fi
 
     # zsh-autosuggestions
     if [[ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]]; then
@@ -148,6 +220,10 @@ install_zsh_plugins() {
 # Initialize and apply dotfiles
 apply_dotfiles() {
     say "Initializing and applying dotfiles..."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would clone $DOTFILES_REPO and apply dotfiles via chezmoi"
+        return 0
+    fi
     chezmoi init --apply "$DOTFILES_REPO"
     say "Dotfiles applied successfully!"
 }
@@ -156,6 +232,11 @@ apply_dotfiles() {
 setup_cron() {
     if [[ "$(uname -s)" != "Darwin" ]]; then
         say "Skipping cron setup (not macOS)"
+        return 0
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would setup cron jobs for Homebrew updates and backups"
         return 0
     fi
 
@@ -256,7 +337,12 @@ setup_dotfiles_cli() {
 # Main
 main() {
     echo
-    say "Starting dotfiles bootstrap..."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "Starting dotfiles bootstrap (DRY-RUN MODE)..."
+        say "No changes will be made to your system."
+    else
+        say "Starting dotfiles bootstrap..."
+    fi
     echo
 
     install_homebrew
@@ -271,9 +357,14 @@ main() {
     setup_dotfiles_cli         # Install dotfiles CLI command
 
     echo
-    say "Bootstrap complete!"
-    say "Restart your shell for all changes to take effect."
-    say "Run 'dotfiles doctor' to verify your setup."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN complete!"
+        say "Run without --dry-run to perform actual installation."
+    else
+        say "Bootstrap complete!"
+        say "Restart your shell for all changes to take effect."
+        say "Run 'dotfiles doctor' to verify your setup."
+    fi
     echo
 }
 

@@ -1,0 +1,23 @@
+# Brave/Chrome Extensions List
+# Each line should contain one extension ID (from the Chrome Web Store URL).
+# Inline comments after the ID are allowed.
+#
+# This file will be located at ~/.config/dotfiles/brave-extensions.txt after chezmoi applies it.
+# The install_brave_extensions.sh script will read this file to open installation pages.
+#
+# To find extension IDs:
+# 1. Go to chrome.google.com/webstore
+# 2. Find the extension
+# 3. The ID is the last part of the URL: chrome.google.com/webstore/detail/[name]/[EXTENSION_ID]
+
+aeblfdkhhhdcdjpifhhbdiojplfjncoa # 1Password
+kbfnbcaeplbcioakkpcpgfkobkghlhen # Grammarly
+bdakmnplckeopfghnlpocafcepegjeap # RescueTime
+
+# Add your desired extension IDs below:
+# extension_id # Extension Name
+
+{{ if and (hasKey . "is_work_machine") .is_work_machine }}
+# Work specific extensions
+# extension_id # Work Extension
+{{ end }}

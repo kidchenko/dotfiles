@@ -132,7 +132,7 @@ dotfiles ssh
 dotfiles defaults
 ```
 
-This configures developer-friendly macOS settings. Review `tools/os_setup/macos_config.sh` first.
+This configures developer-friendly macOS settings. Review `tools/os_setup/macos-config.sh` first.
 
 ### 5. Install VS Code Extensions (optional)
 
