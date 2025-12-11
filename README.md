@@ -5,17 +5,19 @@ Cross-platform dotfiles (macOS, Linux & Windows) managed with [Chezmoi](https://
 ## Quick Start
 
 ```bash
-# One-line bootstrap on a new machine (latest stable release)
+# One-line bootstrap on a new machine (~15-20 min)
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.0/tools/bootstrap.sh)"
-
-# Or use main branch for latest changes (may be unstable)
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)"
 
 # Preview what will be installed (dry-run)
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.0/tools/bootstrap.sh)" -- --dry-run
 ```
 
-This will install everything: Homebrew, packages, shell configuration, SSH keys, and scheduled tasks.
+Bootstrap installs essential dev tools only. After bootstrap, install the full software suite:
+
+```bash
+# Install full software suite (~30-40 min)
+dotfiles install
+```
 
 > **Tip**: Use a tagged release (e.g., `v1.0.0`) for stability. Check [releases](https://github.com/kidchenko/dotfiles/releases) for the latest version.
 
@@ -54,7 +56,7 @@ dotfiles help              # Show all commands
 
 | Command | Description |
 |---------|-------------|
-| `dotfiles install` | Install Homebrew packages from Brewfile |
+| `dotfiles install` | Install full software suite (Brewfile) |
 | `dotfiles cleanup` | List packages not in Brewfile |
 | `dotfiles extensions` | Install VS Code extensions |
 

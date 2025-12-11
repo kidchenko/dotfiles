@@ -61,7 +61,7 @@ show_help() {
     echo "  status                   Show git status of dotfiles"
     echo "  backup [cmd]             Backup project folders"
     echo "  cron [list|setup]        Manage scheduled tasks"
-    echo "  install                  Install packages (brew bundle)"
+    echo "  install                  Install full software suite (Brewfile)"
     echo "  cleanup                  Remove packages not in Brewfile"
     echo "  logs [backup|brew]       View cron job logs"
     echo "  extensions               Install VS Code extensions"
@@ -165,9 +165,9 @@ cmd_install() {
         error "Brewfile not found at $BREWFILE"
     fi
 
-    say "Installing packages from Brewfile..."
+    say "Installing full software suite from Brewfile..."
     brew bundle install --file="$BREWFILE" "$@"
-    say "Done!"
+    say "Done! Run 'dotfiles cleanup' to remove packages not in Brewfile."
 }
 
 cmd_cleanup() {

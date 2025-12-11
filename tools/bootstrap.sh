@@ -93,11 +93,11 @@ install_homebrew() {
     say "Homebrew installed successfully"
 }
 
-# Install Homebrew packages from Brewfile
+# Install essential Homebrew packages from Brewfile.essential
 install_brew_packages() {
     if ! command -v brew >/dev/null 2>&1; then
         if [[ "$DRY_RUN" == true ]]; then
-            say "DRY-RUN: Would install Homebrew packages (Homebrew not yet installed)"
+            say "DRY-RUN: Would install essential Homebrew packages (Homebrew not yet installed)"
             return 0
         fi
         say "Skipping Homebrew packages (Homebrew not installed)"
@@ -106,16 +106,16 @@ install_brew_packages() {
 
     # Try chezmoi source directory first
     local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
-    local BREWFILE="$CHEZMOI_SOURCE/Brewfile"
+    local BREWFILE="$CHEZMOI_SOURCE/Brewfile.essential"
 
     # If not found, try local path (when running ./tools/bootstrap.sh directly)
     if [[ ! -f "$BREWFILE" ]]; then
         SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        BREWFILE="$(dirname "$SCRIPT_DIR")/Brewfile"
+        BREWFILE="$(dirname "$SCRIPT_DIR")/Brewfile.essential"
     fi
 
     if [[ -f "$BREWFILE" ]]; then
-        say "Installing Homebrew packages from Brewfile..."
+        say "Installing essential Homebrew packages..."
         if [[ "$DRY_RUN" == true ]]; then
             local formulae casks
             formulae=$(grep -cE "^brew " "$BREWFILE" 2>/dev/null || echo 0)
@@ -124,9 +124,9 @@ install_brew_packages() {
             return 0
         fi
         brew bundle install --file="$BREWFILE"
-        say "Homebrew packages installed"
+        say "Essential packages installed (run 'dotfiles install' for full software suite)"
     else
-        say "Skipping Homebrew packages (Brewfile not found)"
+        say "Skipping Homebrew packages (Brewfile.essential not found)"
     fi
 }
 
@@ -304,8 +304,8 @@ main() {
         say "Bootstrap complete!"
         say ""
         say "Next steps:"
-        say "  1. Restart your shell (or run: source ~/.zshrc)"
-        say "  2. Sign in to 1Password: op signin"
+        say "  1. Restart your shell: source ~/.zshrc"
+        say "  2. Install full software suite: dotfiles install"
         say "  3. Setup SSH keys: dotfiles ssh"
         say "  4. Verify setup: dotfiles doctor"
     fi
