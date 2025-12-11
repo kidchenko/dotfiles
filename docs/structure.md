@@ -17,9 +17,7 @@ dotfiles/
 │   ├── dot_zshrc.tmpl           # Main shell config → ~/.zshrc
 │   ├── dot_gitconfig.tmpl       # Git config → ~/.gitconfig
 │   ├── private_dot_ssh/         # SSH configuration
-│   │   ├── config.tmpl          # SSH client config
-│   │   ├── private_id_ed25519.tmpl    # Private key (from 1Password)
-│   │   └── id_ed25519.pub.tmpl  # Public key (from 1Password)
+│   │   └── config.tmpl          # SSH client config
 │   ├── .chezmoi.toml.tmpl       # Chezmoi config template
 │   └── .chezmoiignore           # Files to ignore conditionally
 │
@@ -87,6 +85,16 @@ All configurations follow the [XDG Base Directory Specification](https://specifi
 | `~/.config/chezmoi/chezmoi.toml` | Chezmoi configuration |
 | `~/.cache/chezmoi` | Chezmoi cache |
 
+### Dotfiles Data Paths
+
+| Path | Purpose |
+|------|---------|
+| `~/.config/dotfiles/config.yaml` | Dotfiles configuration |
+| `~/.config/dotfiles/vscode-extensions.txt` | VS Code extensions list |
+| `~/.config/dotfiles/brave-extensions.txt` | Brave extensions list |
+| `~/.local/share/dotfiles/backups/` | Project backups |
+| `~/.local/log/` | Cron job logs |
+
 ## Key Files Explained
 
 ### `tools/dotfiles`
@@ -95,16 +103,15 @@ The main CLI tool. Provides commands like `doctor`, `apply`, `update`, `ssh`, et
 
 ### `tools/bootstrap.sh`
 
-One-line installer that:
+Fast bootstrap (~15-20 min) that installs essentials:
 1. Installs Homebrew
 2. Installs Chezmoi
-3. Installs Brewfile packages
-4. Sets up 1Password CLI
-5. Generates/restores SSH keys
-6. Applies dotfiles
-7. Installs Oh My Zsh + plugins
-8. Sets up cron jobs
-9. Links the `dotfiles` CLI
+3. Applies dotfiles
+4. Installs essential packages (Brewfile.essential)
+5. Installs Oh My Zsh + plugins
+6. Links the `dotfiles` CLI
+
+After bootstrap, run `dotfiles setup` for complete setup (SSH, full software, extensions, defaults).
 
 ### `tools/doctor.sh`
 
@@ -132,11 +139,11 @@ Uninstaller with three levels:
 
 ### `home/.chezmoi.toml.tmpl`
 
-Template for Chezmoi config. Prompts for user data and auto-detects 1Password.
+Template for Chezmoi config. Prompts for user data (name, email, editor).
 
 ### `home/.chezmoiignore`
 
-Conditionally ignores files. SSH keys are ignored when 1Password is not configured.
+Ignores files that shouldn't be managed by Chezmoi (SSH keys are managed via `dotfiles ssh`).
 
 ## Uninstalling
 

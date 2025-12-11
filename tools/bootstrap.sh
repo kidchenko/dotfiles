@@ -228,37 +228,6 @@ apply_dotfiles() {
     say "Dotfiles applied successfully!"
 }
 
-# Setup cron jobs
-setup_cron() {
-    if [[ "$(uname -s)" != "Darwin" ]]; then
-        say "Skipping cron setup (not macOS)"
-        return 0
-    fi
-
-    if [[ "$DRY_RUN" == true ]]; then
-        say "DRY-RUN: Would setup cron jobs for Homebrew updates and backups"
-        return 0
-    fi
-
-    # Try chezmoi source directory first
-    local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
-    local CRON_SETUP="$CHEZMOI_SOURCE/cron/setup-cron.sh"
-
-    # If not found, try local path
-    if [[ ! -f "$CRON_SETUP" ]]; then
-        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        CRON_SETUP="$(dirname "$SCRIPT_DIR")/cron/setup-cron.sh"
-    fi
-
-    if [[ -f "$CRON_SETUP" ]]; then
-        say "Setting up cron jobs..."
-        bash "$CRON_SETUP"
-        say "Cron jobs configured"
-    else
-        say "Skipping cron setup (setup-cron.sh not found)"
-    fi
-}
-
 # Setup dotfiles CLI command
 setup_dotfiles_cli() {
     local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
@@ -293,7 +262,6 @@ main() {
     install_brew_packages
     install_oh_my_zsh
     install_zsh_plugins
-    setup_cron
     setup_dotfiles_cli
 
     echo
@@ -305,9 +273,8 @@ main() {
         say ""
         say "Next steps:"
         say "  1. Restart your shell: source ~/.zshrc"
-        say "  2. Install full software suite: dotfiles install"
-        say "  3. Setup SSH keys: dotfiles ssh"
-        say "  4. Verify setup: dotfiles doctor"
+        say "  2. Run complete setup: dotfiles setup"
+        say "  3. Verify setup: dotfiles doctor"
     fi
     echo
 }

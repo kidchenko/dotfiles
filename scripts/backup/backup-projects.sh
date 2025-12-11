@@ -30,8 +30,8 @@ LOG_FILE="$LOG_DIR/backup.log"
 # Default values (overridden by config file)
 BACKUP_FOLDERS=()
 EXCLUDE_PATTERNS=()
-BACKUP_BASE_DIR="$HOME/Backups"
-BACKUP_TEMP_DIR="$BACKUP_BASE_DIR/tmp_project_backups"
+BACKUP_BASE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/backups"
+BACKUP_TEMP_DIR="$BACKUP_BASE_DIR"
 LOCAL_RETENTION_DAYS=7
 LOG_RETENTION_DAYS=30
 RCLONE_REMOTE_NAME="GoogleDrive"
@@ -188,8 +188,8 @@ load_config() {
     val=$(yq -r '.backup.schedule.cron // ""' "$CONFIG_FILE" 2>/dev/null)
     [[ -n "$val" && "$val" != "null" ]] && CRON_SCHEDULE="$val"
 
-    # Update temp dir based on base dir
-    BACKUP_TEMP_DIR="$BACKUP_BASE_DIR/tmp_project_backups"
+    # Update paths based on loaded config
+    BACKUP_TEMP_DIR="$BACKUP_BASE_DIR"
     LOG_FILE="$LOG_DIR/backup.log"
 
     debug "Loaded ${#BACKUP_FOLDERS[@]} folders, ${#EXCLUDE_PATTERNS[@]} exclude patterns"

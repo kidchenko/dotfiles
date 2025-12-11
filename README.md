@@ -105,9 +105,11 @@ Two cron jobs are set up automatically:
 | Schedule | Task | Description |
 |----------|------|-------------|
 | Monday 9am | `cron/update.sh` | Update Homebrew packages |
-| Sunday 2am | `cron/backup.sh` | Backup projects (keeps 2 most recent) |
+| Sunday 2am | `cron/backup.sh` | Backup projects (keeps 7 days) |
 
 Manage with `dotfiles cron` and `dotfiles logs`.
+
+Backups are stored in `~/.local/share/dotfiles/backups/` (XDG-compliant).
 
 ## Directory Structure
 

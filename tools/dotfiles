@@ -29,62 +29,76 @@ DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
 TOOLS_DIR="$DOTFILES_DIR/tools"
 SCRIPTS_DIR="$DOTFILES_DIR/scripts"
 
+# Version
+VERSION="1.0.0"
+
 # Colors
 if [[ -t 1 ]]; then
     RED='\033[0;31m'
     GREEN='\033[0;32m'
     YELLOW='\033[0;33m'
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    DIM='\033[2m'
     BOLD='\033[1m'
     NC='\033[0m'
 else
-    RED='' GREEN='' YELLOW='' BOLD='' NC=''
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' DIM='' BOLD='' NC=''
 fi
 
 say() { echo -e "${GREEN}[dotfiles]${NC} $1"; }
 error() { echo -e "${RED}[dotfiles] ERROR:${NC} $1" >&2; exit 1; }
 
 show_help() {
-    echo -e "${BOLD}dotfiles${NC} - CLI for managing dotfiles"
+    echo -e "${BOLD}dotfiles${NC} v${VERSION} - CLI for managing dotfiles"
     echo ""
     echo -e "${BOLD}Usage:${NC}"
     echo "  dotfiles <command> [options]"
     echo ""
-    echo -e "${BOLD}Commands:${NC}"
-    echo "  doctor [--quick|--fix]   Run health checks"
-    echo "  bootstrap                Bootstrap dotfiles on new machine"
-    echo "  destroy [--all|--deep]   Remove dotfiles and state"
-    echo "  update                   Pull and apply latest changes"
-    echo "  apply                    Apply dotfiles (chezmoi apply)"
-    echo "  diff                     Show pending changes"
-    echo "  edit [file]              Edit dotfiles source"
-    echo "  cd                       Print path to dotfiles source"
-    echo "  status                   Show git status of dotfiles"
-    echo "  backup [cmd]             Backup project folders"
-    echo "  cron [list|setup]        Manage scheduled tasks"
-    echo "  install                  Install full software suite (Brewfile)"
-    echo "  cleanup                  Remove packages not in Brewfile"
-    echo "  logs [backup|brew]       View cron job logs"
-    echo "  extensions               Install VS Code extensions"
-    echo "  defaults                 Apply macOS system defaults"
-    echo "  ssh                      Setup SSH keys with 1Password"
-    echo "  help                     Show this help message"
+    echo -e "${YELLOW}▶ Post-bootstrap:${NC}"
+    echo -e "  ${CYAN}setup${NC}                    Complete setup (ssh, install, extensions, defaults)"
     echo ""
-    echo -e "${BOLD}Examples:${NC}"
-    echo "  dotfiles doctor          # Run all health checks"
-    echo "  dotfiles doctor --quick  # Skip slow checks"
-    echo "  dotfiles doctor --fix    # Auto-fix issues"
-    echo "  dotfiles apply           # Apply pending changes"
-    echo "  dotfiles edit            # Open dotfiles in editor"
-    echo "  cd \$(dotfiles cd)        # Navigate to dotfiles"
+    echo -e "${BOLD}Core:${NC}"
+    echo -e "  ${CYAN}doctor${NC}                   Run health checks"
+    echo -e "      ${DIM}--quick${NC}              Skip slow checks (disk, outdated)"
+    echo -e "      ${DIM}--fix${NC}                Auto-fix issues"
+    echo -e "  ${CYAN}update${NC}                   Pull and apply latest changes"
+    echo -e "  ${CYAN}apply${NC}                    Apply dotfiles (chezmoi apply)"
+    echo -e "  ${CYAN}diff${NC}                     Show pending changes"
+    echo -e "  ${CYAN}edit${NC} [file]              Edit dotfiles source"
+    echo -e "  ${CYAN}cd${NC}                       Print path to dotfiles source"
+    echo -e "  ${CYAN}status${NC}                   Show git status of dotfiles"
     echo ""
-    echo -e "${BOLD}Backup commands:${NC}"
-    echo "  dotfiles backup          # Create a backup"
-    echo "  dotfiles backup list     # List available backups"
-    echo "  dotfiles backup restore  # Restore from backup"
+    echo -e "${BOLD}Packages:${NC}"
+    echo -e "  ${CYAN}install${NC}                  Install full software suite (Brewfile)"
+    echo -e "  ${CYAN}cleanup${NC}                  Remove packages not in Brewfile"
+    echo -e "  ${CYAN}extensions${NC}               Install VS Code extensions"
     echo ""
-    echo -e "${BOLD}Cron commands:${NC}"
-    echo "  dotfiles cron            # List scheduled tasks"
-    echo "  dotfiles cron setup      # Setup all cron jobs"
+    echo -e "${BOLD}System:${NC}"
+    echo -e "  ${CYAN}ssh${NC}                      Setup SSH keys with 1Password"
+    echo -e "      ${DIM}restore${NC}              Restore key from 1Password to ~/.ssh/"
+    echo -e "      ${DIM}generate${NC}             Generate new key in 1Password"
+    echo -e "      ${DIM}show${NC}                 Show public key"
+    echo -e "  ${CYAN}defaults${NC}                 Apply macOS system defaults"
+    echo -e "  ${CYAN}cron${NC}                     Manage scheduled tasks"
+    echo -e "      ${DIM}list${NC}                 List scheduled tasks (default)"
+    echo -e "      ${DIM}setup${NC}                Setup cron jobs"
+    echo ""
+    echo -e "${BOLD}Maintenance:${NC}"
+    echo -e "  ${CYAN}backup${NC}                   Backup project folders"
+    echo -e "      ${DIM}list${NC}                 List available backups"
+    echo -e "      ${DIM}restore${NC}              Restore from backup"
+    echo -e "  ${CYAN}logs${NC}                     View cron job logs"
+    echo -e "      ${DIM}backup${NC}               View backup logs"
+    echo -e "      ${DIM}brew${NC}                 View brew bundle logs"
+    echo -e "  ${CYAN}bootstrap${NC}                Bootstrap dotfiles on new machine"
+    echo -e "  ${CYAN}destroy${NC}                  Remove dotfiles and state"
+    echo -e "      ${DIM}--all${NC}                Also remove chezmoi state, zsh data"
+    echo -e "      ${DIM}--deep${NC}               Factory reset: remove all dev tools"
+    echo ""
+    echo -e "${BOLD}Other:${NC}"
+    echo -e "  ${CYAN}help${NC}                     Show this help message"
+    echo -e "  ${CYAN}--version${NC}                Show version"
     echo ""
 }
 
@@ -310,6 +324,50 @@ cmd_ssh() {
     fi
 }
 
+cmd_setup() {
+    say "Running complete setup..."
+    echo ""
+
+    say "Step 1/7: Setting up SSH keys..."
+    cmd_ssh
+    echo ""
+
+    say "Step 2/7: Installing full software suite..."
+    cmd_install
+    echo ""
+
+    say "Step 3/7: Installing VS Code extensions..."
+    cmd_extensions
+    echo ""
+
+    say "Step 4/7: Installing global tools (npm/pip/dotnet)..."
+    if [[ -f "$TOOLS_DIR/install-global-tools.sh" ]]; then
+        bash "$TOOLS_DIR/install-global-tools.sh"
+    else
+        warn "install-global-tools.sh not found, skipping"
+    fi
+    echo ""
+
+    say "Step 5/7: Installing Brave extensions..."
+    if [[ -f "$TOOLS_DIR/install-brave-extensions.sh" ]]; then
+        bash "$TOOLS_DIR/install-brave-extensions.sh"
+    else
+        warn "install-brave-extensions.sh not found, skipping"
+    fi
+    echo ""
+
+    say "Step 6/7: Setting up cron jobs..."
+    cmd_cron setup
+    echo ""
+
+    say "Step 7/7: Applying macOS defaults..."
+    cmd_defaults
+    echo ""
+
+    say "Setup complete!"
+    say "Run 'dotfiles doctor' to verify everything is configured correctly."
+}
+
 # Main
 case "${1:-help}" in
     doctor)
@@ -379,8 +437,15 @@ case "${1:-help}" in
         shift
         cmd_ssh "$@"
         ;;
+    setup)
+        shift
+        cmd_setup "$@"
+        ;;
     help|--help|-h)
         show_help
+        ;;
+    --version|-v)
+        echo "dotfiles v${VERSION}"
         ;;
     *)
         error "Unknown command: $1\nRun 'dotfiles help' for usage."

@@ -1,37 +1,22 @@
 # Essential Brewfile - Minimal dev tools for fast bootstrap
 # Full software list: run `dotfiles install` after bootstrap
 
-# Core CLI tools
-brew "bash"
+# Core
 brew "zsh"
-brew "z"
-brew "curl"
 brew "git"
-brew "git-lfs"
-brew "openssh"
+brew "z"          # Directory jumper
 
-# GNU utilities (replace macOS defaults)
-brew "coreutils"
-brew "findutils"
-brew "gnu-sed"
-brew "grep"
-
-# Modern CLI replacements
+# Modern CLI tools
 brew "fzf"        # Fuzzy finder
 brew "ripgrep"    # Fast grep
-brew "fd"         # Fast find
 brew "bat"        # Better cat
 brew "jq"         # JSON processor
-brew "yq"         # YAML processor
 
-# Development essentials
-brew "neovim"
-brew "node"
-brew "nvm"
+# Dotfiles management
 brew "chezmoi"
 brew "gh"         # GitHub CLI
 
-# Font for terminal
+# Fonts for terminal
 cask "font-hack-nerd-font"
 cask "font-fira-mono-nerd-font"
 cask "font-fira-code-nerd-font"
