@@ -24,7 +24,7 @@ set -o pipefail
 
 # --- Configuration ---
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
-LOG_DIR="${XDG_DATA_HOME:-$HOME/.local}/log"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 LOG_FILE="$LOG_DIR/backup.log"
 
 # Default values (overridden by config file)

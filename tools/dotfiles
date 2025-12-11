@@ -196,7 +196,7 @@ cmd_cleanup() {
 }
 
 cmd_logs() {
-    local LOG_DIR="${HOME}/.local/log"
+    local LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 
     case "${1:-list}" in
         backup)

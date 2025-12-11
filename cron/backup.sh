@@ -3,7 +3,7 @@
 # backup.sh - Weekly backup with 2-backup retention
 #
 # Runs backup-projects.sh and keeps only 2 backups (current + previous week)
-# Logs output to ~/.local/log/backup-cron.log
+# Logs output to ~/.local/state/dotfiles/backup-cron.log
 
 set -e
 
@@ -11,9 +11,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 BACKUP_SCRIPT="$DOTFILES_DIR/scripts/backup/backup-projects.sh"
-LOG_DIR="${HOME}/.local/log"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 LOG_FILE="$LOG_DIR/backup-cron.log"
-BACKUP_DIR="${HOME}/Backups/tmp_project_backups"
+BACKUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/backups"
 
 # Ensure log directory exists
 mkdir -p "$LOG_DIR"

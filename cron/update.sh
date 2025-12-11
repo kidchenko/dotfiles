@@ -3,7 +3,7 @@
 # update.sh - Weekly brew bundle install
 #
 # Runs brew bundle install from the dotfiles Brewfile
-# Logs output to ~/.local/log/brew-bundle.log
+# Logs output to ~/.local/state/dotfiles/brew-bundle.log
 
 set -e
 
@@ -11,7 +11,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 BREWFILE="$DOTFILES_DIR/Brewfile"
-LOG_DIR="${HOME}/.local/log"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 LOG_FILE="$LOG_DIR/brew-bundle.log"
 
 # Find Homebrew (Apple Silicon or Intel Mac)

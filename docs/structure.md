@@ -93,7 +93,7 @@ All configurations follow the [XDG Base Directory Specification](https://specifi
 | `~/.config/dotfiles/vscode-extensions.txt` | VS Code extensions list |
 | `~/.config/dotfiles/brave-extensions.txt` | Brave extensions list |
 | `~/.local/share/dotfiles/backups/` | Project backups |
-| `~/.local/log/` | Cron job logs |
+| `~/.local/state/dotfiles/` | Cron job logs |
 
 ## Key Files Explained
 
