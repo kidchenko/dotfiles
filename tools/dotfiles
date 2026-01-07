@@ -19,7 +19,7 @@
 #   install     Install packages (brew bundle)
 #   cleanup     Remove packages not in Brewfile
 #   logs        View cron job logs
-#   extensions  Install VS Code extensions
+#   extensions  Install extensions (VS Code, browser)
 #   defaults    Apply macOS system defaults
 #   ssh         Setup SSH keys with 1Password
 #   help        Show this help message
@@ -72,7 +72,10 @@ show_help() {
     echo -e "${BOLD}Packages:${NC}"
     echo -e "  ${CYAN}install${NC}                  Install full software suite (Brewfile)"
     echo -e "  ${CYAN}cleanup${NC}                  Remove packages not in Brewfile"
-    echo -e "  ${CYAN}extensions${NC}               Install VS Code extensions"
+    echo -e "  ${CYAN}extensions${NC}               Install extensions"
+    echo -e "      ${DIM}vscode${NC}               VS Code extensions"
+    echo -e "      ${DIM}browser${NC}              Browser extensions (Brave)"
+    echo -e "      ${DIM}all${NC}                  All extensions (default)"
     echo ""
     echo -e "${BOLD}System:${NC}"
     echo -e "  ${CYAN}ssh${NC}                      Setup SSH keys with 1Password"
@@ -290,13 +293,52 @@ cmd_cron() {
 }
 
 cmd_extensions() {
-    local extensions_script="$TOOLS_DIR/install-vscode-extensions.sh"
+    local vscode_script="$TOOLS_DIR/install-vscode-extensions.sh"
+    local browser_script="$TOOLS_DIR/install-brave-extensions.sh"
 
-    if [[ -f "$extensions_script" ]]; then
-        bash "$extensions_script" "$@"
-    else
-        error "install-vscode-extensions.sh not found in $TOOLS_DIR"
-    fi
+    case "${1:-all}" in
+        vscode|code)
+            shift 2>/dev/null || true
+            if [[ -f "$vscode_script" ]]; then
+                bash "$vscode_script" "$@"
+            else
+                error "install-vscode-extensions.sh not found in $TOOLS_DIR"
+            fi
+            ;;
+        browser|brave)
+            shift 2>/dev/null || true
+            if [[ -f "$browser_script" ]]; then
+                bash "$browser_script" "$@"
+            else
+                error "install-brave-extensions.sh not found in $TOOLS_DIR"
+            fi
+            ;;
+        all)
+            say "Installing all extensions..."
+            echo ""
+            say "VS Code extensions:"
+            if [[ -f "$vscode_script" ]]; then
+                bash "$vscode_script"
+            else
+                echo "  (skipped - script not found)"
+            fi
+            echo ""
+            say "Browser extensions:"
+            if [[ -f "$browser_script" ]]; then
+                bash "$browser_script"
+            else
+                echo "  (skipped - script not found)"
+            fi
+            ;;
+        *)
+            echo "Usage: dotfiles extensions [vscode|browser|all]"
+            echo ""
+            echo "Commands:"
+            echo "  vscode   Install VS Code extensions"
+            echo "  browser  Install browser extensions (Brave)"
+            echo "  all      Install all extensions (default)"
+            ;;
+    esac
 }
 
 cmd_defaults() {

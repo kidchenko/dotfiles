@@ -19,7 +19,7 @@ _dotfiles() {
         'install:Install packages (brew bundle)'
         'cleanup:Remove packages not in Brewfile'
         'logs:View cron job logs'
-        'extensions:Install VS Code extensions'
+        'extensions:Install extensions (VS Code, browser)'
         'defaults:Apply macOS system defaults'
         'ssh:Setup SSH keys with 1Password'
         'help:Show help message'
@@ -50,6 +50,13 @@ _dotfiles() {
         'brew:View brew bundle logs'
     )
 
+    local -a extensions_cmds
+    extensions_cmds=(
+        'vscode:Install VS Code extensions'
+        'browser:Install browser extensions (Brave)'
+        'all:Install all extensions'
+    )
+
     case $state in
         (command)
             _describe -t commands 'dotfiles command' commands
@@ -71,6 +78,9 @@ _dotfiles() {
                 ;;
             logs)
                 _describe -t commands 'logs command' logs_cmds
+                ;;
+            extensions)
+                _describe -t commands 'extensions command' extensions_cmds
                 ;;
         esac
     fi
