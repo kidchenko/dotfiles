@@ -245,19 +245,25 @@ cmd_compare() {
 
     echo ""
 
+    # Show keys
+    if $has_local; then
+        echo -e "${BOLD}Local:${NC}"
+        echo "$local_key"
+        echo ""
+    fi
+
+    if $has_1password; then
+        echo -e "${BOLD}1Password:${NC}"
+        echo "$op_key"
+        echo ""
+    fi
+
     # Compare if both exist
     if $has_local && $has_1password; then
         if [[ "$local_key" == "$op_key" ]]; then
             echo -e "${GREEN}✓ Keys match!${NC}"
         else
             echo -e "${YELLOW}! Keys are different${NC}"
-            echo ""
-            echo -e "${BOLD}Local:${NC}"
-            echo "$local_key"
-            echo ""
-            echo -e "${BOLD}1Password:${NC}"
-            echo "$op_key"
-            echo ""
             info "Run 'dotfiles ssh restore' to sync from 1Password to local"
         fi
     elif $has_1password && ! $has_local; then

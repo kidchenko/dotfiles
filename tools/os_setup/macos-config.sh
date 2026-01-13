@@ -289,6 +289,47 @@ defaults write com.apple.dock wvous-tr-modifier -int 0
 defaults write com.apple.dock wvous-bl-corner -int 11
 defaults write com.apple.dock wvous-bl-modifier -int 0
 
+###############################################################################
+# Dock Apps - Configure essential apps only                                   #
+###############################################################################
+
+# Only configure dock if dockutil is installed
+if command -v dockutil &>/dev/null; then
+    echo "Configuring dock with essential apps..."
+
+    # Remove all current dock items
+    dockutil --remove all --no-restart
+
+    # Essential apps for developers (in order)
+    DOCK_APPS=(
+        "/System/Applications/Finder.app"
+        "/Applications/Hyper.app"
+        "/Applications/Visual Studio Code.app"
+        "/Applications/Brave Browser.app"
+        "/Applications/Claude.app"
+        "/Applications/Slack.app"
+        "/Applications/Notion.app"
+        "/Applications/Spotify.app"
+        "/Applications/1Password.app"
+        "/System/Applications/System Settings.app"
+    )
+
+    # Add apps to dock (only if they exist)
+    for app in "${DOCK_APPS[@]}"; do
+        if [[ -d "$app" ]]; then
+            dockutil --add "$app" --no-restart
+        fi
+    done
+
+    # Add Downloads folder to the dock (right side)
+    dockutil --add "$HOME/Downloads" --view fan --display stack --no-restart
+
+    echo "Dock configured with essential apps"
+else
+    echo "dockutil not installed, skipping dock app configuration"
+    echo "Install with: brew install dockutil"
+fi
+
 # Note: Safari settings removed - Safari is sandboxed on modern macOS
 # and cannot be configured via defaults write. Configure Safari manually.
 

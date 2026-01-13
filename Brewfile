@@ -68,6 +68,7 @@ cask "1password-cli"      # 1Password CLI (op) for secrets in dotfiles
 brew "jira-cli"           # Jira CLI
 brew "stripe-cli"         # Stripe CLI
 brew "mas"                # Mac App Store CLI
+brew "dockutil"           # Dock management CLI
 brew "lazygit"            # Terminal UI for git
 brew "neovim"             # Modern vim
 brew "watch"              # Run commands periodically
