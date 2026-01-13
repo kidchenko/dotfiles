@@ -6,7 +6,8 @@
 #   ./tools/setup-ssh-keys.sh              # Interactive: restore or generate
 #   ./tools/setup-ssh-keys.sh restore      # Restore SSH key from 1Password
 #   ./tools/setup-ssh-keys.sh generate     # Generate new SSH key in 1Password
-#   ./tools/setup-ssh-keys.sh show         # Show public key from 1Password
+#   ./tools/setup-ssh-keys.sh show         # Show local public key
+#   ./tools/setup-ssh-keys.sh compare      # Compare local vs 1Password keys
 #   ./tools/setup-ssh-keys.sh --help       # Show help
 #
 
@@ -46,7 +47,8 @@ show_help() {
     echo "  (none)          Interactive mode - restore if exists, otherwise generate"
     echo "  restore         Restore SSH key from 1Password to ~/.ssh/"
     echo "  generate        Generate new SSH key and store in 1Password"
-    echo "  show            Show public key from 1Password"
+    echo "  show            Show local public key"
+    echo "  compare         Compare local key with 1Password"
     echo ""
     echo -e "${BOLD}Options:${NC}"
     echo "  --vault NAME    1Password vault (default: development)"
@@ -57,7 +59,8 @@ show_help() {
     echo "  dotfiles ssh                  # Interactive setup"
     echo "  dotfiles ssh restore          # Restore key from 1Password"
     echo "  dotfiles ssh generate         # Generate new key"
-    echo "  dotfiles ssh show             # Display public key"
+    echo "  dotfiles ssh show             # Display local public key"
+    echo "  dotfiles ssh compare          # Check if local matches 1Password"
     echo ""
 }
 
@@ -189,21 +192,83 @@ cmd_generate() {
     echo ""
 }
 
-# Show public key from 1Password
+# Show local public key
 cmd_show() {
-    check_prerequisites
-
-    if ! key_exists_in_1password; then
-        error "SSH key '$KEY_NAME' not found in 1Password vault '$VAULT'"
+    if ! key_exists_locally; then
+        error "No local SSH key found at $PUBLIC_KEY_FILE"
     fi
 
-    local public_key
-    public_key=$(op read "op://$VAULT/$KEY_NAME/public_key")
+    echo ""
+    echo -e "${BOLD}Local Public Key:${NC} ($PUBLIC_KEY_FILE)"
+    echo ""
+    cat "$PUBLIC_KEY_FILE"
+    echo ""
+}
+
+# Compare local key with 1Password
+cmd_compare() {
+    check_prerequisites
+
+    local has_local=false
+    local has_1password=false
+    local local_key=""
+    local op_key=""
+
+    # Check local key
+    if key_exists_locally && [[ -f "$PUBLIC_KEY_FILE" ]]; then
+        has_local=true
+        local_key=$(cat "$PUBLIC_KEY_FILE")
+    fi
+
+    # Check 1Password key
+    if key_exists_in_1password; then
+        has_1password=true
+        op_key=$(op read "op://$VAULT/$KEY_NAME/public_key")
+    fi
 
     echo ""
-    echo -e "${BOLD}Public Key:${NC}"
+    echo -e "${BOLD}SSH Key Comparison${NC}"
     echo ""
-    echo "$public_key"
+
+    # Show status
+    if $has_local; then
+        echo -e "${GREEN}✓${NC} Local key exists: $PUBLIC_KEY_FILE"
+    else
+        echo -e "${RED}✗${NC} No local key found"
+    fi
+
+    if $has_1password; then
+        echo -e "${GREEN}✓${NC} 1Password key exists: $VAULT/$KEY_NAME"
+    else
+        echo -e "${RED}✗${NC} No key in 1Password vault '$VAULT'"
+    fi
+
+    echo ""
+
+    # Compare if both exist
+    if $has_local && $has_1password; then
+        if [[ "$local_key" == "$op_key" ]]; then
+            echo -e "${GREEN}✓ Keys match!${NC}"
+        else
+            echo -e "${YELLOW}! Keys are different${NC}"
+            echo ""
+            echo -e "${BOLD}Local:${NC}"
+            echo "$local_key"
+            echo ""
+            echo -e "${BOLD}1Password:${NC}"
+            echo "$op_key"
+            echo ""
+            info "Run 'dotfiles ssh restore' to sync from 1Password to local"
+        fi
+    elif $has_1password && ! $has_local; then
+        info "Run 'dotfiles ssh restore' to restore key from 1Password"
+    elif $has_local && ! $has_1password; then
+        warn "Local key exists but not in 1Password"
+        info "Consider backing up your key to 1Password"
+    else
+        info "Run 'dotfiles ssh generate' to create a new key"
+    fi
+
     echo ""
 }
 
@@ -259,6 +324,9 @@ case "$COMMAND" in
         ;;
     show)
         cmd_show
+        ;;
+    compare)
+        cmd_compare
         ;;
     "")
         cmd_interactive

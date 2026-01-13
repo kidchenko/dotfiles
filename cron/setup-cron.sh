@@ -3,8 +3,17 @@
 # setup-cron.sh - Install cron jobs for dotfiles
 #
 # Jobs:
+#   Security & Updates:
 #   - update.sh: Weekly brew bundle (Monday 9am)
+#   - outdated.sh: Daily outdated packages check (8am)
+#   - cleanup.sh: Weekly cleanup - brew & caches (Sunday 10am)
+#
+#   Backups & Maintenance:
 #   - backup.sh: Weekly backup (Sunday 2am)
+#   - git-maintenance.sh: Weekly git gc (Saturday 4am)
+#
+#   Health Monitoring:
+#   - health.sh: Daily health check (7am)
 
 set -e
 
@@ -13,8 +22,17 @@ CRON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi/cron"
 
 # Define cron jobs: "script|schedule|description"
 CRON_JOBS=(
+    # Security & Updates
     "update.sh|0 9 * * 1|Weekly brew bundle (Monday 9am)"
+    "outdated.sh|0 8 * * *|Daily outdated packages check (8am)"
+    "cleanup.sh|0 10 * * 0|Weekly cleanup - brew & caches (Sunday 10am)"
+
+    # Backups & Maintenance
     "backup.sh|0 2 * * 0|Weekly backup (Sunday 2am)"
+    "git-maintenance.sh|0 4 * * 6|Weekly git maintenance (Saturday 4am)"
+
+    # Health Monitoring
+    "health.sh|0 7 * * *|Daily health check (7am)"
 )
 
 echo "[cron] Setting up dotfiles cron jobs..."
@@ -23,7 +41,7 @@ echo ""
 
 # First, remove any old dotfiles cron entries (from any path)
 echo "[cron] Cleaning up old entries..."
-crontab -l 2>/dev/null | grep -vE "cron/(update|backup)\.sh" | crontab - 2>/dev/null || true
+crontab -l 2>/dev/null | grep -vE "cron/(update|backup|cleanup|health|outdated|git-maintenance)\.sh" | crontab - 2>/dev/null || true
 
 for entry in "${CRON_JOBS[@]}"; do
     script="${entry%%|*}"

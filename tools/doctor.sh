@@ -445,17 +445,32 @@ done
 if [[ "$(uname -s)" == "Darwin" ]]; then
     header "Scheduled Tasks"
 
-    if crontab -l 2>/dev/null | grep -qE "cron/update\.sh"; then
-        pass "brew bundle cron job configured"
-    else
-        warn "brew bundle cron job not configured"
-        info "Run: dotfiles cron setup"
-    fi
+    # Define expected cron jobs: "pattern|description"
+    EXPECTED_CRON_JOBS=(
+        "cron/update\.sh|brew bundle"
+        "cron/backup\.sh|backup"
+        "cron/outdated\.sh|outdated check"
+        "cron/cleanup\.sh|cleanup"
+        "cron/health\.sh|health check"
+        "cron/git-maintenance\.sh|git maintenance"
+    )
 
-    if crontab -l 2>/dev/null | grep -qE "cron/backup\.sh"; then
-        pass "backup cron job configured"
-    else
-        warn "backup cron job not configured"
+    CRONTAB=$(crontab -l 2>/dev/null || true)
+    MISSING_JOBS=0
+
+    for job in "${EXPECTED_CRON_JOBS[@]}"; do
+        pattern="${job%%|*}"
+        desc="${job#*|}"
+
+        if echo "$CRONTAB" | grep -qE "$pattern"; then
+            pass "$desc cron job configured"
+        else
+            warn "$desc cron job not configured"
+            ((MISSING_JOBS++)) || true
+        fi
+    done
+
+    if [[ $MISSING_JOBS -gt 0 ]]; then
         info "Run: dotfiles cron setup"
     fi
 fi
