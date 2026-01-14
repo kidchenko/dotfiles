@@ -228,19 +228,38 @@ apply_dotfiles() {
     say "Dotfiles applied successfully!"
 }
 
-# Create project directories
+# Create project directories (reads from config.yaml backup.folders)
 setup_directories() {
-    local directories=(
-        "$HOME/kidchenko"
-        "$HOME/lambda3"
-        "$HOME/jetabroad"
-        "$HOME/thoughtworks"
-        "$HOME/sevenpeaks"
-        "$HOME/isho"
-        "$HOME/Documents/Screenshots"
-    )
+    local CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
+    local directories=()
 
     say "Setting up project directories..."
+
+    # Read directories from config.yaml if available
+    if [[ -f "$CONFIG_FILE" ]] && command -v yq &>/dev/null; then
+        while IFS= read -r folder; do
+            [[ -z "$folder" || "$folder" == "null" ]] && continue
+            # Make path absolute
+            if [[ "$folder" == /* ]]; then
+                directories+=("$folder")
+            else
+                directories+=("$HOME/$folder")
+            fi
+        done < <(yq -r '.backup.folders[]?' "$CONFIG_FILE" 2>/dev/null)
+    fi
+
+    # Fallback if no config or yq
+    if [[ ${#directories[@]} -eq 0 ]]; then
+        directories=(
+            "$HOME/kidchenko"
+            "$HOME/lambda3"
+            "$HOME/jetabroad"
+            "$HOME/thoughtworks"
+            "$HOME/sevenpeaks"
+            "$HOME/isho"
+            "$HOME/Documents/Screenshots"
+        )
+    fi
 
     if [[ "$DRY_RUN" == true ]]; then
         say "DRY-RUN: Would create directories:"

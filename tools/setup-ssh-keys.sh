@@ -25,12 +25,35 @@ else
     RED='' GREEN='' YELLOW='' BLUE='' BOLD='' NC=''
 fi
 
-# Configuration
+# Configuration file
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
+
+# Default configuration (can be overridden by config.yaml or CLI args)
 VAULT="development"
 KEY_NAME="SSH Key"
+KEY_TYPE="ed25519"
 SSH_DIR="$HOME/.ssh"
-PRIVATE_KEY_FILE="$SSH_DIR/id_ed25519"
-PUBLIC_KEY_FILE="$SSH_DIR/id_ed25519.pub"
+
+# Load configuration from config.yaml
+load_config() {
+    if [[ -f "$CONFIG_FILE" ]] && command -v yq &>/dev/null; then
+        local val
+        val=$(yq -r '.ssh.vault // ""' "$CONFIG_FILE" 2>/dev/null)
+        [[ -n "$val" && "$val" != "null" ]] && VAULT="$val"
+
+        val=$(yq -r '.ssh.item_name // ""' "$CONFIG_FILE" 2>/dev/null)
+        [[ -n "$val" && "$val" != "null" ]] && KEY_NAME="$val"
+
+        val=$(yq -r '.ssh.key_type // ""' "$CONFIG_FILE" 2>/dev/null)
+        [[ -n "$val" && "$val" != "null" ]] && KEY_TYPE="$val"
+    fi
+
+    # Set paths based on key type
+    PRIVATE_KEY_FILE="$SSH_DIR/id_$KEY_TYPE"
+    PUBLIC_KEY_FILE="$SSH_DIR/id_$KEY_TYPE.pub"
+}
+
+load_config
 
 say() { echo -e "${GREEN}[ssh]${NC} $1"; }
 info() { echo -e "${BLUE}→${NC} $1"; }
@@ -163,13 +186,13 @@ cmd_generate() {
     fi
 
     # Generate SSH key directly in 1Password
-    say "Generating Ed25519 SSH key in 1Password (vault: $VAULT)..."
+    say "Generating $KEY_TYPE SSH key in 1Password (vault: $VAULT)..."
 
     op item create \
         --category SSH_KEY \
         --vault "$VAULT" \
         --title "$KEY_NAME" \
-        --ssh-generate-key ed25519 \
+        --ssh-generate-key "$KEY_TYPE" \
         >/dev/null
 
     say "SSH key generated and stored in 1Password!"

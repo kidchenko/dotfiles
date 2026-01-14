@@ -20,8 +20,9 @@ dotfiles help              # Show all commands
 
 | Command | Description | Documentation |
 |---------|-------------|---------------|
-| `dotfiles packages` | Manage system packages | [packages.md](packages.md) |
-| `dotfiles extensions` | Install extensions | [extensions.md](extensions.md) |
+| `dotfiles packages` | Install system packages | [packages.md](packages.md) |
+| `dotfiles packages global` | Install npm/pip/dotnet tools | [packages.md](packages.md) |
+| `dotfiles packages extensions` | Install VS Code/browser extensions | [packages.md](packages.md) |
 
 ## System
 

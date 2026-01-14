@@ -1,75 +1,57 @@
-# Sample configuration for global tools installation
+# Dotfiles Configuration
 # Located at ~/.config/dotfiles/config.yaml after chezmoi applies it.
 #
-# This file defines lists of tools to be installed globally via different
-# package managers like npm, pip, and dotnet.
+# Sections:
+#   - global_tools: npm/pip/dotnet packages to install globally
+#   - cron: Scheduled task definitions
+#   - backup: Backup folders, excludes, and settings
+#   - extensions: VS Code and browser extensions
+#   - ssh: 1Password SSH key settings
 
 global_tools:
-  npm: # Node Package Manager tools
-    # - <package-name> # Example: some-npm-package
-    # - <package-name>@<version> # Example: another-npm-package@1.2.3
-    - http-server
-    - eslint
-    - prettier
-    - yarn # Installing yarn via npm is one way, though it can also be installed standalone.
-    - tldr
-    - live-server
-    # - neovim # For Neovim LSP, if npm is the chosen install method for node-based language servers
-
-  pip: # Python Package Installer tools (will be installed with --user)
-    # - <package-name> # Example: some-pip-package
-    # - <package-name>==<version> # Example: another-pip-package==1.2.3
-    - black                 # Python code formatter
-    - flake8                # Python linter
-    - pylint                # Another Python linter
-    - pipenv                # Python dev workflow tool (manages virtualenvs and dependencies)
-    - poetry                # Python packaging and dependency management
-    - virtualenv            # Tool to create isolated Python environments
-    - httpie                # A command-line HTTP client
-    - glances               # System monitoring tool
-    # - neovim-remote       # For interacting with Neovim from the command line (nvr)
-    # - pynvim              # Python client for Neovim (needed for some Python plugins)
-
-  dotnet: # .NET Core global tools
-    # - <ToolName> # Example: SomeDotNetTool
-    # - <ToolName> --version <version> # Example: AnotherDotNetTool --version 1.2.3
-    # Note: dotnet tool install command structure is `dotnet tool install --global <PACKAGE_NAME>`
-    # The list should contain package names. Versions can be specified in the install command if needed,
-    # but this simple YAML structure assumes just package names for now.
-    # If versioning is critical, the script might need to parse more complex entries.
-    - dotnet-ef           # Entity Framework Core tools
-    - dotnet-serve        # Simple command-line HTTP server for static files
-    - dotnet-try          # Interactive C# experimentation tool
-    # - PowerShell          # If installing PowerShell Core as a dotnet tool (pwsh)
-    # - Amazon.Lambda.Tools
-
-  # Example for other package managers (the script would need to support them)
-  # gem: # RubyGems
-  #   - rails
-  #   - jekyll
-  #
-  # cargo: # Rust's Cargo
-  #   - ripgrep
-  #   - exa
-  #   - bat
-
-# Configuration for the installation script itself (optional)
-# install_settings:
-#   pip_user_install: true # Default for pip, can be overridden
-#   npm_global_install: true # Default for npm
-#   dotnet_global_install: true # Default for dotnet
-#   show_warnings_for_missing_managers: true
-#   dry_run_default: false
-#   verbose_default: true
-{{ if and (hasKey . "is_work_machine") .is_work_machine }}
-# Example of conditional configuration using chezmoi templates
-# This section would only be included if 'is_work_machine' is true in chezmoi data.
-work_specific_tools:
   npm:
-    - internal-work-tool
+    - typescript          # TypeScript compiler
+    - prettier            # Code formatter
+    - npm-check-updates   # Check for outdated dependencies (ncu)
+
   pip:
-    - work-python-utility
-{{ end }}
+    - httpie              # Better curl for API testing
+    - pipx                # Install Python CLI tools in isolation
+
+  dotnet:
+    - dotnet-ef           # Entity Framework Core tools
+    - dotnet-outdated     # Check for outdated NuGet packages
+
+# Cron jobs configuration
+# Each job has: script name, cron schedule, and description
+cron:
+  jobs:
+    # Security & Updates
+    - script: update.sh
+      schedule: "0 9 * * 1"
+      description: Weekly brew bundle (Monday 9am)
+
+    - script: outdated.sh
+      schedule: "0 8 * * *"
+      description: Daily outdated packages check (8am)
+
+    - script: cleanup.sh
+      schedule: "0 10 * * 0"
+      description: Weekly cleanup - brew & caches (Sunday 10am)
+
+    # Backups & Maintenance
+    - script: backup.sh
+      schedule: "0 2 * * 0"
+      description: Weekly backup (Sunday 2am)
+
+    - script: git-maintenance.sh
+      schedule: "0 4 * * 6"
+      description: Weekly git maintenance (Saturday 4am)
+
+    # Health Monitoring
+    - script: health.sh
+      schedule: "0 7 * * *"
+      description: Daily health check (7am)
 
 # Backup configuration
 backup:
@@ -125,8 +107,38 @@ backup:
     dir: ~/.local/log
     retention_days: 30
 
-  # Schedule (cron)
-  schedule:
-    enabled: false
-    # Runs every Sunday at 2am
-    cron: "0 2 * * 0"
+# Extensions configuration
+extensions:
+  vscode:
+    # General
+    - EditorConfig.EditorConfig
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - eamodio.gitlens
+    - usernamehw.errorlens
+    - Gruntfuggly.todo-tree
+    - streetsidesoftware.code-spell-checker
+    - oderwat.indent-rainbow
+    # Remote Development
+    - ms-vscode-remote.remote-containers
+    - ms-vscode-remote.remote-ssh
+    - ms-azuretools.vscode-docker
+    # Languages
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - redhat.vscode-yaml
+    # Web
+    - ms-vscode.live-server
+    - formulahendry.auto-rename-tag
+    - formulahendry.auto-close-tag
+
+  brave:
+    - aeblfdkhhhdcdjpifhhbdiojplfjncoa  # 1Password
+    - kbfnbcaeplbcioakkpcpgfkobkghlhen  # Grammarly
+    - bdakmnplckeopfghnlpocafcepegjeap  # RescueTime
+
+# SSH key configuration (1Password)
+ssh:
+  vault: development
+  item_name: "SSH Key"
+  key_type: ed25519

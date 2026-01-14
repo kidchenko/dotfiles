@@ -1,53 +1,58 @@
 #!/bin/bash
-
-# tools/install-brave-extensions.sh
 #
-# Opens installation pages for Brave/Chrome extensions listed in
-# ~/.config/dotfiles/brave-extensions.txt (or $XDG_CONFIG_HOME/dotfiles/brave-extensions.txt).
+# install-brave-extensions.sh
 #
-# Note: Unlike VS Code, Brave doesn't support CLI extension installation.
+# Opens installation pages for Brave extensions from ~/.config/dotfiles/config.yaml
+#
+# Note: Brave doesn't support CLI extension installation.
 # This script opens the Chrome Web Store page for each extension.
 
 set -e
 
-# --- Script Configuration & Variables ---
+# Configuration
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
+
+# Options
 VERBOSE=false
 DRY_RUN=false
-EXTENSIONS_FILE_NAME="brave-extensions.txt"
 
-# Determine extensions file path using XDG standard
-if [ -n "$XDG_CONFIG_HOME" ]; then
-    CONFIG_DIR="$XDG_CONFIG_HOME/dotfiles"
+# Colors
+if [[ -t 1 ]]; then
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    NC='\033[0m'
 else
-    CONFIG_DIR="$HOME/.config/dotfiles"
+    GREEN='' YELLOW='' NC=''
 fi
-EXTENSIONS_FILE="$CONFIG_DIR/$EXTENSIONS_FILE_NAME"
 
-# --- Helper Functions ---
-say() {
-    echo "install-brave-extensions: $1"
-}
+say() { echo -e "${GREEN}[brave]${NC} $1"; }
+warn() { echo -e "${YELLOW}[brave]${NC} $1"; }
 
-say_verbose() {
-    if [ "$VERBOSE" = true ]; then
-        say "$1"
-    fi
-}
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --verbose) VERBOSE=true ;;
+        --dry-run) DRY_RUN=true ;;
+        -h|--help)
+            echo "Usage: $0 [--verbose] [--dry-run]"
+            echo ""
+            echo "Opens Brave extension installation pages from config.yaml"
+            echo ""
+            echo "Options:"
+            echo "  --verbose    Show detailed output"
+            echo "  --dry-run    Preview without opening browser"
+            exit 0
+            ;;
+        *) ;;
+    esac
+    shift
+done
 
-say_warning() {
-    say "WARNING: $1"
-}
-
-say_error() {
-    say "ERROR: $1" >&2
-}
-
-# Check if extension is already installed in Brave (macOS only)
+# Check if extension is already installed (macOS only)
 is_extension_installed() {
     local extension_id="$1"
 
     if [[ "$(uname)" != "Darwin" ]]; then
-        # Can't easily check on Linux, assume not installed
         return 1
     fi
 
@@ -67,15 +72,15 @@ is_extension_installed() {
     return 1
 }
 
-# Open URL in appropriate browser
+# Open URL in Brave
 open_extension_url() {
     local install_url="$1"
 
     if [[ "$(uname)" == "Darwin" ]]; then
-        if command -v open &>/dev/null && open -Ra "Brave Browser" 2>/dev/null; then
+        if open -Ra "Brave Browser" 2>/dev/null; then
             open -a "Brave Browser" "$install_url"
         else
-            say_warning "'Brave Browser' not found. Opening in default browser."
+            warn "Brave Browser not found, opening in default browser"
             open "$install_url"
         fi
     elif [[ "$(uname)" == "Linux" ]]; then
@@ -84,100 +89,67 @@ open_extension_url() {
         elif command -v xdg-open &>/dev/null; then
             xdg-open "$install_url" &
         else
-            say_error "Could not find 'brave-browser' or 'xdg-open' to open the URL."
-            say_error "Please open manually: $install_url"
+            warn "Could not open URL: $install_url"
             return 1
         fi
     else
-        say_warning "Unsupported OS: $(uname). Please open manually: $install_url"
+        warn "Unsupported OS. Open manually: $install_url"
         return 1
     fi
 }
 
-# --- Main Logic ---
-main() {
-    say "Starting Brave extension installation..."
+# Check yq
+if ! command -v yq &>/dev/null; then
+    warn "yq not installed. Install with: brew install yq"
+    exit 1
+fi
 
-    if [ ! -f "$EXTENSIONS_FILE" ]; then
-        say_warning "Extensions file not found: $EXTENSIONS_FILE"
-        say_warning "Run 'chezmoi apply' first to create the extensions file."
-        exit 0
+# Check config file
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    warn "Config file not found: $CONFIG_FILE"
+    warn "Run 'chezmoi apply' to create it"
+    exit 0
+fi
+
+say "Installing Brave extensions..."
+
+# Get extensions from config
+extensions=$(yq -r '.extensions.brave[]?' "$CONFIG_FILE" 2>/dev/null | grep -v '^null$')
+
+if [[ -z "$extensions" ]]; then
+    say "No Brave extensions defined in config.yaml"
+    exit 0
+fi
+
+opened_count=0
+skipped_count=0
+
+while IFS= read -r ext_id; do
+    [[ -z "$ext_id" ]] && continue
+
+    # Check if already installed
+    if is_extension_installed "$ext_id"; then
+        [[ "$VERBOSE" == true ]] && echo "  ✓ $ext_id (already installed)"
+        ((skipped_count++))
+        continue
     fi
 
-    local opened_count=0
-    local skipped_count=0
-    local total_count=0
+    install_url="https://chrome.google.com/webstore/detail/$ext_id"
 
-    # Read extensions from file, filter out comments and empty lines
-    while IFS= read -r line || [[ -n "$line" ]]; do
-        # Trim leading/trailing whitespace
-        local trimmed_line
-        trimmed_line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
-        # Skip empty lines and lines starting with #
-        if [ -z "$trimmed_line" ] || [[ "$trimmed_line" == \#* ]]; then
-            continue
-        fi
-
-        # Extract extension ID (part before any # comment)
-        local extension_id
-        extension_id=$(echo "$trimmed_line" | awk -F'#' '{print $1}' | sed 's/[[:space:]]*$//')
-
-        if [ -z "$extension_id" ]; then
-            continue
-        fi
-
-        ((total_count++))
-
-        # Check if already installed
-        if is_extension_installed "$extension_id"; then
-            say_verbose "Extension '$extension_id' is already installed. Skipping."
-            ((skipped_count++))
-            continue
-        fi
-
-        local install_url="https://chrome.google.com/webstore/detail/$extension_id"
-
-        if [ "$DRY_RUN" = true ]; then
-            say "DRY RUN: Would open $install_url"
-        else
-            say "Opening install page for: $extension_id"
-            if open_extension_url "$install_url"; then
-                ((opened_count++))
-                # Small delay to prevent overwhelming the browser
-                sleep 0.5
-            fi
-        fi
-    done < "$EXTENSIONS_FILE"
-
-    say "Brave extension installation process finished."
-    say "Summary: Processed $total_count extensions."
-    if [ "$DRY_RUN" = true ]; then
-        local would_open=$((total_count - skipped_count))
-        say "DRY RUN MODE: Would open $would_open extension pages. $skipped_count already installed."
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would open: $install_url"
     else
-        say "  Opened: $opened_count"
-        say "  Skipped (already installed): $skipped_count"
+        echo "  Opening: $ext_id"
+        if open_extension_url "$install_url"; then
+            ((opened_count++))
+            sleep 0.5  # Prevent overwhelming the browser
+        fi
     fi
-}
+done <<< "$extensions"
 
-# --- Argument Parsing ---
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --verbose) VERBOSE=true; shift ;;
-        --dry-run) DRY_RUN=true; shift ;;
-        -h|--help)
-            echo "Usage: $0 [--verbose] [--dry-run]"
-            echo "  --verbose    Enable verbose output."
-            echo "  --dry-run    Simulate without opening browser tabs."
-            echo "  -h, --help   Show this help message."
-            echo ""
-            echo "This script opens Brave extension installation pages based on $EXTENSIONS_FILE."
-            exit 0
-            ;;
-        *) echo "Unknown parameter passed: $1"; exit 1 ;;
-    esac
-done
-
-# --- Script Execution ---
-main "$@"
+echo ""
+if [[ "$DRY_RUN" == true ]]; then
+    say "Dry run complete"
+else
+    say "Done: $opened_count opened, $skipped_count skipped"
+fi

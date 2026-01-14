@@ -2,24 +2,38 @@
 
 Cross-platform dotfiles (macOS, Linux & Windows) managed with [Chezmoi](https://chezmoi.io/), following [XDG Base Directory](https://specifications.freedesktop.org/basedir-spec/latest/) conventions.
 
+## Why?
+
+Setting up a new machine takes hours. Configurations drift between machines. Packages get outdated. SSH keys sit on disk. This project solves all of that:
+
+| Problem | Solution |
+|---------|----------|
+| New machine setup takes hours | Single command, minutes |
+| Configuration drift between machines | One repo, templated variations |
+| Packages get outdated | Automated weekly updates |
+| SSH keys on disk are a security risk | Keys stored in 1Password |
+| Dotfiles scattered everywhere | XDG-compliant structure |
+| No visibility into system health | `dotfiles doctor` command |
+| Backups are forgotten | Automated weekly with retention |
+
+See [Problem Statement](docs/problem-statement.md) for the full rationale.
+
 ## Quick Start
 
 ```bash
-# One-line bootstrap on a new machine (~15-20 min)
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.0/tools/bootstrap.sh)"
+# One-line bootstrap on a new machine
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)"
 
 # Preview what will be installed (dry-run)
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.0/tools/bootstrap.sh)" -- --dry-run
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)" -- --dry-run
 ```
 
 Bootstrap installs essential dev tools only. After bootstrap, run the full setup:
 
 ```bash
-# Complete setup (packages, extensions, ssh, defaults) (~30-40 min)
+# Complete setup (packages, extensions, ssh, defaults)
 dotfiles setup
 ```
-
-> **Tip**: Use a tagged release (e.g., `v1.0.0`) for stability. Check [releases](https://github.com/kidchenko/dotfiles/releases) for the latest version.
 
 ## What's Included
 
@@ -53,10 +67,11 @@ dotfiles help              # Show all commands
 
 | Command | Description |
 |---------|-------------|
-| `dotfiles packages` | Install packages from manifest |
+| `dotfiles packages` | Install system packages (Brewfile) |
 | `dotfiles packages cleanup` | Remove unlisted packages |
 | `dotfiles packages outdated` | Show packages with updates |
-| `dotfiles extensions` | Install VS Code/browser extensions |
+| `dotfiles packages global` | Install global tools (npm/pip/dotnet) |
+| `dotfiles packages extensions` | Install VS Code/browser extensions |
 
 ### System
 
@@ -78,33 +93,55 @@ dotfiles help              # Show all commands
 
 ## Secrets Management (1Password)
 
-SSH keys are generated directly in 1Password - the private key never touches disk during generation.
+SSH keys are generated and stored directly in 1Password - the private key never touches disk during generation.
+
+### Setup SSH Keys
 
 ```bash
-# First time setup (generate new SSH key)
-op signin                    # Sign in to 1Password CLI
-dotfiles ssh                 # Generate Ed25519 key in 1Password
-                             # Copy public key to GitHub/GitLab
-
-# On a new machine (restore existing key)
-op signin                    # Sign in to 1Password CLI
-chezmoi apply                # SSH keys restored automatically
+dotfiles ssh                 # Interactive menu for SSH key management
 ```
 
-Keys are stored at `op://development/SSH Key/` and restored via Chezmoi templates.
+Options:
+- **restore** - Restore existing key from 1Password to `~/.ssh/`
+- **generate** - Generate new Ed25519 key directly in 1Password
+- **show** - Display your public key (for adding to GitHub/GitLab)
+- **compare** - Compare local key with 1Password version
+
+### How It Works
+
+```
+Traditional (Unsafe):
+  ssh-keygen → Key on disk → Copy to USB/cloud → Multiple copies, multiple risks
+
+1Password Workflow (Safe):
+  op item create → Key in vault → Restored via Chezmoi → Key in memory only
+```
+
+Keys are stored at `op://development/SSH Key/` and restored automatically when you run `chezmoi apply`.
 
 ## Scheduled Tasks
 
-Two cron jobs are set up automatically:
+Six cron jobs are set up automatically:
 
+**Security & Updates**
 | Schedule | Task | Description |
 |----------|------|-------------|
-| Monday 9am | `cron/update.sh` | Update Homebrew packages |
-| Sunday 2am | `cron/backup.sh` | Backup projects (keeps 7 days) |
+| Daily 8am | `outdated.sh` | Check for outdated packages |
+| Monday 9am | `update.sh` | Update Homebrew packages |
+| Sunday 10am | `cleanup.sh` | Cleanup brew cache & temp files |
 
-Manage with `dotfiles cron` and `dotfiles logs`.
+**Backups & Maintenance**
+| Schedule | Task | Description |
+|----------|------|-------------|
+| Sunday 2am | `backup.sh` | Backup projects (git sync + archive) |
+| Saturday 4am | `git-maintenance.sh` | Run git gc on repositories |
 
-Backups are stored in `~/.local/share/dotfiles/backups/` (XDG-compliant).
+**Health Monitoring**
+| Schedule | Task | Description |
+|----------|------|-------------|
+| Daily 7am | `health.sh` | System health check |
+
+Manage with `dotfiles cron` and view logs with `dotfiles logs`.
 
 ## Directory Structure
 
@@ -128,53 +165,39 @@ dotfiles/
 
 ## Customization
 
-### Global Tools
+### Packages
 
-Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet tools:
+Edit `Brewfile` to add/remove Homebrew packages, then run:
+
+```bash
+dotfiles packages
+```
+
+### Extensions
+
+Edit config files, then run `dotfiles packages extensions`:
+
+| Config File | Description |
+|-------------|-------------|
+| `~/.config/dotfiles/vscode-extensions.txt` | VS Code extension IDs (one per line) |
+| `~/.config/dotfiles/brave-extensions.txt` | Browser extension IDs |
+
+### Global Tools (npm/pip/dotnet)
+
+Edit `~/.config/dotfiles/config.yaml`:
 
 ```yaml
 global_tools:
-  npm:
-    - typescript
-    - prettier
-  pip:
-    - httpie
-  dotnet:
-    - dotnet-ef
+  npm: [typescript, prettier]
+  pip: [httpie]
+  dotnet: [dotnet-ef]
 ```
 
-Then run the installer:
-
-```bash
-bash tools/install-global-tools.sh
-```
-
-### VS Code Extensions
-
-Edit `~/.config/dotfiles/vscode-extensions.txt` (one extension ID per line):
-
-```
-ms-python.python
-esbenp.prettier-vscode
-```
-
-Then run:
-
-```bash
-dotfiles extensions
-```
+Then run: `dotfiles packages global`
 
 ### macOS Defaults
 
-The `dotfiles defaults` command applies developer-friendly macOS settings:
-
-- Fast keyboard repeat, tap-to-click
-- Show hidden files, file extensions
-- Auto-hide Dock, disable animations
-- Screenshots to ~/Documents/Screenshots
-- Hot corners (Lock Screen, Mission Control, Launchpad)
-
-Review settings in `tools/os_setup/macos-config.sh` before running.
+The `dotfiles defaults` command applies developer-friendly settings (keyboard, Dock, Finder, screenshots). Review `tools/os_setup/macos-config.sh` before running.
 
 ## Bootstrap Flow
 
@@ -182,14 +205,14 @@ When you run `bootstrap.sh`, it executes in this order:
 
 1. **Homebrew** - Install package manager (macOS)
 2. **Chezmoi** - Install dotfiles manager
-3. **Brewfile** - Install all packages (includes 1password-cli)
-4. **1Password** - Prompt to sign in for secrets
-5. **SSH Keys** - Generate or restore from 1Password
-6. **Dotfiles** - Apply all configurations
-7. **Oh My Zsh** - Install shell framework
-8. **Plugins** - Install zsh-autosuggestions, zsh-syntax-highlighting, zsh-nvm
-9. **Cron** - Setup scheduled tasks
-10. **CLI** - Install `dotfiles` command
+3. **Dotfiles** - Apply all configurations
+4. **Essential Packages** - Install from `Brewfile.essential` (git, fzf, ripgrep, bat, Hyper, fonts)
+5. **Oh My Zsh** - Install shell framework
+6. **Plugins** - Install zsh-autosuggestions, zsh-syntax-highlighting, zsh-nvm
+7. **Directories** - Create project folders (~/kidchenko, ~/lambda3, etc.)
+8. **CLI** - Install `dotfiles` command
+
+After bootstrap, run `dotfiles setup` for complete installation (full packages, SSH keys, extensions, system defaults, cron jobs).
 
 ## Uninstalling
 

@@ -1,6 +1,6 @@
 # dotfiles packages
 
-Manage system packages across platforms (Homebrew on macOS/Linux, Chocolatey on Windows).
+Manage all packages: system packages, global tools, and extensions.
 
 ## Usage
 
@@ -12,12 +12,14 @@ dotfiles packages [SUBCOMMAND]
 
 | Subcommand | Description |
 |------------|-------------|
-| `install` | Install packages from manifest (default) |
-| `cleanup` | Remove packages not in manifest |
+| `install` | Install system packages from Brewfile (default) |
+| `cleanup` | Remove packages not in Brewfile |
 | `list` | Show installed packages |
 | `outdated` | Show packages with available updates |
+| `global` | Install global tools (npm/pip/dotnet) |
+| `extensions` | Install extensions (vscode/browser/all) |
 
-## Examples
+## System Packages
 
 ```bash
 # Install all packages from Brewfile
@@ -39,63 +41,7 @@ dotfiles packages list
 dotfiles packages outdated
 ```
 
-## Package Manifests
-
-### macOS/Linux (Homebrew)
-
-Packages are defined in `Brewfile` at the repository root:
-
-```ruby
-# Brewfile
-brew "git"
-brew "fzf"
-cask "visual-studio-code"
-```
-
-### Windows (Chocolatey)
-
-Packages are defined in `tools/os_installers/choco.ps1`.
-
-## Verbose Output
-
-The install command runs with `--verbose` by default, showing:
-
-```
-[dotfiles] Installing packages from Brewfile...
-Using git
-Using fzf
-Installing ripgrep
-Using bat
-...
-[dotfiles] Done! Run 'dotfiles packages cleanup' to remove unlisted packages.
-```
-
-## Checking for Updates
-
-```bash
-$ dotfiles packages outdated
-
-Outdated Packages
-
-node (18.0.0) < 20.0.0
-python (3.11.0) < 3.12.0
-
-Run 'brew upgrade' to update all packages
-```
-
-## Cleanup Workflow
-
-1. **Preview** what would be removed:
-   ```bash
-   dotfiles packages cleanup
-   ```
-
-2. **Remove** unlisted packages:
-   ```bash
-   dotfiles packages cleanup --force
-   ```
-
-## Cross-Platform Behavior
+### Package Manifests
 
 | Platform | Package Manager | Manifest |
 |----------|-----------------|----------|
@@ -103,7 +49,55 @@ Run 'brew upgrade' to update all packages
 | Linux | Homebrew | `Brewfile` |
 | Windows | Chocolatey | `tools/os_installers/choco.ps1` |
 
+## Global Tools
+
+Install npm, pip, and dotnet global tools defined in `~/.config/dotfiles/config.yaml`.
+
+```bash
+dotfiles packages global
+```
+
+### Configuration
+
+Edit `~/.config/dotfiles/config.yaml`:
+
+```yaml
+global_tools:
+  npm:
+    - typescript
+    - prettier
+    - eslint
+  pip:
+    - black
+    - httpie
+    - poetry
+  dotnet:
+    - dotnet-ef
+    - dotnet-serve
+```
+
+## Extensions
+
+Install VS Code and browser extensions.
+
+```bash
+# Install all extensions
+dotfiles packages extensions
+
+# VS Code only
+dotfiles packages extensions vscode
+
+# Browser only (Brave)
+dotfiles packages extensions browser
+```
+
+### Configuration
+
+| Config File | Description |
+|-------------|-------------|
+| `~/.config/dotfiles/vscode-extensions.txt` | VS Code extension IDs (one per line) |
+| `~/.config/dotfiles/brave-extensions.txt` | Brave extension IDs (one per line) |
+
 ## Related Commands
 
-- [dotfiles extensions](extensions.md) - Install VS Code/browser extensions
-- [dotfiles setup](setup.md) - Complete setup (includes packages)
+- [dotfiles setup](setup.md) - Complete setup (includes all packages)

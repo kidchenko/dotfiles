@@ -15,7 +15,6 @@
 #   backup      Create a new backup (default)
 #   restore     Restore from a backup
 #   list        List available backups
-#   setup-cron  Setup scheduled backups
 #   help        Show this help message
 #
 # Options:
@@ -44,7 +43,6 @@ RCLONE_REMOTE_NAME="GoogleDrive"
 RCLONE_REMOTE_PATH="DotfilesBackups/"
 REMOTE_ENABLED=true
 LOGGING_ENABLED=true
-CRON_SCHEDULE="0 2 * * 0"
 
 # Runtime options
 DRY_RUN=false
@@ -98,7 +96,6 @@ show_help() {
     echo "  backup       Create a new backup (default)"
     echo "  restore      Restore from a backup"
     echo "  list         List available backups (local and remote)"
-    echo "  setup-cron   Setup scheduled backups"
     echo "  help         Show this help message"
     echo ""
     echo -e "${BOLD}Options:${NC}"
@@ -113,7 +110,6 @@ show_help() {
     echo "  backup-projects.sh --dry-run        # Preview backup"
     echo "  backup-projects.sh restore          # Restore from backup"
     echo "  backup-projects.sh list             # List backups"
-    echo "  backup-projects.sh setup-cron       # Setup weekly backups"
     echo ""
     echo -e "${BOLD}Config file:${NC} $CONFIG_FILE"
     echo -e "${BOLD}Git repos log:${NC} $LOG_DIR/git-repos.log"
@@ -198,9 +194,6 @@ load_config() {
     val=$(yq -r '.backup.logging.retention_days // ""' "$CONFIG_FILE" 2>/dev/null)
     [[ -n "$val" && "$val" != "null" ]] && LOG_RETENTION_DAYS="$val"
 
-    val=$(yq -r '.backup.schedule.cron // ""' "$CONFIG_FILE" 2>/dev/null)
-    [[ -n "$val" && "$val" != "null" ]] && CRON_SCHEDULE="$val"
-
     # Update paths based on loaded config
     BACKUP_TEMP_DIR="$BACKUP_BASE_DIR"
     LOG_FILE="$LOG_DIR/backup.log"
@@ -212,7 +205,7 @@ load_config() {
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            backup|restore|list|setup-cron|help)
+            backup|restore|list|help)
                 COMMAND="$1"
                 ;;
             --dry-run)
@@ -629,58 +622,6 @@ cmd_restore() {
     fi
 }
 
-# --- Setup Cron Command ---
-cmd_setup_cron() {
-    say "Setting up scheduled backups"
-
-    local script_path
-    script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-
-    # Also check chezmoi location
-    local chezmoi_script="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi/scripts/backup/backup-projects.sh"
-    if [[ -f "$chezmoi_script" ]]; then
-        script_path="$chezmoi_script"
-    fi
-
-    local cron_entry="$CRON_SCHEDULE $script_path backup >> $LOG_DIR/backup-cron.log 2>&1"
-
-    echo ""
-    echo -e "${BOLD}Cron schedule:${NC} $CRON_SCHEDULE"
-    echo -e "${BOLD}Script:${NC} $script_path"
-    echo -e "${BOLD}Log:${NC} $LOG_DIR/backup-cron.log"
-    echo ""
-    echo "Cron entry to add:"
-    echo "  $cron_entry"
-    echo ""
-
-    if [[ "$DRY_RUN" == true ]]; then
-        debug "Would add cron entry"
-        return 0
-    fi
-
-    # Check if already exists
-    if crontab -l 2>/dev/null | grep -q "backup-projects.sh"; then
-        warn "Backup cron job already exists"
-        echo -n "Replace existing entry? [y/N]: "
-        read -r confirm
-        if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-            return 0
-        fi
-        # Remove existing
-        crontab -l 2>/dev/null | grep -v "backup-projects.sh" | crontab -
-    fi
-
-    # Add new entry
-    (crontab -l 2>/dev/null; echo "$cron_entry") | crontab -
-
-    if crontab -l 2>/dev/null | grep -q "backup-projects.sh"; then
-        say "Cron job added successfully"
-    else
-        error "Failed to add cron job"
-        return 1
-    fi
-}
-
 # --- Main ---
 main() {
     parse_args "$@"
@@ -701,9 +642,6 @@ main() {
             ;;
         list)
             cmd_list
-            ;;
-        setup-cron)
-            cmd_setup_cron
             ;;
         *)
             error "Unknown command: $COMMAND"

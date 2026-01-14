@@ -9,8 +9,7 @@
 #   update      Pull and apply latest changes
 #   doctor      Run health checks
 #   status      Show pending changes
-#   packages    Manage system packages
-#   extensions  Install extensions
+#   packages    Manage packages (system, global, extensions)
 #   ssh         Setup SSH keys
 #   defaults    Apply macOS system defaults
 #   cron        Manage scheduled tasks
@@ -59,15 +58,13 @@ show_help() {
     echo -e "  ${CYAN}status${NC}                   Show pending changes"
     echo ""
     echo -e "${BOLD}Packages:${NC}"
-    echo -e "  ${CYAN}packages${NC}                 Manage system packages"
-    echo -e "      ${DIM}install${NC}              Install from manifest (default)"
+    echo -e "  ${CYAN}packages${NC}                 Manage all packages"
+    echo -e "      ${DIM}install${NC}              Install system packages (default)"
     echo -e "      ${DIM}cleanup${NC}              Remove unlisted packages"
     echo -e "      ${DIM}list${NC}                 Show installed packages"
     echo -e "      ${DIM}outdated${NC}             Show packages with updates"
-    echo -e "  ${CYAN}extensions${NC}               Install extensions"
-    echo -e "      ${DIM}vscode${NC}               VS Code extensions"
-    echo -e "      ${DIM}browser${NC}              Browser extensions (Brave)"
-    echo -e "      ${DIM}all${NC}                  All extensions (default)"
+    echo -e "      ${DIM}global${NC}               Install global tools (npm/pip/dotnet)"
+    echo -e "      ${DIM}extensions${NC}           Install extensions (vscode|browser|all)"
     echo ""
     echo -e "${BOLD}System:${NC}"
     echo -e "  ${CYAN}ssh${NC}                      Setup SSH keys with 1Password"
@@ -235,14 +232,67 @@ cmd_packages() {
                 error "No supported package manager found"
             fi
             ;;
+        global)
+            shift 2>/dev/null || true
+            local global_script="$TOOLS_DIR/install-global-tools.sh"
+            if [[ -f "$global_script" ]]; then
+                bash "$global_script" "$@"
+            else
+                error "install-global-tools.sh not found in $TOOLS_DIR"
+            fi
+            ;;
+        extensions)
+            shift 2>/dev/null || true
+            local vscode_script="$TOOLS_DIR/install-vscode-extensions.sh"
+            local browser_script="$TOOLS_DIR/install-brave-extensions.sh"
+            local ext_cmd="${1:-all}"
+            case "$ext_cmd" in
+                vscode|code)
+                    if [[ -f "$vscode_script" ]]; then
+                        bash "$vscode_script"
+                    else
+                        error "install-vscode-extensions.sh not found in $TOOLS_DIR"
+                    fi
+                    ;;
+                browser|brave)
+                    if [[ -f "$browser_script" ]]; then
+                        bash "$browser_script"
+                    else
+                        error "install-brave-extensions.sh not found in $TOOLS_DIR"
+                    fi
+                    ;;
+                all|"")
+                    say "Installing all extensions..."
+                    echo ""
+                    say "VS Code extensions:"
+                    if [[ -f "$vscode_script" ]]; then
+                        bash "$vscode_script"
+                    else
+                        echo "  (skipped - script not found)"
+                    fi
+                    echo ""
+                    say "Browser extensions:"
+                    if [[ -f "$browser_script" ]]; then
+                        bash "$browser_script"
+                    else
+                        echo "  (skipped - script not found)"
+                    fi
+                    ;;
+                *)
+                    echo "Usage: dotfiles packages extensions [vscode|browser|all]"
+                    ;;
+            esac
+            ;;
         *)
-            echo "Usage: dotfiles packages [install|cleanup|list|outdated]"
+            echo "Usage: dotfiles packages [install|cleanup|list|outdated|global|extensions]"
             echo ""
             echo "Commands:"
-            echo "  install   Install packages from manifest (default)"
-            echo "  cleanup   Remove packages not in manifest"
-            echo "  list      Show installed packages"
-            echo "  outdated  Show packages with available updates"
+            echo "  install     Install system packages from Brewfile (default)"
+            echo "  cleanup     Remove packages not in Brewfile"
+            echo "  list        Show installed packages"
+            echo "  outdated    Show packages with available updates"
+            echo "  global      Install global tools (npm/pip/dotnet)"
+            echo "  extensions  Install extensions (vscode|browser|all)"
             ;;
     esac
 }
@@ -292,43 +342,59 @@ cmd_logs() {
 
 cmd_cron() {
     local CRON_DIR="$DOTFILES_DIR/cron"
+    local CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
 
     case "${1:-list}" in
         list)
             echo -e "${BOLD}Scheduled Tasks${NC}"
             echo ""
-            # Match both chezmoi path and git repo path for cron scripts
-            if crontab -l 2>/dev/null | grep -qE "cron/(update|backup)\.sh"; then
-                crontab -l 2>/dev/null | grep -E "cron/(update|backup)\.sh" | while read -r line; do
-                    local schedule
-                    local script
-                    local desc=""
-                    schedule=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
-                    script=$(echo "$line" | awk '{print $6}' | xargs basename)
-                    case "$script" in
-                        update.sh) desc="Weekly brew bundle" ;;
-                        backup.sh) desc="Weekly backup" ;;
-                        *) desc="$script" ;;
-                    esac
-                    # Parse cron schedule to human readable
-                    case "$schedule" in
-                        "0 9 * * 1") echo -e "  ${GREEN}✓${NC} $desc (Monday 9am)" ;;
-                        "0 2 * * 0") echo -e "  ${GREEN}✓${NC} $desc (Sunday 2am)" ;;
-                        *) echo -e "  ${GREEN}✓${NC} $desc ($schedule)" ;;
-                    esac
-                done
-            else
-                echo -e "  ${YELLOW}No dotfiles cron jobs configured${NC}"
-                echo ""
-                echo "  Run: dotfiles cron setup"
+
+            # Check if yq is available
+            if ! command -v yq &>/dev/null; then
+                echo -e "  ${YELLOW}yq not installed - cannot read config${NC}"
+                echo "  Install with: brew install yq"
+                return 1
             fi
+
+            if [[ ! -f "$CONFIG_FILE" ]]; then
+                echo -e "  ${YELLOW}Config file not found${NC}"
+                echo "  Run: chezmoi apply"
+                return 1
+            fi
+
+            # Read jobs from config.yaml and check if installed
+            local job_count
+            job_count=$(yq -r '.cron.jobs | length' "$CONFIG_FILE" 2>/dev/null)
+
+            if [[ -z "$job_count" || "$job_count" == "0" || "$job_count" == "null" ]]; then
+                echo -e "  ${YELLOW}No cron jobs defined in config.yaml${NC}"
+                return 0
+            fi
+
+            local crontab_content
+            crontab_content=$(crontab -l 2>/dev/null || echo "")
+
+            for ((i=0; i<job_count; i++)); do
+                local script description
+                script=$(yq -r ".cron.jobs[$i].script" "$CONFIG_FILE")
+                description=$(yq -r ".cron.jobs[$i].description" "$CONFIG_FILE")
+
+                if echo "$crontab_content" | grep -q "$script"; then
+                    echo -e "  ${GREEN}✓${NC} $description"
+                else
+                    echo -e "  ${YELLOW}○${NC} $description ${DIM}(not installed)${NC}"
+                fi
+            done
+
+            echo ""
+            echo -e "${DIM}Run 'dotfiles cron setup' to install/update jobs${NC}"
             echo ""
             ;;
         setup)
-            if [[ -f "$CRON_DIR/setup-cron.sh" ]]; then
-                bash "$CRON_DIR/setup-cron.sh"
+            if [[ -f "$TOOLS_DIR/setup-cron.sh" ]]; then
+                bash "$TOOLS_DIR/setup-cron.sh"
             else
-                error "setup-cron.sh not found in $CRON_DIR"
+                error "setup-cron.sh not found in $TOOLS_DIR"
             fi
             ;;
         *)
@@ -337,55 +403,6 @@ cmd_cron() {
             echo "Commands:"
             echo "  list   Show configured cron jobs (default)"
             echo "  setup  Install/update all cron jobs"
-            ;;
-    esac
-}
-
-cmd_extensions() {
-    local vscode_script="$TOOLS_DIR/install-vscode-extensions.sh"
-    local browser_script="$TOOLS_DIR/install-brave-extensions.sh"
-
-    case "${1:-all}" in
-        vscode|code)
-            shift 2>/dev/null || true
-            if [[ -f "$vscode_script" ]]; then
-                bash "$vscode_script" "$@"
-            else
-                error "install-vscode-extensions.sh not found in $TOOLS_DIR"
-            fi
-            ;;
-        browser|brave)
-            shift 2>/dev/null || true
-            if [[ -f "$browser_script" ]]; then
-                bash "$browser_script" "$@"
-            else
-                error "install-brave-extensions.sh not found in $TOOLS_DIR"
-            fi
-            ;;
-        all)
-            say "Installing all extensions..."
-            echo ""
-            say "VS Code extensions:"
-            if [[ -f "$vscode_script" ]]; then
-                bash "$vscode_script"
-            else
-                echo "  (skipped - script not found)"
-            fi
-            echo ""
-            say "Browser extensions:"
-            if [[ -f "$browser_script" ]]; then
-                bash "$browser_script"
-            else
-                echo "  (skipped - script not found)"
-            fi
-            ;;
-        *)
-            echo "Usage: dotfiles extensions [vscode|browser|all]"
-            echo ""
-            echo "Commands:"
-            echo "  vscode   Install VS Code extensions"
-            echo "  browser  Install browser extensions (Brave)"
-            echo "  all      Install all extensions (default)"
             ;;
     esac
 }
@@ -419,35 +436,24 @@ cmd_setup() {
     say "Running complete setup..."
     echo ""
 
-    say "Step 1/7: Setting up SSH keys..."
+    say "Step 1/6: Setting up SSH keys..."
     cmd_ssh
     echo ""
 
-    say "Step 2/7: Installing packages..."
+    say "Step 2/6: Installing system packages..."
     cmd_packages install
     echo ""
 
-    say "Step 3/7: Installing VS Code extensions..."
-    cmd_extensions vscode
+    say "Step 3/6: Installing global tools & extensions..."
+    cmd_packages global
+    cmd_packages extensions
     echo ""
 
-    say "Step 4/7: Installing global tools (npm/pip/dotnet)..."
-    if [[ -f "$TOOLS_DIR/install-global-tools.sh" ]]; then
-        bash "$TOOLS_DIR/install-global-tools.sh"
-    else
-        echo "  (skipped - install-global-tools.sh not found)"
-    fi
-    echo ""
-
-    say "Step 5/7: Installing browser extensions..."
-    cmd_extensions browser
-    echo ""
-
-    say "Step 6/7: Setting up cron jobs..."
+    say "Step 4/6: Setting up cron jobs..."
     cmd_cron setup
     echo ""
 
-    say "Step 7/7: Applying system defaults..."
+    say "Step 5/6: Applying system defaults..."
     if [[ "$(uname -s)" == "Darwin" ]]; then
         cmd_defaults
     else
@@ -476,10 +482,6 @@ case "${1:-help}" in
     packages)
         shift
         cmd_packages "$@"
-        ;;
-    extensions)
-        shift
-        cmd_extensions "$@"
         ;;
     ssh)
         shift

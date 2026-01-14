@@ -11,6 +11,7 @@ brew "fzf"        # Fuzzy finder
 brew "ripgrep"    # Fast grep
 brew "bat"        # Better cat
 brew "jq"         # JSON processor
+brew "yq"         # YAML processor (used by dotfiles scripts)
 
 # Dotfiles management
 brew "chezmoi"

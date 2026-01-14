@@ -25,12 +25,11 @@ dotfiles status
 dotfiles doctor
 
 # Manage packages
-dotfiles packages              # Install from manifest
+dotfiles packages              # Install system packages
 dotfiles packages outdated     # Check for updates
 dotfiles packages cleanup      # Remove unlisted
-
-# Install extensions
-dotfiles extensions            # VS Code + browser
+dotfiles packages global       # Install npm/pip/dotnet tools
+dotfiles packages extensions   # Install VS Code + browser extensions
 ```
 
 ## Architecture
@@ -63,13 +62,12 @@ All configs follow XDG conventions:
 After bootstrap, run `dotfiles setup` for complete installation (packages, extensions, ssh, defaults).
 
 ### Global Tools Config
-Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet global tools, then run `tools/install-global-tools.sh`.
+Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet global tools, then run `dotfiles packages global`.
 
-### VS Code Extensions
-Edit `~/.config/dotfiles/vscode-extensions.txt` (one extension ID per line), then run `tools/install-vscode-extensions.sh`.
-
-### Brave Extensions
-Edit `~/.config/dotfiles/brave-extensions.txt` (one extension ID per line), then run `tools/install-brave-extensions.sh`.
+### Extensions
+Edit extension config files, then run `dotfiles packages extensions`:
+- `~/.config/dotfiles/vscode-extensions.txt` - VS Code extension IDs (one per line)
+- `~/.config/dotfiles/brave-extensions.txt` - Brave extension IDs (one per line)
 
 ### Windows Support
 - PowerShell profile at `~/Documents/PowerShell/` sources modular config from `~/.config/powershell/`
