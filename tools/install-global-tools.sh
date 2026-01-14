@@ -1,223 +1,199 @@
 #!/bin/bash
-
-# tools/install_global_tools.sh
 #
-# Installs global tools based on the configuration specified in
-# ~/.config/dotfiles/config.yaml (or $XDG_CONFIG_HOME/dotfiles/config.yaml).
+# install-global-tools.sh
+#
+# Installs global tools from ~/.config/dotfiles/config.yaml
 
-set -e # Exit on any error
+set -e
 
-# --- Script Configuration & Variables ---
-VERBOSE=false
+# Configuration
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
+
+# Options
 DRY_RUN=false
-CONFIG_FILE_NAME="config.yaml" # Name of the config file within the dotfiles config directory
 
-# Determine config file path using XDG standard
-if [ -n "$XDG_CONFIG_HOME" ]; then
-    CONFIG_DIR="$XDG_CONFIG_HOME/dotfiles"
+# Colors
+if [[ -t 1 ]]; then
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    DIM='\033[2m'
+    BOLD='\033[1m'
+    NC='\033[0m'
 else
-    CONFIG_DIR="$HOME/.config/dotfiles"
+    GREEN='' YELLOW='' BLUE='' CYAN='' DIM='' BOLD='' NC=''
 fi
-CONFIG_FILE="$CONFIG_DIR/$CONFIG_FILE_NAME"
 
-# --- Helper Functions ---
-say() {
-    echo "install_global_tools: $1"
-}
+# Platform-specific prefixes
+node_say() { echo -e "${GREEN}[node]${NC} $1"; }
+python_say() { echo -e "${BLUE}[python]${NC} $1"; }
+dotnet_say() { echo -e "${CYAN}[dotnet]${NC} $1"; }
+warn() { echo -e "${YELLOW}!${NC} $1"; }
 
-say_verbose() {
-    if [ "$VERBOSE" = true ]; then
-        say "$1"
-    fi
-}
-
-say_warning() {
-    say "WARNING: $1"
-}
-
-say_error() {
-    say "ERROR: $1" >&2
-    # exit 1 # Decided by calling function if it's fatal
-}
-
-# Check if a command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Check if yq is installed (YAML parser)
-check_yq() {
-    if ! command_exists yq; then
-        say_error "YAML parser 'yq' is not installed. This script requires 'yq' to parse $CONFIG_FILE_NAME."
-        say_error "Please install yq (e.g., 'brew install yq', 'sudo snap install yq', or download from https://github.com/mikefarah/yq)."
-        exit 1
-    fi
-}
-
-# --- Installation Functions ---
-
-# Install NPM packages
-install_npm_package() {
-    local package="$1"
-    if ! command_exists npm; then
-        say_warning "NPM is not installed. Skipping NPM package: $package"
-        return 1
-    fi
-
-    say_verbose "Checking NPM package: $package..."
-    # Idempotency check: npm list -g --depth=0 | grep <package_name>
-    # However, npm install -g itself is largely idempotent for installing/updating.
-    # A specific check might be `npm list -g --depth=0 ${package%%@*} | grep -q ${package%%@*}`
-    # For simplicity, we'll rely on npm's idempotency here. Re-running install will update if needed.
-
-    if [ "$DRY_RUN" = true ]; then
-        say "DRY RUN: Would install NPM package: $package (npm install -g $package)"
-    else
-        say "Installing NPM package: $package..."
-        if npm install -g "$package"; then
-            say_verbose "NPM package $package installed/updated successfully."
-        else
-            say_error "Failed to install NPM package: $package"
-            return 1 # Non-fatal, continue with other packages
-        fi
-    fi
-}
-
-# Install Pip packages
-install_pip_package() {
-    local package="$1"
-    # Try pip3 first, then pip
-    local pip_cmd=""
-    if command_exists pip3; then
-        pip_cmd="pip3"
-    elif command_exists pip; then
-        pip_cmd="pip"
-    else
-        say_warning "Pip (pip3 or pip) is not installed. Skipping Pip package: $package"
-        return 1
-    fi
-
-    say_verbose "Checking Pip package: $package with $pip_cmd..."
-    # Idempotency check: $pip_cmd show <package_name>
-    # $pip_cmd install --user is generally idempotent.
-    # Example check: $pip_cmd show "${package%%==*}" > /dev/null 2>&1
-
-    if [ "$DRY_RUN" = true ]; then
-        say "DRY RUN: Would install Pip package: $package ($pip_cmd install --user $package)"
-    else
-        say "Installing Pip package: $package (with --user)..."
-        if "$pip_cmd" install --user "$package"; then
-            say_verbose "Pip package $package installed/updated successfully."
-        else
-            say_error "Failed to install Pip package: $package"
-            return 1 # Non-fatal
-        fi
-    fi
-}
-
-# Install Dotnet tools
-install_dotnet_tool() {
-    local tool_name="$1" # This is the package name for dotnet tools
-    if ! command_exists dotnet; then
-        say_warning "Dotnet CLI is not installed. Skipping Dotnet tool: $tool_name"
-        return 1
-    fi
-
-    say_verbose "Checking Dotnet tool: $tool_name..."
-    # Idempotency check: dotnet tool list -g | grep <tool_name_lowercase>
-    # Dotnet tool install is idempotent and will update if already installed.
-    # Tool names are case-insensitive for the check but package ID is specific.
-    # We'll use the provided name.
-
-    if [ "$DRY_RUN" = true ]; then
-        say "DRY RUN: Would install Dotnet tool: $tool_name (dotnet tool install --global $tool_name)"
-    else
-        say "Installing Dotnet tool: $tool_name..."
-        # Attempt to update if already installed, otherwise install
-        # `dotnet tool update --global "$tool_name"` can be used if we know it's installed.
-        # `dotnet tool install --global "$tool_name"` will install or update.
-        if dotnet tool install --global "$tool_name"; then
-            say_verbose "Dotnet tool $tool_name installed/updated successfully."
-        else
-            # Sometimes install fails if already installed but update is available. Try update.
-            # However, modern `dotnet tool install` should handle updates.
-            # If it truly failed, then it's an error.
-            say_error "Failed to install/update Dotnet tool: $tool_name. It might already be installed and up-to-date, or an error occurred."
-            # Check if it's actually installed now, despite error message (e.g. if it was just a warning)
-            if dotnet tool list --global | grep -iq "^${tool_name%% *} "; then # check by package id (first word)
-                 say_verbose "Dotnet tool $tool_name appears to be installed despite previous message."
-            else
-                 return 1 # Non-fatal
-            fi
-        fi
-    fi
-}
-
-# --- Main Logic ---
-main() {
-    say "Starting global tools installation..."
-
-    if [ ! -f "$CONFIG_FILE" ]; then
-        say_error "Configuration file not found: $CONFIG_FILE"
-        say_error "Please ensure it exists and is populated."
-        exit 1
-    fi
-
-    check_yq # Ensure yq is available for parsing
-
-    # Process NPM packages
-    say_verbose "Processing NPM packages from $CONFIG_FILE..."
-    local npm_count=0
-    while IFS= read -r tool; do
-        [[ -z "$tool" || "$tool" == "null" ]] && continue
-        install_npm_package "$tool" || say_verbose "Continuing after failure with $tool"
-        ((npm_count++))
-    done < <(yq eval '.global_tools.npm[]?' "$CONFIG_FILE" 2>/dev/null)
-    [[ $npm_count -eq 0 ]] && say_verbose "No NPM packages listed in $CONFIG_FILE or section is empty/null."
-
-    # Process Pip packages
-    say_verbose "Processing Pip packages from $CONFIG_FILE..."
-    local pip_count=0
-    while IFS= read -r tool; do
-        [[ -z "$tool" || "$tool" == "null" ]] && continue
-        install_pip_package "$tool" || say_verbose "Continuing after failure with $tool"
-        ((pip_count++))
-    done < <(yq eval '.global_tools.pip[]?' "$CONFIG_FILE" 2>/dev/null)
-    [[ $pip_count -eq 0 ]] && say_verbose "No Pip packages listed in $CONFIG_FILE or section is empty/null."
-
-    # Process Dotnet tools
-    say_verbose "Processing Dotnet tools from $CONFIG_FILE..."
-    local dotnet_count=0
-    while IFS= read -r tool; do
-        [[ -z "$tool" || "$tool" == "null" ]] && continue
-        install_dotnet_tool "$tool" || say_verbose "Continuing after failure with $tool"
-        ((dotnet_count++))
-    done < <(yq eval '.global_tools.dotnet[]?' "$CONFIG_FILE" 2>/dev/null)
-    [[ $dotnet_count -eq 0 ]] && say_verbose "No Dotnet tools listed in $CONFIG_FILE or section is empty/null."
-
-    say "Global tools installation process finished."
-    if [ "$DRY_RUN" = true ]; then
-        say "DRY RUN MODE: No actual changes were made."
-    fi
-}
-
-# --- Argument Parsing ---
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --verbose) VERBOSE=true; shift ;;
-        --dry-run) DRY_RUN=true; shift ;;
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --dry-run) DRY_RUN=true ;;
         -h|--help)
-            echo "Usage: $0 [--verbose] [--dry-run]"
-            echo "  --verbose    Enable verbose output."
-            echo "  --dry-run    Simulate installations without making changes."
-            echo "  -h, --help   Show this help message."
+            echo "Usage: $0 [--dry-run]"
             echo ""
-            echo "This script installs global tools (npm, pip, dotnet) based on $CONFIG_FILE."
+            echo "Installs global tools from config.yaml"
+            echo ""
+            echo "Options:"
+            echo "  --dry-run    Preview without installing"
             exit 0
             ;;
-        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        *) ;;
     esac
+    shift
 done
 
-# --- Script Execution ---
-main "$@"
+# Check dependencies
+if ! command -v yq &>/dev/null; then
+    warn "yq not installed. Install with: brew install yq"
+    exit 1
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    warn "Config file not found: $CONFIG_FILE"
+    exit 1
+fi
+
+# Collect packages from config
+npm_packages=$(yq -r '.global_tools.npm[]?' "$CONFIG_FILE" 2>/dev/null | grep -v '^null$' || true)
+pip_packages=$(yq -r '.global_tools.pip[]?' "$CONFIG_FILE" 2>/dev/null | grep -v '^null$' || true)
+dotnet_packages=$(yq -r '.global_tools.dotnet[]?' "$CONFIG_FILE" 2>/dev/null | grep -v '^null$' || true)
+
+# Track results
+npm_installed=()
+pip_installed=()
+dotnet_installed=()
+failed=()
+
+# --- NPM ---
+if [[ -n "$npm_packages" ]]; then
+    echo ""
+    node_say "${BOLD}Installing Node.js packages${NC}"
+    echo -e "${DIM}Packages: $(echo $npm_packages | tr '\n' ' ')${NC}"
+    echo ""
+
+    if ! command -v npm &>/dev/null; then
+        warn "npm not installed, skipping Node.js packages"
+    else
+        while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+
+            if [[ "$DRY_RUN" == true ]]; then
+                echo "  → Would install: $pkg"
+            else
+                echo -n "  Installing $pkg... "
+                if npm install -g "$pkg" &>/dev/null; then
+                    echo -e "${GREEN}✓${NC}"
+                    npm_installed+=("$pkg")
+                else
+                    echo -e "${YELLOW}✗${NC}"
+                    failed+=("npm:$pkg")
+                fi
+            fi
+        done <<< "$npm_packages"
+    fi
+
+    if [[ "$DRY_RUN" != true && ${#npm_installed[@]} -gt 0 ]]; then
+        echo ""
+        node_say "Installed ${#npm_installed[@]} packages: ${npm_installed[*]}"
+    fi
+fi
+
+# --- Python ---
+if [[ -n "$pip_packages" ]]; then
+    echo ""
+    python_say "${BOLD}Installing Python packages${NC}"
+    echo -e "${DIM}Packages: $(echo $pip_packages | tr '\n' ' ')${NC}"
+    echo ""
+
+    pip_cmd=""
+    if command -v pip3 &>/dev/null; then
+        pip_cmd="pip3"
+    elif command -v pip &>/dev/null; then
+        pip_cmd="pip"
+    fi
+
+    if [[ -z "$pip_cmd" ]]; then
+        warn "pip not installed, skipping Python packages"
+    else
+        while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+
+            if [[ "$DRY_RUN" == true ]]; then
+                echo "  → Would install: $pkg"
+            else
+                echo -n "  Installing $pkg... "
+                if $pip_cmd install --user "$pkg" &>/dev/null; then
+                    echo -e "${GREEN}✓${NC}"
+                    pip_installed+=("$pkg")
+                else
+                    echo -e "${YELLOW}✗${NC}"
+                    failed+=("pip:$pkg")
+                fi
+            fi
+        done <<< "$pip_packages"
+    fi
+
+    if [[ "$DRY_RUN" != true && ${#pip_installed[@]} -gt 0 ]]; then
+        echo ""
+        python_say "Installed ${#pip_installed[@]} packages: ${pip_installed[*]}"
+    fi
+fi
+
+# --- .NET ---
+if [[ -n "$dotnet_packages" ]]; then
+    echo ""
+    dotnet_say "${BOLD}Installing .NET tools${NC}"
+    echo -e "${DIM}Tools: $(echo $dotnet_packages | tr '\n' ' ')${NC}"
+    echo ""
+
+    if ! command -v dotnet &>/dev/null; then
+        warn "dotnet not installed, skipping .NET tools"
+    else
+        while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+
+            if [[ "$DRY_RUN" == true ]]; then
+                echo "  → Would install: $pkg"
+            else
+                echo -n "  Installing $pkg... "
+                if dotnet tool install --global "$pkg" &>/dev/null 2>&1; then
+                    echo -e "${GREEN}✓${NC}"
+                    dotnet_installed+=("$pkg")
+                elif dotnet tool list --global 2>/dev/null | grep -iq "^$pkg "; then
+                    echo -e "${GREEN}✓${NC} (already installed)"
+                    dotnet_installed+=("$pkg")
+                else
+                    echo -e "${YELLOW}✗${NC}"
+                    failed+=("dotnet:$pkg")
+                fi
+            fi
+        done <<< "$dotnet_packages"
+    fi
+
+    if [[ "$DRY_RUN" != true && ${#dotnet_installed[@]} -gt 0 ]]; then
+        echo ""
+        dotnet_say "Installed ${#dotnet_installed[@]} tools: ${dotnet_installed[*]}"
+    fi
+fi
+
+# --- Summary ---
+echo ""
+if [[ "$DRY_RUN" == true ]]; then
+    echo -e "${BOLD}Dry run complete${NC}"
+else
+    total=$((${#npm_installed[@]} + ${#pip_installed[@]} + ${#dotnet_installed[@]}))
+    echo -e "${BOLD}Global tools installation complete${NC}"
+    echo -e "  ${GREEN}✓${NC} $total packages installed"
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        echo -e "  ${YELLOW}!${NC} ${#failed[@]} failed: ${failed[*]}"
+    fi
+fi
+echo ""
