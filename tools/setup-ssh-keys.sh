@@ -68,6 +68,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Commands:${NC}"
     echo "  (none)          Interactive mode - restore if exists, otherwise generate"
+    echo "  sync            Auto-sync: restore if missing, prompt only if keys differ"
     echo "  restore         Restore SSH key from 1Password to ~/.ssh/"
     echo "  generate        Generate new SSH key and store in 1Password"
     echo "  show            Show local public key"
@@ -301,6 +302,64 @@ cmd_compare() {
     echo ""
 }
 
+# Sync mode - auto-sync if possible, prompt only when needed
+cmd_sync() {
+    check_prerequisites
+
+    local has_local=false
+    local has_1password=false
+    local local_key=""
+    local op_key=""
+
+    # Check local key
+    if key_exists_locally && [[ -f "$PUBLIC_KEY_FILE" ]]; then
+        has_local=true
+        local_key=$(cat "$PUBLIC_KEY_FILE")
+    fi
+
+    # Check 1Password key
+    if key_exists_in_1password; then
+        has_1password=true
+        op_key=$(op read "op://$VAULT/$KEY_NAME/public_key" 2>/dev/null)
+    fi
+
+    # Decision logic
+    if $has_local && $has_1password; then
+        if [[ "$local_key" == "$op_key" ]]; then
+            say "SSH keys are in sync ✓"
+            return 0
+        else
+            # Keys differ - ask user
+            warn "Local SSH key differs from 1Password"
+            echo ""
+            echo "Options:"
+            echo "  1. Overwrite local with 1Password key"
+            echo "  2. Keep local key (do nothing)"
+            echo ""
+            read -rp "Choose [1-2]: " choice
+            case $choice in
+                1) cmd_restore ;;
+                *) say "Keeping local key" ;;
+            esac
+        fi
+    elif $has_1password && ! $has_local; then
+        # Auto-restore from 1Password
+        say "Restoring SSH key from 1Password..."
+        cmd_restore
+    elif $has_local && ! $has_1password; then
+        warn "Local SSH key exists but not in 1Password"
+        info "Consider backing up your key to 1Password"
+    else
+        # Neither exists - ask to generate
+        say "No SSH key found"
+        echo ""
+        read -rp "Generate new SSH key in 1Password? [Y/n]: " confirm
+        if [[ "$confirm" != "n" && "$confirm" != "N" ]]; then
+            cmd_generate
+        fi
+    fi
+}
+
 # Interactive mode
 cmd_interactive() {
     check_prerequisites
@@ -345,6 +404,9 @@ cmd_interactive() {
 
 # Main
 case "$COMMAND" in
+    sync)
+        cmd_sync
+        ;;
     restore)
         cmd_restore
         ;;

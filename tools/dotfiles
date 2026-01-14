@@ -68,6 +68,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}System:${NC}"
     echo -e "  ${CYAN}ssh${NC}                      Setup SSH keys with 1Password"
+    echo -e "      ${DIM}sync${NC}                 Auto-sync (used by setup)"
     echo -e "      ${DIM}restore${NC}              Restore key from 1Password to ~/.ssh/"
     echo -e "      ${DIM}generate${NC}             Generate new key in 1Password"
     echo -e "      ${DIM}show${NC}                 Show local public key"
@@ -436,8 +437,19 @@ cmd_setup() {
     say "Running complete setup..."
     echo ""
 
+    # Ask for sudo password upfront
+    say "Some steps require administrator privileges."
+    sudo -v
+
+    # Keep sudo alive in background for the duration of setup
+    (while true; do sudo -n true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done) &
+    local sudo_keeper_pid=$!
+    trap "kill $sudo_keeper_pid 2>/dev/null" EXIT
+
+    echo ""
+
     say "Step 1/6: Setting up SSH keys..."
-    cmd_ssh
+    cmd_ssh sync
     echo ""
 
     say "Step 2/6: Installing system packages..."
@@ -460,6 +472,9 @@ cmd_setup() {
         echo "  (skipped - macOS only)"
     fi
     echo ""
+
+    # Stop the sudo keeper
+    kill $sudo_keeper_pid 2>/dev/null
 
     say "Setup complete!"
     say "Run 'dotfiles doctor' to verify everything is configured correctly."

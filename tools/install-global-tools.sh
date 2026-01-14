@@ -167,37 +167,33 @@ main() {
 
     # Process NPM packages
     say_verbose "Processing NPM packages from $CONFIG_FILE..."
-    # yq eval '.global_tools.npm[]?' "$CONFIG_FILE" # The '?' suppresses errors for null arrays
-    mapfile -t npm_tools < <(yq eval '.global_tools.npm[]?' "$CONFIG_FILE" | grep -v '^null$') # Read into array, filter null
-    if [ ${#npm_tools[@]} -gt 0 ]; then
-        for tool in "${npm_tools[@]}"; do
-            install_npm_package "$tool" || say_verbose "Continuing after failure with $tool"
-        done
-    else
-        say_verbose "No NPM packages listed in $CONFIG_FILE or section is empty/null."
-    fi
+    local npm_count=0
+    while IFS= read -r tool; do
+        [[ -z "$tool" || "$tool" == "null" ]] && continue
+        install_npm_package "$tool" || say_verbose "Continuing after failure with $tool"
+        ((npm_count++))
+    done < <(yq eval '.global_tools.npm[]?' "$CONFIG_FILE" 2>/dev/null)
+    [[ $npm_count -eq 0 ]] && say_verbose "No NPM packages listed in $CONFIG_FILE or section is empty/null."
 
     # Process Pip packages
     say_verbose "Processing Pip packages from $CONFIG_FILE..."
-    mapfile -t pip_tools < <(yq eval '.global_tools.pip[]?' "$CONFIG_FILE" | grep -v '^null$')
-    if [ ${#pip_tools[@]} -gt 0 ]; then
-        for tool in "${pip_tools[@]}"; do
-            install_pip_package "$tool" || say_verbose "Continuing after failure with $tool"
-        done
-    else
-        say_verbose "No Pip packages listed in $CONFIG_FILE or section is empty/null."
-    fi
+    local pip_count=0
+    while IFS= read -r tool; do
+        [[ -z "$tool" || "$tool" == "null" ]] && continue
+        install_pip_package "$tool" || say_verbose "Continuing after failure with $tool"
+        ((pip_count++))
+    done < <(yq eval '.global_tools.pip[]?' "$CONFIG_FILE" 2>/dev/null)
+    [[ $pip_count -eq 0 ]] && say_verbose "No Pip packages listed in $CONFIG_FILE or section is empty/null."
 
     # Process Dotnet tools
     say_verbose "Processing Dotnet tools from $CONFIG_FILE..."
-    mapfile -t dotnet_tools < <(yq eval '.global_tools.dotnet[]?' "$CONFIG_FILE" | grep -v '^null$')
-    if [ ${#dotnet_tools[@]} -gt 0 ]; then
-        for tool in "${dotnet_tools[@]}"; do
-            install_dotnet_tool "$tool" || say_verbose "Continuing after failure with $tool"
-        done
-    else
-        say_verbose "No Dotnet tools listed in $CONFIG_FILE or section is empty/null."
-    fi
+    local dotnet_count=0
+    while IFS= read -r tool; do
+        [[ -z "$tool" || "$tool" == "null" ]] && continue
+        install_dotnet_tool "$tool" || say_verbose "Continuing after failure with $tool"
+        ((dotnet_count++))
+    done < <(yq eval '.global_tools.dotnet[]?' "$CONFIG_FILE" 2>/dev/null)
+    [[ $dotnet_count -eq 0 ]] && say_verbose "No Dotnet tools listed in $CONFIG_FILE or section is empty/null."
 
     say "Global tools installation process finished."
     if [ "$DRY_RUN" = true ]; then
