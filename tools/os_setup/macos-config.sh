@@ -6,8 +6,9 @@
 
 set -e
 
-# Close any open System Preferences panes
+# Close any open System Preferences/Settings panes
 osascript -e 'tell application "System Preferences" to quit' 2>/dev/null || true
+osascript -e 'tell application "System Settings" to quit' 2>/dev/null || true
 
 # Ask for the administrator password upfront
 sudo -v
@@ -20,7 +21,8 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 ###############################################################################
 
 # Disable the sound effects on boot
-sudo nvram SystemAudioVolume=" "
+# Note: This may not work on Apple Silicon Macs with Secure Boot enabled
+sudo nvram SystemAudioVolume=" " 2>/dev/null || true
 
 # Set sidebar icon size to medium
 defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 2
@@ -338,10 +340,10 @@ fi
 ###############################################################################
 
 # Only use UTF-8 in Terminal.app
-defaults write com.apple.terminal StringEncodings -array 4
+defaults write com.apple.Terminal StringEncodings -array 4
 
 # Enable Secure Keyboard Entry in Terminal.app
-defaults write com.apple.terminal SecureKeyboardEntry -bool true
+defaults write com.apple.Terminal SecureKeyboardEntry -bool true
 
 # Disable the annoying line marks
 defaults write com.apple.Terminal ShowLineMarks -int 0
@@ -425,6 +427,92 @@ defaults write com.google.Chrome DisablePrintPreview -bool true
 
 # Expand the print dialog by default
 defaults write com.google.Chrome PMPrintingExpandedStateForPrint2 -bool true
+
+###############################################################################
+# Keyboard Shortcuts - Disable native shortcuts for third-party replacements  #
+###############################################################################
+
+# Reassign Spotlight to Option+Space (use Raycast for Command+Space)
+# Spotlight Show/Hide: AppleSymbolicHotKeys ID 64
+# Modifier: 524288 = Option key
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 "
+  <dict>
+    <key>enabled</key><true/>
+    <key>value</key><dict>
+      <key>type</key><string>standard</string>
+      <key>parameters</key>
+      <array>
+        <integer>32</integer>
+        <integer>49</integer>
+        <integer>524288</integer>
+      </array>
+    </dict>
+  </dict>
+"
+
+# Disable Spotlight Finder search shortcut (Command+Option+Space)
+# AppleSymbolicHotKeys ID 65
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 65 "
+  <dict>
+    <key>enabled</key><false/>
+    <key>value</key><dict>
+      <key>type</key><string>standard</string>
+      <key>parameters</key>
+      <array>
+        <integer>32</integer>
+        <integer>49</integer>
+        <integer>1572864</integer>
+      </array>
+    </dict>
+  </dict>
+"
+
+echo "Configured Spotlight to Option+Space (use Raycast with Command+Space)"
+
+# Configure AltTab to use Command+Tab
+# holdShortcut = modifier key to hold (⌘)
+# nextWindowShortcut = key to press (⇥ Tab)
+defaults write com.lwouis.alt-tab-macos holdShortcut $'\U2318'
+defaults write com.lwouis.alt-tab-macos nextWindowShortcut $'\U21e5'
+# Configure Shortcut 2 to use Command+` (switch windows of same app)
+defaults write com.lwouis.alt-tab-macos holdShortcut2 $'\U2318'
+defaults write com.lwouis.alt-tab-macos nextWindowShortcut2 $'\U0060'
+echo "Configured AltTab: Shortcut 1 = Command+Tab, Shortcut 2 = Command+\`"
+
+# Configure Raycast hotkey to Command+Space
+defaults write com.raycast.macos raycastGlobalHotkey -string "Command-49"
+echo "Configured Raycast hotkey to Command+Space"
+
+# Activate the symbolic hotkeys changes
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+
+###############################################################################
+# Login Items - Apps that start at login                                      #
+###############################################################################
+
+LOGIN_APPS=(
+    "/Applications/AltTab.app"
+    "/Applications/Flux.app"
+    "/Applications/Grammarly Desktop.app"
+    "/Applications/1Password.app"
+    "/Applications/RescueTime.app"
+    "/Applications/Rectangle.app"
+    "/Applications/Raycast.app"
+)
+
+echo "Configuring login items..."
+
+for app in "${LOGIN_APPS[@]}"; do
+    if [[ -d "$app" ]]; then
+        app_name=$(basename "$app" .app)
+        # Remove existing login item if present (to avoid duplicates)
+        osascript -e "tell application \"System Events\" to delete login item \"$app_name\"" &>/dev/null || true
+        # Add login item
+        osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$app\", hidden:false}" &>/dev/null
+        echo "Added $app_name to login items"
+    fi
+done
 
 ###############################################################################
 # Kill affected applications                                                  #

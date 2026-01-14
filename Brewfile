@@ -93,6 +93,7 @@ cask "google-chrome"      # Chrome
 cask "chatgpt"            # ChatGPT desktop
 cask "claude"             # Claude desktop
 cask "cursor"             # Cursor IDE
+cask "claude-code"
 
 # Casks - Database
 cask "dbeaver-community"  # Database tool
@@ -106,7 +107,7 @@ cask "notion"             # Notes
 cask "postman"            # API testing
 cask "rectangle"          # Window management
 cask "raycast"            # Spotlight replacement
-cask "alt-tab"            # Windows-like alt-tab
+cask "alt-tab"            # Window switcher
 cask "discord"            # Chat
 cask "grammarly-desktop"   # Writing assistant
 
