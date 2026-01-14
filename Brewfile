@@ -75,7 +75,7 @@ brew "watch"              # Run commands periodically
 
 # Casks - Development
 cask "visual-studio-code"  # VS Code
-# cask "docker"             # Docker - conflicts_with bug, install manually
+cask "docker-desktop"      # Docker Desktop
 cask "jetbrains-toolbox"  # JetBrains tools
 cask "rider"              # .NET IDE
 cask "dotnet-sdk"         # .NET SDK - conflicts_with bug, install manually
@@ -112,12 +112,16 @@ cask "discord"            # Chat
 cask "grammarly-desktop"   # Writing assistant
 
 # Casks - Utilities
+cask "google-drive"       # Google Drive sync
 cask "flux-app"           # Screen color
 cask "rescuetime"         # Time tracking
 cask "spotify"            # Music
 
 # Fonts
 cask "font-hack-nerd-font"
+cask "font-fira-code-nerd-font"
+cask "font-fira-mono-nerd-font"
+cask "font-meslo-lg-nerd-font"
 
 # Mac App Store apps (requires: brew install mas)
 mas "Line", id: 539883307

@@ -101,6 +101,10 @@ show_help() {
     echo -e "      ${DIM}--deep${NC}               Factory reset: remove all dev tools"
     echo ""
     echo -e "${BOLD}Other:${NC}"
+    echo -e "  ${CYAN}completions${NC}              Manage shell completions"
+    echo -e "      ${DIM}install${NC}              Install/update completions (default)"
+    echo -e "      ${DIM}uninstall${NC}            Remove completions"
+    echo -e "      ${DIM}path${NC}                 Show completions file path"
     echo -e "  ${CYAN}help${NC}                     Show this help message"
     echo -e "  ${CYAN}--version${NC}                Show version"
     echo ""
@@ -367,6 +371,57 @@ cmd_ssh() {
     fi
 }
 
+cmd_completions() {
+    local completions_src="$DOTFILES_DIR/home/dot_config/zsh/completions/_dotfiles"
+    local completions_dst="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/completions/_dotfiles"
+
+    case "${1:-install}" in
+        install)
+            if [[ ! -f "$completions_src" ]]; then
+                error "Completions source not found at $completions_src"
+            fi
+
+            mkdir -p "$(dirname "$completions_dst")"
+
+            if [[ -f "$completions_dst" ]]; then
+                say "Updating completions..."
+            else
+                say "Installing completions..."
+            fi
+
+            cp "$completions_src" "$completions_dst"
+            say "Completions installed to $completions_dst"
+            echo ""
+            echo -e "${YELLOW}To activate, run:${NC}"
+            echo "  exec zsh"
+            echo ""
+            echo "Or reload completions in current shell:"
+            echo "  unfunction _dotfiles 2>/dev/null; autoload -Uz _dotfiles"
+            ;;
+        uninstall)
+            if [[ -f "$completions_dst" ]]; then
+                rm "$completions_dst"
+                say "Completions removed from $completions_dst"
+                echo ""
+                echo "Restart your shell to apply changes."
+            else
+                echo "No completions found at $completions_dst"
+            fi
+            ;;
+        path)
+            echo "$completions_dst"
+            ;;
+        *)
+            echo "Usage: dotfiles completions [install|uninstall|path]"
+            echo ""
+            echo "Commands:"
+            echo "  install    Install/update completions (default)"
+            echo "  uninstall  Remove completions"
+            echo "  path       Show completions file path"
+            ;;
+    esac
+}
+
 cmd_setup() {
     say "Running complete setup..."
     echo ""
@@ -483,6 +538,10 @@ case "${1:-help}" in
     setup)
         shift
         cmd_setup "$@"
+        ;;
+    completions)
+        shift
+        cmd_completions "$@"
         ;;
     help|--help|-h)
         show_help

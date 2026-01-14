@@ -1,47 +1,63 @@
 #compdef dotfiles
 
 # Zsh completion for dotfiles CLI
+# Reload with: unfunction _dotfiles && autoload -Uz _dotfiles
 
 _dotfiles() {
     local -a commands
     commands=(
+        'setup:Complete setup (ssh, install, extensions, defaults)'
         'doctor:Run health checks'
-        'bootstrap:Bootstrap dotfiles on new machine'
-        'destroy:Remove dotfiles and state'
         'update:Pull and apply latest changes'
         'apply:Apply dotfiles (chezmoi apply)'
         'diff:Show pending changes'
         'edit:Edit dotfiles source'
         'cd:Print path to dotfiles source'
         'status:Show git status of dotfiles'
-        'backup:Backup project folders'
-        'cron:Manage scheduled tasks'
-        'install:Install packages (brew bundle)'
+        'install:Install full software suite (Brewfile)'
         'cleanup:Remove packages not in Brewfile'
-        'logs:View cron job logs'
         'extensions:Install extensions (VS Code, browser)'
-        'defaults:Apply macOS system defaults'
         'ssh:Setup SSH keys with 1Password'
+        'defaults:Apply macOS system defaults'
+        'cron:Manage scheduled tasks'
+        'backup:Backup project folders'
+        'logs:View cron job logs'
+        'bootstrap:Bootstrap dotfiles on new machine'
+        'destroy:Remove dotfiles and state'
+        'completions:Manage shell completions'
         'help:Show help message'
     )
 
     local -a doctor_opts
     doctor_opts=(
-        '--quick:Skip slow checks'
+        '--quick:Skip slow checks (disk, outdated)'
         '--fix:Auto-fix issues'
     )
 
-    local -a backup_cmds
-    backup_cmds=(
-        'backup:Create a backup'
-        'list:List available backups'
-        'restore:Restore from backup'
+    local -a destroy_opts
+    destroy_opts=(
+        '--all:Also remove chezmoi state, zsh data'
+        '--deep:Factory reset - remove all dev tools'
+    )
+
+    local -a ssh_cmds
+    ssh_cmds=(
+        'restore:Restore key from 1Password to ~/.ssh/'
+        'generate:Generate new key in 1Password'
+        'show:Show local public key'
+        'compare:Compare local key with 1Password'
     )
 
     local -a cron_cmds
     cron_cmds=(
-        'list:Show configured cron jobs'
-        'setup:Install/update all cron jobs'
+        'list:List scheduled tasks'
+        'setup:Setup cron jobs'
+    )
+
+    local -a backup_cmds
+    backup_cmds=(
+        'list:List available backups'
+        'restore:Restore from backup'
     )
 
     local -a logs_cmds
@@ -57,11 +73,12 @@ _dotfiles() {
         'all:Install all extensions'
     )
 
-    case $state in
-        (command)
-            _describe -t commands 'dotfiles command' commands
-            ;;
-    esac
+    local -a completions_cmds
+    completions_cmds=(
+        'install:Install completions to shell'
+        'uninstall:Remove completions'
+        'path:Show completions file path'
+    )
 
     if (( CURRENT == 2 )); then
         _describe -t commands 'dotfiles command' commands
@@ -70,17 +87,30 @@ _dotfiles() {
             doctor)
                 _describe -t options 'doctor options' doctor_opts
                 ;;
-            backup)
-                _describe -t commands 'backup command' backup_cmds
+            destroy)
+                _describe -t options 'destroy options' destroy_opts
+                ;;
+            ssh)
+                _describe -t commands 'ssh command' ssh_cmds
                 ;;
             cron)
                 _describe -t commands 'cron command' cron_cmds
+                ;;
+            backup)
+                _describe -t commands 'backup command' backup_cmds
                 ;;
             logs)
                 _describe -t commands 'logs command' logs_cmds
                 ;;
             extensions)
                 _describe -t commands 'extensions command' extensions_cmds
+                ;;
+            completions)
+                _describe -t commands 'completions command' completions_cmds
+                ;;
+            edit)
+                # Complete with chezmoi-managed files
+                _files
                 ;;
         esac
     fi
