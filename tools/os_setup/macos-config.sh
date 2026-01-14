@@ -152,9 +152,9 @@ defaults write com.apple.finder DisableAllAnimations -bool true
 defaults write com.apple.finder NewWindowTarget -string "PfDe"
 defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/"
 
-# Show icons for hard drives, servers, and removable media on the desktop
+# Show icons for external drives, servers, and removable media on the desktop (but not internal hard drives)
 defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
-defaults write com.apple.finder ShowHardDrivesOnDesktop -bool true
+defaults write com.apple.finder ShowHardDrivesOnDesktop -bool false
 defaults write com.apple.finder ShowMountedServersOnDesktop -bool true
 defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true
 
@@ -494,12 +494,11 @@ echo "Configured Raycast hotkey to Command+Space"
 LOGIN_APPS=(
     "/Applications/AltTab.app"
     "/Applications/Flux.app"
-    "/Applications/Grammarly Desktop.app"
-    "/Applications/1Password.app"
     "/Applications/RescueTime.app"
     "/Applications/Rectangle.app"
     "/Applications/Raycast.app"
 )
+# Note: 1Password and Grammarly manage their own "Start at login" settings and start minimized to menu bar
 
 echo "Configuring login items..."
 
