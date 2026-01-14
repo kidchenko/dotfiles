@@ -171,6 +171,8 @@ cmd_packages() {
                 if [[ ! -f "$BREWFILE" ]]; then
                     error "Brewfile not found at $BREWFILE"
                 fi
+                # Refresh sudo if already authenticated (for casks that need it)
+                sudo -n true 2>/dev/null && sudo -v 2>/dev/null || true
                 say "Installing packages from Brewfile..."
                 brew bundle install --file="$BREWFILE" --verbose "$@"
                 echo ""
@@ -437,15 +439,6 @@ cmd_setup() {
     say "Running complete setup..."
     echo ""
 
-    # Ask for sudo password upfront
-    say "Some steps require administrator privileges."
-    sudo -v
-
-    # Keep sudo alive in background for the duration of setup
-    (while true; do sudo -n true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done) &
-    local sudo_keeper_pid=$!
-    trap "kill $sudo_keeper_pid 2>/dev/null" EXIT
-
     echo ""
 
     say "Step 1/6: Setting up SSH keys..."
@@ -472,9 +465,6 @@ cmd_setup() {
         echo "  (skipped - macOS only)"
     fi
     echo ""
-
-    # Stop the sudo keeper
-    kill $sudo_keeper_pid 2>/dev/null
 
     say "Setup complete!"
     say "Run 'dotfiles doctor' to verify everything is configured correctly."

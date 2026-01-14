@@ -10,11 +10,10 @@ set -e
 osascript -e 'tell application "System Preferences" to quit' 2>/dev/null || true
 osascript -e 'tell application "System Settings" to quit' 2>/dev/null || true
 
-# Ask for the administrator password upfront
-sudo -v
-
-# Keep-alive: update existing `sudo` time stamp until script has finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+# Ask for the administrator password upfront (skip if already authenticated)
+if ! sudo -n true 2>/dev/null; then
+    sudo -v
+fi
 
 ###############################################################################
 # General UI/UX                                                               #
