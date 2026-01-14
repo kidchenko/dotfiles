@@ -48,15 +48,26 @@ brew "yarn"               # JS package manager
 brew "pnpm"               # Fast JS package manager
 brew "shellcheck"         # Shell script linter
 brew "terraform"          # Infrastructure as code
+brew "direnv"             # Per-directory environment variables
+brew "act"                # Run GitHub Actions locally
+brew "pre-commit"         # Git pre-commit hooks framework
 
 # Languages & runtimes
 brew "ruby"               # Ruby
+brew "pyenv"              # Python version manager
+brew "poetry"             # Python dependency management
 
 # Cloud & DevOps
 brew "azure-cli"          # Azure CLI
+brew "awscli"             # AWS CLI
 brew "flyctl"             # Fly.io CLI
 brew "graphviz"           # Graph visualization
 brew "rclone"             # Sync files to cloud storage (Google Drive, S3, etc.)
+
+# Kubernetes
+brew "kubectl"            # Kubernetes CLI
+brew "k9s"                # Kubernetes TUI
+brew "helm"               # Kubernetes package manager
 
 # Security
 brew "nmap"               # Network scanner
@@ -94,6 +105,11 @@ cask "chatgpt"            # ChatGPT desktop
 cask "claude"             # Claude desktop
 cask "cursor"             # Cursor IDE
 cask "claude-code"
+
+# Database
+brew "postgresql@16"      # PostgreSQL client
+brew "mysql-client"       # MySQL client
+brew "redis"              # Redis CLI
 
 # Casks - Database
 cask "dbeaver-community"  # Database tool
