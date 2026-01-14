@@ -12,11 +12,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.0/tools/bootstrap.sh)" -- --dry-run
 ```
 
-Bootstrap installs essential dev tools only. After bootstrap, install the full software suite:
+Bootstrap installs essential dev tools only. After bootstrap, run the full setup:
 
 ```bash
-# Install full software suite (~30-40 min)
-dotfiles install
+# Complete setup (packages, extensions, ssh, defaults) (~30-40 min)
+dotfiles setup
 ```
 
 > **Tip**: Use a tagged release (e.g., `v1.0.0`) for stability. Check [releases](https://github.com/kidchenko/dotfiles/releases) for the latest version.
@@ -41,45 +41,40 @@ After installation, use the `dotfiles` command to manage everything:
 dotfiles help              # Show all commands
 ```
 
-### Core Commands
+### Daily
 
 | Command | Description |
 |---------|-------------|
-| `dotfiles doctor` | Run health checks on your setup |
-| `dotfiles apply` | Apply pending dotfile changes |
 | `dotfiles update` | Pull and apply latest changes |
-| `dotfiles diff` | Preview pending changes |
-| `dotfiles edit` | Open dotfiles in your editor |
-| `dotfiles status` | Show git status of dotfiles |
+| `dotfiles doctor` | Run health checks on your setup |
+| `dotfiles status` | Show pending changes (chezmoi diff + git status) |
 
-### Package Management
-
-| Command | Description |
-|---------|-------------|
-| `dotfiles install` | Install full software suite (Brewfile) |
-| `dotfiles cleanup` | List packages not in Brewfile |
-| `dotfiles extensions` | Install VS Code extensions |
-
-### Maintenance
+### Packages
 
 | Command | Description |
 |---------|-------------|
-| `dotfiles doctor --quick` | Fast health check (skip slow checks) |
-| `dotfiles doctor --fix` | Auto-fix common issues |
-| `dotfiles backup` | Create project backup |
-| `dotfiles backup list` | List available backups |
-| `dotfiles logs` | View cron job logs |
-| `dotfiles cron` | List scheduled tasks |
-| `dotfiles cron setup` | Setup/update cron jobs |
+| `dotfiles packages` | Install packages from manifest |
+| `dotfiles packages cleanup` | Remove unlisted packages |
+| `dotfiles packages outdated` | Show packages with updates |
+| `dotfiles extensions` | Install VS Code/browser extensions |
 
-### System Setup
+### System
 
 | Command | Description |
 |---------|-------------|
-| `dotfiles ssh` | Generate SSH key in 1Password |
+| `dotfiles ssh` | Setup SSH keys with 1Password |
 | `dotfiles defaults` | Apply macOS system preferences |
-| `dotfiles bootstrap` | Full bootstrap (for new machines) |
-| `dotfiles destroy` | Remove all dotfiles |
+| `dotfiles cron` | Manage scheduled tasks |
+| `dotfiles logs` | View cron job logs |
+| `dotfiles backup` | Backup project folders |
+
+### Lifecycle
+
+| Command | Description |
+|---------|-------------|
+| `dotfiles setup` | Complete post-bootstrap setup |
+| `dotfiles bootstrap` | Bootstrap on new machine |
+| `dotfiles destroy` | Remove dotfiles and state |
 
 ## Secrets Management (1Password)
 

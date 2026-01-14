@@ -16,6 +16,9 @@ brew "jq"         # JSON processor
 brew "chezmoi"
 brew "gh"         # GitHub CLI
 
+# Terminal
+cask "hyper"
+
 # Fonts for terminal
 cask "font-hack-nerd-font"
 cask "font-fira-mono-nerd-font"

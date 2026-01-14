@@ -26,17 +26,16 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/
 
 ## What Gets Installed
 
-The bootstrap process will:
+The bootstrap process installs essential tools only:
 
 1. Install Homebrew (macOS only)
 2. Install Chezmoi dotfiles manager
-3. Install all packages from `Brewfile`
-4. Prompt for 1Password sign-in (for secrets)
-5. Offer to generate SSH keys (stored in 1Password)
-6. Apply all dotfile configurations
-7. Install Oh My Zsh and plugins
-8. Setup scheduled cron jobs
-9. Install the `dotfiles` CLI command
+3. Apply all dotfile configurations
+4. Install essential packages from `Brewfile.essential`
+5. Install Oh My Zsh and plugins
+6. Setup the `dotfiles` CLI command
+
+After bootstrap, run `dotfiles setup` for complete installation (full packages, extensions, SSH keys, system defaults).
 
 ## Manual Install
 
@@ -71,8 +70,8 @@ chezmoi diff
 # 5. Apply dotfiles
 chezmoi apply
 
-# 6. Install Homebrew packages
-brew bundle install --file=~/.local/share/chezmoi/Brewfile
+# 6. Install packages
+dotfiles packages
 
 # 7. Install Oh My Zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -97,7 +96,24 @@ ln -sf ~/.local/share/chezmoi/tools/dotfiles ~/.local/bin/dotfiles
 exec zsh
 ```
 
-### 2. Verify Installation
+### 2. Complete Setup
+
+Run the full setup to install packages, extensions, SSH keys, and system defaults:
+
+```bash
+dotfiles setup
+```
+
+Or run individual steps:
+
+```bash
+dotfiles ssh              # Setup SSH keys
+dotfiles packages         # Install packages
+dotfiles extensions       # Install extensions
+dotfiles defaults         # Apply macOS defaults
+```
+
+### 3. Verify Installation
 
 ```bash
 dotfiles doctor
@@ -112,33 +128,6 @@ This checks:
 - Git configuration
 - Symlink health
 - Scheduled tasks
-
-### 3. Setup SSH Keys (if not done during bootstrap)
-
-```bash
-# Sign in to 1Password
-op signin
-
-# Generate SSH key
-dotfiles ssh
-
-# Add public key to GitHub
-# https://github.com/settings/ssh/new
-```
-
-### 4. Apply macOS Defaults (optional)
-
-```bash
-dotfiles defaults
-```
-
-This configures developer-friendly macOS settings. Review `tools/os_setup/macos-config.sh` first.
-
-### 5. Install VS Code Extensions (optional)
-
-```bash
-dotfiles extensions
-```
 
 ## Updating
 

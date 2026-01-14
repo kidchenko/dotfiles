@@ -123,8 +123,8 @@ install_brew_packages() {
             say "DRY-RUN: Would install $formulae formulae and $casks casks from $BREWFILE"
             return 0
         fi
-        brew bundle install --file="$BREWFILE"
-        say "Essential packages installed (run 'dotfiles install' for full software suite)"
+        brew bundle install --file="$BREWFILE" --verbose
+        say "Essential packages installed (run 'dotfiles setup' for full installation)"
     else
         say "Skipping Homebrew packages (Brewfile.essential not found)"
     fi

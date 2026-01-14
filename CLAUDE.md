@@ -12,26 +12,25 @@ Cross-platform dotfiles (macOS, Linux & Windows) managed with [Chezmoi](https://
 # Bootstrap on new machine (essential tools only, ~15-20 min)
 bash tools/bootstrap.sh
 
-# Install full software suite after bootstrap (~30-40 min)
-dotfiles install
+# Complete setup after bootstrap (~30-40 min)
+dotfiles setup
 
-# Apply dotfile changes
-chezmoi apply
+# Pull and apply latest changes
+dotfiles update
 
-# Pull and apply from remote
-chezmoi update
+# Show pending changes (chezmoi diff + git status)
+dotfiles status
 
-# Preview pending changes
-chezmoi diff
+# Run health checks
+dotfiles doctor
 
-# Verify chezmoi setup
-chezmoi doctor
+# Manage packages
+dotfiles packages              # Install from manifest
+dotfiles packages outdated     # Check for updates
+dotfiles packages cleanup      # Remove unlisted
 
-# Install global tools (npm/pip/dotnet)
-bash tools/install-global-tools.sh
-
-# Install VS Code extensions
-bash tools/install-vscode-extensions.sh
+# Install extensions
+dotfiles extensions            # VS Code + browser
 ```
 
 ## Architecture
@@ -61,7 +60,7 @@ All configs follow XDG conventions:
 ### Bootstrap Flow
 `tools/bootstrap.sh` runs: Homebrew install → Chezmoi install → Apply dotfiles → Essential packages (Brewfile.essential) → Oh My Zsh → Zsh plugins → Cron setup
 
-After bootstrap, run `dotfiles install` to install the full software suite from `Brewfile`.
+After bootstrap, run `dotfiles setup` for complete installation (packages, extensions, ssh, defaults).
 
 ### Global Tools Config
 Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet global tools, then run `tools/install-global-tools.sh`.
