@@ -119,10 +119,10 @@ dotfiles/
 │   ├── bootstrap.sh         # One-line installer
 │   ├── doctor.sh            # Health checks
 │   ├── destroy.sh           # Uninstaller
+│   ├── backup-projects.sh   # Backup utility
 │   ├── setup-ssh-keys.sh    # SSH key generation
 │   └── os_setup/            # OS-specific configs
 ├── cron/                    # Scheduled tasks
-├── scripts/                 # User scripts (backup, etc.)
 └── Brewfile                 # Homebrew packages
 ```
 
