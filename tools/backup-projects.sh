@@ -2,6 +2,12 @@
 #
 # backup-projects.sh - Backup project folders to local and remote storage
 #
+# Features:
+#   - Commits and pushes all git repositories before backup
+#   - Logs all repositories and their remote origins
+#   - Creates compressed archive of project folders
+#   - Optional upload to cloud storage via rclone
+#
 # Usage:
 #   backup-projects.sh [command] [options]
 #
@@ -15,7 +21,7 @@
 # Options:
 #   --dry-run   Show what would be done without doing it
 #   --verbose   Show detailed output
-#   --local     Only backup locally (skip remote upload)
+#   --upload    Upload to remote storage (Google Drive via rclone)
 #   --config    Path to config file (default: ~/.config/dotfiles/config.yaml)
 #
 
@@ -79,6 +85,12 @@ log() {
 show_help() {
     echo -e "${BOLD}backup-projects${NC} - Backup project folders"
     echo ""
+    echo -e "${BOLD}Features:${NC}"
+    echo "  - Commits and pushes all git repositories before backup"
+    echo "  - Logs all repositories and their remote origins"
+    echo "  - Creates compressed archive of project folders"
+    echo "  - Optional upload to cloud storage via rclone"
+    echo ""
     echo -e "${BOLD}Usage:${NC}"
     echo "  backup-projects.sh [command] [options]"
     echo ""
@@ -104,6 +116,7 @@ show_help() {
     echo "  backup-projects.sh setup-cron       # Setup weekly backups"
     echo ""
     echo -e "${BOLD}Config file:${NC} $CONFIG_FILE"
+    echo -e "${BOLD}Git repos log:${NC} $LOG_DIR/git-repos.log"
     echo ""
 }
 
@@ -235,6 +248,102 @@ build_exclude_args() {
     echo "${args[@]}"
 }
 
+# --- Git Sync ---
+sync_git_repos() {
+    say "Syncing git repositories..."
+    echo ""
+
+    local git_repos_log="$LOG_DIR/git-repos.log"
+    local synced=0
+    local failed=0
+
+    # Clear previous log
+    if [[ "$DRY_RUN" != true ]]; then
+        mkdir -p "$LOG_DIR"
+        echo "# Git Repositories - $(date '+%Y-%m-%d %H:%M:%S')" > "$git_repos_log"
+        echo "# Format: folder | remote_name | remote_url" >> "$git_repos_log"
+        echo "" >> "$git_repos_log"
+    fi
+
+    for folder in "${BACKUP_FOLDERS[@]}"; do
+        [[ ! -d "$folder" ]] && continue
+
+        # Find all git repositories in this folder (including nested ones)
+        while IFS= read -r git_dir; do
+            [[ -z "$git_dir" ]] && continue
+            local repo_dir
+            repo_dir=$(dirname "$git_dir")
+            local repo_name
+            repo_name=$(basename "$repo_dir")
+            local relative_path="${repo_dir#$HOME/}"
+
+            # Get remote origin URL
+            local remote_url
+            remote_url=$(git -C "$repo_dir" remote get-url origin 2>/dev/null || echo "no remote")
+
+            if [[ "$DRY_RUN" == true ]]; then
+                echo -e "  ${BLUE}→${NC} $relative_path"
+                echo -e "    Remote: $remote_url"
+                debug "Would pull --rebase, commit, and push changes"
+            else
+                # Log the repository
+                echo "$relative_path | origin | $remote_url" >> "$git_repos_log"
+
+                # Pull latest changes first (rebase to avoid merge commits)
+                if [[ "$remote_url" != "no remote" ]]; then
+                    if git -C "$repo_dir" pull --rebase 2>/dev/null; then
+                        echo -e "  ${GREEN}✓${NC} $relative_path (pulled latest)"
+                    else
+                        echo -e "  ${YELLOW}!${NC} $relative_path (pull failed, may have conflicts)"
+                        # Abort rebase if it failed
+                        git -C "$repo_dir" rebase --abort 2>/dev/null || true
+                        ((failed++))
+                        continue
+                    fi
+                fi
+
+                # Check if there are changes to commit
+                if [[ -n $(git -C "$repo_dir" status --porcelain 2>/dev/null) ]]; then
+                    echo -e "    ${YELLOW}●${NC} Uncommitted changes found"
+
+                    # Stage all changes
+                    git -C "$repo_dir" add -A 2>/dev/null
+
+                    # Commit with auto-generated message
+                    local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
+                    if git -C "$repo_dir" commit -m "$commit_msg" 2>/dev/null; then
+                        echo -e "    ${GREEN}✓${NC} Committed changes"
+                    else
+                        echo -e "    ${YELLOW}!${NC} Nothing to commit"
+                    fi
+                fi
+
+                # Push if remote exists
+                if [[ "$remote_url" != "no remote" ]]; then
+                    if git -C "$repo_dir" push 2>/dev/null; then
+                        echo -e "    ${GREEN}✓${NC} Pushed to origin"
+                        ((synced++))
+                    else
+                        echo -e "    ${YELLOW}!${NC} Push failed (may need manual intervention)"
+                        ((failed++))
+                    fi
+                else
+                    echo -e "    ${YELLOW}!${NC} No remote configured"
+                fi
+            fi
+        done < <(find "$folder" -name ".git" -type d -maxdepth 3 2>/dev/null)
+    done
+
+    echo ""
+    if [[ "$DRY_RUN" != true ]]; then
+        say "Git sync complete: $synced pushed, $failed failed"
+        say "Repository log: $git_repos_log"
+    else
+        debug "Would sync all git repositories"
+    fi
+    echo ""
+}
+
 # --- Backup Command ---
 cmd_backup() {
     local script_start_time
@@ -254,6 +363,9 @@ cmd_backup() {
         debug "Would create: $BACKUP_TEMP_DIR"
         debug "Would create: $LOG_DIR"
     fi
+
+    # Sync git repositories first
+    sync_git_repos
 
     # Find existing folders
     local existing_folders=()

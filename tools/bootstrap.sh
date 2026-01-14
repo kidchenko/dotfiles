@@ -228,6 +228,38 @@ apply_dotfiles() {
     say "Dotfiles applied successfully!"
 }
 
+# Create project directories
+setup_directories() {
+    local directories=(
+        "$HOME/kidchenko"
+        "$HOME/lambda3"
+        "$HOME/jetabroad"
+        "$HOME/thoughtworks"
+        "$HOME/sevenpeaks"
+        "$HOME/isho"
+        "$HOME/Documents/Screenshots"
+    )
+
+    say "Setting up project directories..."
+
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would create directories:"
+        for dir in "${directories[@]}"; do
+            say "  - $dir"
+        done
+        return 0
+    fi
+
+    for dir in "${directories[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            mkdir -p "$dir"
+            say "Created $dir"
+        fi
+    done
+
+    say "Project directories ready"
+}
+
 # Setup dotfiles CLI command
 setup_dotfiles_cli() {
     local CHEZMOI_SOURCE="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
@@ -262,6 +294,7 @@ main() {
     install_brew_packages
     install_oh_my_zsh
     install_zsh_plugins
+    setup_directories
     setup_dotfiles_cli
 
     echo
