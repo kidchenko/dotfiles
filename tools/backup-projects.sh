@@ -274,13 +274,17 @@ sync_git_repos() {
             local remote_url
             remote_url=$(git -C "$repo_dir" remote get-url origin 2>/dev/null || echo "no remote")
 
+            # Sanitize remote URL for logging (remove credentials)
+            local safe_remote_url
+            safe_remote_url=$(echo "$remote_url" | sed 's|://[^@]*@|://***@|g')
+
             if [[ "$DRY_RUN" == true ]]; then
                 echo -e "  ${BLUE}→${NC} $relative_path"
-                echo -e "    Remote: $remote_url"
+                echo -e "    Remote: $safe_remote_url"
                 debug "Would pull --rebase, commit, and push changes"
             else
                 # Log the repository
-                echo "$relative_path | origin | $remote_url" >> "$git_repos_log"
+                echo "$relative_path | origin | $safe_remote_url" >> "$git_repos_log"
 
                 # Pull latest changes first (rebase to avoid merge commits)
                 if [[ "$remote_url" != "no remote" ]]; then
