@@ -14,7 +14,7 @@ command -v chezmoi &>/dev/null || { say "chezmoi not installed"; exit 1; }
 [[ -d "$DOTFILES_DIR/.git" ]] || exit 0
 
 # Check if remote has updates
-git -C "$DOTFILES_DIR" fetch --quiet 2>/dev/null
+git -C "$DOTFILES_DIR" fetch --quiet 2>/dev/null &
 LOCAL=$(git -C "$DOTFILES_DIR" rev-parse '@' 2>/dev/null)
 REMOTE=$(git -C "$DOTFILES_DIR" rev-parse '@{u}' 2>/dev/null)
 
