@@ -153,7 +153,9 @@ cmd_restore() {
     chmod 700 "$SSH_DIR"
 
     # Read private key from 1Password and save locally
-    op read "op://$VAULT/$KEY_NAME/private_key" > "$PRIVATE_KEY_FILE"
+    # Use umask 077 to ensure the file is created with 0600 permissions
+    (umask 077; op read "op://$VAULT/$KEY_NAME/private_key" > "$PRIVATE_KEY_FILE")
+    # chmod is redundant if umask worked, but good for clarity/double-check
     chmod 600 "$PRIVATE_KEY_FILE"
 
     # Read public key from 1Password and save locally
