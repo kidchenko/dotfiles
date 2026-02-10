@@ -77,6 +77,7 @@ get_shell_scripts() {
         "$ROOT_DIR/scripts"
         "$ROOT_DIR/scripts/backup"
         "$ROOT_DIR/cron"
+        "$ROOT_DIR/tests"
         "$ROOT_DIR"
     )
 
