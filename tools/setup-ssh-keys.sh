@@ -148,12 +148,17 @@ cmd_restore() {
 
     say "Restoring SSH key from 1Password..."
 
-    # Create SSH directory
-    mkdir -p "$SSH_DIR"
+    # Create SSH directory securely
+    (umask 077 && mkdir -p "$SSH_DIR")
+    # Redundant chmod for defense in depth
     chmod 700 "$SSH_DIR"
 
-    # Read private key from 1Password and save locally
-    op read "op://$VAULT/$KEY_NAME/private_key" > "$PRIVATE_KEY_FILE"
+    # Read private key from 1Password and save locally securely
+    (
+        umask 077
+        op read "op://$VAULT/$KEY_NAME/private_key" > "$PRIVATE_KEY_FILE"
+    )
+    # Redundant chmod for defense in depth
     chmod 600 "$PRIVATE_KEY_FILE"
 
     # Read public key from 1Password and save locally
