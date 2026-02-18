@@ -232,15 +232,6 @@ parse_args() {
     done
 }
 
-# --- Build Exclude Arguments for Zip ---
-build_exclude_args() {
-    local args=()
-    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-        args+=("-x" "*/${pattern}/*" "-x" "*/${pattern}")
-    done
-    echo "${args[@]}"
-}
-
 # --- Git Sync ---
 sync_git_repos() {
     say "Syncing git repositories..."
@@ -351,10 +342,12 @@ cmd_backup() {
     # Setup directories
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$BACKUP_TEMP_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
+        chmod 700 "$LOG_DIR"
     else
-        debug "Would create: $BACKUP_TEMP_DIR"
-        debug "Would create: $LOG_DIR"
+        debug "Would create: $BACKUP_TEMP_DIR (chmod 700)"
+        debug "Would create: $LOG_DIR (chmod 700)"
     fi
 
     # Sync git repositories first
@@ -406,17 +399,21 @@ cmd_backup() {
             done
         fi
     else
-        local exclude_args
-        exclude_args=$(build_exclude_args)
+        # Build exclude arguments as an array to handle spaces correctly
+        local exclude_args=()
+        for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+            exclude_args+=("-x" "*/${pattern}/*" "-x" "*/${pattern}")
+        done
 
         (
             cd "$HOME" || exit 1
+            # Set umask to ensure archive is not world-readable (0600)
+            umask 077
+
             if [[ "$VERBOSE" == true ]]; then
-                # shellcheck disable=SC2086
-                zip -r "$archive_path" "${relative_paths[@]}" $exclude_args
+                zip -r "$archive_path" "${relative_paths[@]}" "${exclude_args[@]}"
             else
-                # shellcheck disable=SC2086
-                zip -r -q "$archive_path" "${relative_paths[@]}" $exclude_args
+                zip -r -q "$archive_path" "${relative_paths[@]}" "${exclude_args[@]}"
             fi
         )
 
@@ -427,7 +424,7 @@ cmd_backup() {
 
         local archive_size
         archive_size=$(du -h "$archive_path" | cut -f1)
-        say "Archive created: $archive_size"
+        say "Archive created: $archive_size (permissions: 0600)"
     fi
 
     # Upload to remote (only if --upload flag is provided)
