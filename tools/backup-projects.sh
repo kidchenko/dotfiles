@@ -26,6 +26,7 @@
 
 # Pipestatus
 set -o pipefail
+umask 077 # Secure permissions for backups
 
 # --- Configuration ---
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
@@ -351,7 +352,9 @@ cmd_backup() {
     # Setup directories
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$BACKUP_TEMP_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
+        chmod 700 "$LOG_DIR"
     else
         debug "Would create: $BACKUP_TEMP_DIR"
         debug "Would create: $LOG_DIR"
