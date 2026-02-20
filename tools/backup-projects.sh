@@ -350,7 +350,10 @@ cmd_backup() {
 
     # Setup directories
     if [[ "$DRY_RUN" != true ]]; then
+        # Ensure secure permissions for backup directory (700)
+        umask 077
         mkdir -p "$BACKUP_TEMP_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
     else
         debug "Would create: $BACKUP_TEMP_DIR"
@@ -424,6 +427,9 @@ cmd_backup() {
             error "Failed to create archive"
             return 1
         fi
+
+        # Ensure secure permissions for backup archive (600)
+        chmod 600 "$archive_path"
 
         local archive_size
         archive_size=$(du -h "$archive_path" | cut -f1)
