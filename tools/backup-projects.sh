@@ -27,6 +27,9 @@
 # Pipestatus
 set -o pipefail
 
+# Set strict permissions for created files/directories (rwx------)
+umask 077
+
 # --- Configuration ---
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
