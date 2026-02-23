@@ -27,6 +27,9 @@
 # Pipestatus
 set -o pipefail
 
+# Security: Ensure backups and logs are only readable by the owner
+umask 077
+
 # --- Configuration ---
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
