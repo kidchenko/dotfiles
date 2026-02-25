@@ -351,7 +351,9 @@ cmd_backup() {
     # Setup directories
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$BACKUP_TEMP_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
+        chmod 700 "$LOG_DIR"
     else
         debug "Would create: $BACKUP_TEMP_DIR"
         debug "Would create: $LOG_DIR"
@@ -411,6 +413,7 @@ cmd_backup() {
 
         (
             cd "$HOME" || exit 1
+            umask 077
             if [[ "$VERBOSE" == true ]]; then
                 # shellcheck disable=SC2086
                 zip -r "$archive_path" "${relative_paths[@]}" $exclude_args
@@ -419,6 +422,8 @@ cmd_backup() {
                 zip -r -q "$archive_path" "${relative_paths[@]}" $exclude_args
             fi
         )
+        # Ensure strict permissions on the archive
+        [[ -f "$archive_path" ]] && chmod 600 "$archive_path"
 
         if [[ ! -f "$archive_path" ]]; then
             error "Failed to create archive"

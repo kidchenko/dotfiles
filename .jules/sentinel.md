@@ -1,0 +1,4 @@
+## 2025-02-25 - Insecure File Permissions in Backup Script
+**Vulnerability:** The `tools/backup-projects.sh` script created backup archives and log directories without explicitly setting restrictive permissions. This meant that on multi-user systems (or even locally if shared), backup archives containing potentially sensitive project code and secrets were readable by other users (group/world readable depending on umask).
+**Learning:** Default umask settings (often 022) are insufficient for security-critical operations like backups. Relying on default permissions assumes a secure environment, which is not always true.
+**Prevention:** Always use `umask 077` in subshells when creating sensitive files or directories. Explicitly `chmod 700` directories and `chmod 600` files after creation to enforce defense-in-depth.
