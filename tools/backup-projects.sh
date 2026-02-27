@@ -234,11 +234,10 @@ parse_args() {
 
 # --- Build Exclude Arguments for Zip ---
 build_exclude_args() {
-    local args=()
+    EXCLUDE_ARGS=()
     for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-        args+=("-x" "*/${pattern}/*" "-x" "*/${pattern}")
+        EXCLUDE_ARGS+=("-x" "*/${pattern}/*" "-x" "*/${pattern}")
     done
-    echo "${args[@]}"
 }
 
 # --- Git Sync ---
@@ -351,10 +350,12 @@ cmd_backup() {
     # Setup directories
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$BACKUP_TEMP_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
+        chmod 700 "$LOG_DIR"
     else
-        debug "Would create: $BACKUP_TEMP_DIR"
-        debug "Would create: $LOG_DIR"
+        debug "Would create: $BACKUP_TEMP_DIR (mode 700)"
+        debug "Would create: $LOG_DIR (mode 700)"
     fi
 
     # Sync git repositories first
@@ -406,17 +407,15 @@ cmd_backup() {
             done
         fi
     else
-        local exclude_args
-        exclude_args=$(build_exclude_args)
+        build_exclude_args
 
         (
             cd "$HOME" || exit 1
+            umask 077
             if [[ "$VERBOSE" == true ]]; then
-                # shellcheck disable=SC2086
-                zip -r "$archive_path" "${relative_paths[@]}" $exclude_args
+                zip -r "$archive_path" "${relative_paths[@]}" "${EXCLUDE_ARGS[@]}"
             else
-                # shellcheck disable=SC2086
-                zip -r -q "$archive_path" "${relative_paths[@]}" $exclude_args
+                zip -r -q "$archive_path" "${relative_paths[@]}" "${EXCLUDE_ARGS[@]}"
             fi
         )
 

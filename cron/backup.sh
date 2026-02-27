@@ -10,7 +10,7 @@ set -e
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
-BACKUP_SCRIPT="$DOTFILES_DIR/scripts/backup/backup-projects.sh"
+BACKUP_SCRIPT="$DOTFILES_DIR/tools/backup-projects.sh"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 LOG_FILE="$LOG_DIR/backup-cron.log"
 BACKUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/backups"
