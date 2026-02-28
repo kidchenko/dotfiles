@@ -253,6 +253,7 @@ sync_git_repos() {
     # Clear previous log
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$LOG_DIR"
+        chmod 700 "$LOG_DIR"
         echo "# Git Repositories - $(date '+%Y-%m-%d %H:%M:%S')" > "$git_repos_log"
         echo "# Format: folder | remote_name | remote_url" >> "$git_repos_log"
         echo "" >> "$git_repos_log"
@@ -266,8 +267,6 @@ sync_git_repos() {
             [[ -z "$git_dir" ]] && continue
             local repo_dir
             repo_dir=$(dirname "$git_dir")
-            local repo_name
-            repo_name=$(basename "$repo_dir")
             local relative_path="${repo_dir#$HOME/}"
 
             # Get remote origin URL
@@ -303,7 +302,8 @@ sync_git_repos() {
                     git -C "$repo_dir" add -A 2>/dev/null
 
                     # Commit with auto-generated message
-                    local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
+                    local commit_msg
+                    commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
                     if git -C "$repo_dir" commit -m "$commit_msg" 2>/dev/null; then
                         echo -e "    ${GREEN}✓${NC} Committed changes"
                     else
@@ -351,7 +351,9 @@ cmd_backup() {
     # Setup directories
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$BACKUP_TEMP_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
+        chmod 700 "$LOG_DIR"
     else
         debug "Would create: $BACKUP_TEMP_DIR"
         debug "Would create: $LOG_DIR"
@@ -410,6 +412,7 @@ cmd_backup() {
         exclude_args=$(build_exclude_args)
 
         (
+            umask 077 # Ensure created archive is only readable by owner
             cd "$HOME" || exit 1
             if [[ "$VERBOSE" == true ]]; then
                 # shellcheck disable=SC2086
@@ -611,6 +614,7 @@ cmd_restore() {
         if [[ ! -d "$restore_dir" ]]; then
             say "Creating directory: $restore_dir"
             mkdir -p "$restore_dir"
+            chmod 700 "$restore_dir"
         fi
 
         if unzip -o "$selected_backup" -d "$restore_dir"; then
