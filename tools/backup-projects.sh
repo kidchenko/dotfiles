@@ -238,7 +238,9 @@ build_exclude_args() {
     for pattern in "${EXCLUDE_PATTERNS[@]}"; do
         args+=("-x" "*/${pattern}/*" "-x" "*/${pattern}")
     done
-    echo "${args[@]}"
+    if [[ ${#args[@]} -gt 0 ]]; then
+        printf '%s\n' "${args[@]}"
+    fi
 }
 
 # --- Git Sync ---
@@ -267,6 +269,7 @@ sync_git_repos() {
             local repo_dir
             repo_dir=$(dirname "$git_dir")
             local repo_name
+            # shellcheck disable=SC2034
             repo_name=$(basename "$repo_dir")
             local relative_path="${repo_dir#$HOME/}"
 
@@ -303,7 +306,8 @@ sync_git_repos() {
                     git -C "$repo_dir" add -A 2>/dev/null
 
                     # Commit with auto-generated message
-                    local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
+                    local commit_msg
+                    commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
                     if git -C "$repo_dir" commit -m "$commit_msg" 2>/dev/null; then
                         echo -e "    ${GREEN}✓${NC} Committed changes"
                     else
@@ -352,6 +356,7 @@ cmd_backup() {
     if [[ "$DRY_RUN" != true ]]; then
         mkdir -p "$BACKUP_TEMP_DIR"
         mkdir -p "$LOG_DIR"
+        chmod 700 "$BACKUP_TEMP_DIR" "$LOG_DIR"
     else
         debug "Would create: $BACKUP_TEMP_DIR"
         debug "Would create: $LOG_DIR"
@@ -406,17 +411,18 @@ cmd_backup() {
             done
         fi
     else
-        local exclude_args
-        exclude_args=$(build_exclude_args)
+        local exclude_args=()
+        if [[ ${#EXCLUDE_PATTERNS[@]} -gt 0 ]]; then
+            mapfile -t exclude_args < <(build_exclude_args)
+        fi
 
         (
+            umask 077
             cd "$HOME" || exit 1
             if [[ "$VERBOSE" == true ]]; then
-                # shellcheck disable=SC2086
-                zip -r "$archive_path" "${relative_paths[@]}" $exclude_args
+                zip -r "$archive_path" "${relative_paths[@]}" "${exclude_args[@]}"
             else
-                # shellcheck disable=SC2086
-                zip -r -q "$archive_path" "${relative_paths[@]}" $exclude_args
+                zip -r -q "$archive_path" "${relative_paths[@]}" "${exclude_args[@]}"
             fi
         )
 
