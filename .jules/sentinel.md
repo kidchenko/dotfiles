@@ -1,0 +1,4 @@
+## 2025-03-06 - [Insecure Temporary File Usage in OS Installer]
+**Vulnerability:** A script (`tools/os_installers/apt.sh`) was hardcoding the temporary download path for a binary (`/tmp/yq`) before moving it to its final destination using `sudo mv`.
+**Learning:** Hardcoding paths in shared temporary directories like `/tmp` creates a Time-of-Check to Time-of-Use (TOCTOU) race condition and enables symlink attacks. An attacker could pre-create a symlink at `/tmp/yq` pointing to a sensitive file, causing it to be overwritten or modified when the script executes with elevated privileges (`sudo`).
+**Prevention:** Use `mktemp -d` to securely generate a unique temporary directory for downloads or intermediate files, rather than relying on predictable paths, especially before executing commands with elevated privileges.
