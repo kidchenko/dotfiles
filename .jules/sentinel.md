@@ -1,0 +1,4 @@
+## 2024-05-18 - [Predictable Temporary File Vulnerability]
+**Vulnerability:** Predictable temporary file path `/tmp/yq` used in `tools/os_installers/apt.sh` to download and install `yq` as root.
+**Learning:** Hardcoding a predictable file path in the world-writable directory `/tmp` could allow an attacker to launch a symlink attack or pre-create the file to gain privilege escalation when the script later runs `sudo mv /tmp/yq /usr/local/bin/yq`. This is especially dangerous in setup scripts that may be run by different users or multiple times.
+**Prevention:** Always use `mktemp` (e.g., `mktemp -d`) to create secure, unpredictable temporary directories or files when downloading artifacts or storing intermediate data, especially if they are going to be accessed by `sudo` later.
