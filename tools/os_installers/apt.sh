@@ -231,8 +231,9 @@ fi
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
     YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
+    TMP_YQ=$(mktemp)
+    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$TMP_YQ"
+    sudo mv "$TMP_YQ" /usr/local/bin/yq
     sudo chmod +x /usr/local/bin/yq
 fi
 
