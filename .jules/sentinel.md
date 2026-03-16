@@ -1,0 +1,4 @@
+## 2024-05-24 - Insecure Temporary File Creation in Installers
+**Vulnerability:** The `tools/os_installers/apt.sh` script used hardcoded paths (e.g., `/tmp/yq`) when downloading binaries. This creates a risk for symlink attacks (where an attacker pre-creates the symlink pointing to a sensitive file) and local privilege escalation, especially when executed with `sudo`.
+**Learning:** Hardcoding temporary file paths in shared directories like `/tmp` is insecure. The script was executing elevated commands (`sudo mv`, `sudo chmod`) on predictably-named files, exposing the system to exploitation if a malicious local user anticipated the action.
+**Prevention:** Always use securely generated random directories like `mktemp -d` to handle temporary files during installations or script executions to prevent predictable file paths and symlink attacks.
