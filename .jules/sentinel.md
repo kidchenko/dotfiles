@@ -1,0 +1,4 @@
+## 2024-05-24 - [Avoid predictable /tmp files in installation scripts]
+**Vulnerability:** In `tools/os_installers/apt.sh`, the `yq` binary was downloaded directly to a predictable path `/tmp/yq` before being moved with `sudo` to a global path. This can expose the system to symlink attacks or local privilege escalation since `/tmp` is a world-writable directory.
+**Learning:** Hardcoding paths in `/tmp` for temporary files, especially those executed or moved with `sudo` privileges, introduces a vulnerability where malicious users could preemptively create a symlink or a file at that location.
+**Prevention:** Always use `mktemp -d` to create securely generated, isolated temporary directories (e.g. `tmp_dir=$(mktemp -d)`) and use these directories to store downloaded artifacts, ensuring they are deleted via `rm -rf` afterwards.
