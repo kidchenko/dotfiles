@@ -249,6 +249,8 @@ sync_git_repos() {
     local git_repos_log="$LOG_DIR/git-repos.log"
     local synced=0
     local failed=0
+    local synced_repos=()
+    local failed_repos=()
 
     # Clear previous log
     if [[ "$DRY_RUN" != true ]]; then
@@ -274,6 +276,11 @@ sync_git_repos() {
             local remote_url
             remote_url=$(git -C "$repo_dir" remote get-url origin 2>/dev/null || echo "no remote")
 
+            # Extract short remote name (e.g., "origin/github.com" or just the host)
+            local remote_short
+            remote_short=$(echo "$remote_url" | sed -E 's|.*[@/](github\.com\|bitbucket\.org\|gitlab\.com)[:/].*|\1|' 2>/dev/null)
+            [[ "$remote_short" == "$remote_url" ]] && remote_short="origin"
+
             if [[ "$DRY_RUN" == true ]]; then
                 echo -e "  ${BLUE}→${NC} $relative_path"
                 echo -e "    Remote: $remote_url"
@@ -284,44 +291,43 @@ sync_git_repos() {
 
                 # Pull latest changes first (rebase to avoid merge commits)
                 if [[ "$remote_url" != "no remote" ]]; then
-                    if git -C "$repo_dir" pull --rebase 2>/dev/null; then
-                        echo -e "  ${GREEN}✓${NC} $relative_path (pulled latest)"
+                    echo -ne "  Pulling ${BOLD}$relative_path${NC} from $remote_short... "
+                    if git -C "$repo_dir" pull --rebase &>/dev/null; then
+                        echo -e "${GREEN}ok${NC}"
                     else
-                        echo -e "  ${YELLOW}!${NC} $relative_path (pull failed, may have conflicts)"
+                        echo -e "${RED}failed${NC}"
                         # Abort rebase if it failed
                         git -C "$repo_dir" rebase --abort 2>/dev/null || true
                         ((failed++))
+                        failed_repos+=("$relative_path (pull failed)")
                         continue
                     fi
                 fi
 
                 # Check if there are changes to commit
                 if [[ -n $(git -C "$repo_dir" status --porcelain 2>/dev/null) ]]; then
-                    echo -e "    ${YELLOW}●${NC} Uncommitted changes found"
-
                     # Stage all changes
                     git -C "$repo_dir" add -A 2>/dev/null
 
                     # Commit with auto-generated message
                     local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
-                    if git -C "$repo_dir" commit -m "$commit_msg" 2>/dev/null; then
-                        echo -e "    ${GREEN}✓${NC} Committed changes"
-                    else
-                        echo -e "    ${YELLOW}!${NC} Nothing to commit"
-                    fi
+                    git -C "$repo_dir" commit -m "$commit_msg" &>/dev/null || true
                 fi
 
                 # Push if remote exists
                 if [[ "$remote_url" != "no remote" ]]; then
-                    if git -C "$repo_dir" push 2>/dev/null; then
-                        echo -e "    ${GREEN}✓${NC} Pushed to origin"
+                    echo -ne "  Pushing ${BOLD}$relative_path${NC} to $remote_short... "
+                    if git -C "$repo_dir" push &>/dev/null; then
+                        echo -e "${GREEN}ok${NC}"
                         ((synced++))
+                        synced_repos+=("$relative_path")
                     else
-                        echo -e "    ${YELLOW}!${NC} Push failed (may need manual intervention)"
+                        echo -e "${RED}failed${NC}"
                         ((failed++))
+                        failed_repos+=("$relative_path (push failed)")
                     fi
                 else
-                    echo -e "    ${YELLOW}!${NC} No remote configured"
+                    echo -e "  ${YELLOW}!${NC} $relative_path - no remote configured"
                 fi
             fi
         done < <(find "$folder" -name ".git" -type d -maxdepth 3 2>/dev/null)
@@ -330,6 +336,24 @@ sync_git_repos() {
     echo ""
     if [[ "$DRY_RUN" != true ]]; then
         say "Git sync complete: $synced pushed, $failed failed"
+
+        if [[ ${#synced_repos[@]} -gt 0 ]]; then
+            echo ""
+            echo -e "  ${GREEN}Synced:${NC}"
+            for repo in "${synced_repos[@]}"; do
+                echo -e "    ${GREEN}✓${NC} $repo"
+            done
+        fi
+
+        if [[ ${#failed_repos[@]} -gt 0 ]]; then
+            echo ""
+            echo -e "  ${RED}Failed:${NC}"
+            for repo in "${failed_repos[@]}"; do
+                echo -e "    ${RED}✗${NC} $repo"
+            done
+        fi
+
+        echo ""
         say "Repository log: $git_repos_log"
     else
         debug "Would sync all git repositories"
