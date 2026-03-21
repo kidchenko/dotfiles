@@ -289,7 +289,14 @@ sync_git_repos() {
                 # Log the repository
                 echo "$relative_path | origin | $remote_url" >> "$git_repos_log"
 
-                # Pull latest changes first (rebase to avoid merge commits)
+                # Commit local changes first (so pull --rebase doesn't fail)
+                if [[ -n $(git -C "$repo_dir" status --porcelain 2>/dev/null) ]]; then
+                    git -C "$repo_dir" add -A 2>/dev/null
+                    local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
+                    git -C "$repo_dir" commit -m "$commit_msg" &>/dev/null || true
+                fi
+
+                # Pull latest changes (rebase to avoid merge commits)
                 if [[ "$remote_url" != "no remote" ]]; then
                     echo -ne "  Pulling ${BOLD}$relative_path${NC} from $remote_short... "
                     if git -C "$repo_dir" pull --rebase &>/dev/null; then
@@ -302,16 +309,6 @@ sync_git_repos() {
                         failed_repos+=("$relative_path (pull failed)")
                         continue
                     fi
-                fi
-
-                # Check if there are changes to commit
-                if [[ -n $(git -C "$repo_dir" status --porcelain 2>/dev/null) ]]; then
-                    # Stage all changes
-                    git -C "$repo_dir" add -A 2>/dev/null
-
-                    # Commit with auto-generated message
-                    local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
-                    git -C "$repo_dir" commit -m "$commit_msg" &>/dev/null || true
                 fi
 
                 # Push if remote exists
