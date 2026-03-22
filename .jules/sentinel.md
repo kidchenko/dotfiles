@@ -1,0 +1,4 @@
+## 2024-05-18 - Prevented Insecure Downloads in apt.sh
+**Vulnerability:** Predictable temporary paths (e.g. `/tmp/yq`) and writing directly to the current working directory.
+**Learning:** Hardcoding predictible paths and downloading directly to the root/current working directory opens the system to path traversal, privilege escalation, and unintended overwrites if the file is replaced with a malicious artifact or overwritten by another concurrent process.
+**Prevention:** Use `mktemp -d` to generate securely isolated, unique directories before writing any fetched artifacts to disk, and use `rm -rf` to clean them up afterward.
