@@ -231,18 +231,21 @@ fi
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
     YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
+    TMP_DIR=$(mktemp -d)
+    wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$TMP_DIR/yq"
+    sudo mv "$TMP_DIR/yq" /usr/local/bin/yq
     sudo chmod +x /usr/local/bin/yq
+    rm -rf "$TMP_DIR"
 fi
 
 # Install lsd (LSDeluxe)
 echo "Installing lsd..."
 if ! command -v lsd &> /dev/null; then
     LSD_VERSION="1.1.5"
-    wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
-    sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
-    rm "lsd_${LSD_VERSION}_amd64.deb"
+    TMP_DIR=$(mktemp -d)
+    wget -q "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb" -O "$TMP_DIR/lsd.deb"
+    sudo dpkg -i "$TMP_DIR/lsd.deb"
+    rm -rf "$TMP_DIR"
 fi
 
 # Install Tesseract OCR
