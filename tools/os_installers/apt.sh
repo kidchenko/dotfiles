@@ -6,6 +6,10 @@
 # Exit on error
 set -e
 
+# Create a secure temporary directory for downloads
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+
 # Ask for the administrator password upfront
 sudo -v
 
@@ -205,10 +209,10 @@ fi
 echo "Installing Go..."
 if ! command -v go &> /dev/null; then
     GO_VERSION="1.23.4"
-    wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+    wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "$TMP_DIR/go${GO_VERSION}.linux-amd64.tar.gz"
     sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-    rm "go${GO_VERSION}.linux-amd64.tar.gz"
+    sudo tar -C /usr/local -xzf "$TMP_DIR/go${GO_VERSION}.linux-amd64.tar.gz"
+    rm "$TMP_DIR/go${GO_VERSION}.linux-amd64.tar.gz"
     echo "NOTE: Add 'export PATH=\$PATH:/usr/local/go/bin' to your shell profile"
 fi
 
@@ -231,8 +235,8 @@ fi
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
     YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
+    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$TMP_DIR/yq"
+    sudo mv "$TMP_DIR/yq" /usr/local/bin/yq
     sudo chmod +x /usr/local/bin/yq
 fi
 
@@ -240,9 +244,9 @@ fi
 echo "Installing lsd..."
 if ! command -v lsd &> /dev/null; then
     LSD_VERSION="1.1.5"
-    wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
-    sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
-    rm "lsd_${LSD_VERSION}_amd64.deb"
+    wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb" -O "$TMP_DIR/lsd_${LSD_VERSION}_amd64.deb"
+    sudo dpkg -i "$TMP_DIR/lsd_${LSD_VERSION}_amd64.deb"
+    rm "$TMP_DIR/lsd_${LSD_VERSION}_amd64.deb"
 fi
 
 # Install Tesseract OCR
@@ -253,15 +257,15 @@ sudo apt install -y tesseract-ocr
 echo "Installing Composer..."
 if ! command -v composer &> /dev/null; then
     EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    php -r "copy('https://getcomposer.org/installer', '$TMP_DIR/composer-setup.php');"
+    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', '$TMP_DIR/composer-setup.php');")"
 
     if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
-        sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
-        rm composer-setup.php
+        sudo php "$TMP_DIR/composer-setup.php" --quiet --install-dir=/usr/local/bin --filename=composer
+        rm "$TMP_DIR/composer-setup.php"
     else
         >&2 echo 'ERROR: Invalid installer checksum for Composer'
-        rm composer-setup.php
+        rm "$TMP_DIR/composer-setup.php"
     fi
 fi
 
