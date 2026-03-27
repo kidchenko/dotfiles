@@ -1,0 +1,4 @@
+## 2024-05-24 - [Insecure Temporary File Handling in Installer Scripts]
+**Vulnerability:** Scripts like `tools/os_installers/apt.sh` downloaded executables or installation artifacts directly into the current working directory or predictable temporary locations (e.g., `/tmp/yq`), and then moved or executed them with elevated (`sudo`) privileges.
+**Learning:** This exposes the installation process to local privilege escalation, symlink attacks, and unintentional file overwriting. Downloading to predictable locations allows a local attacker to pre-create files or symlinks at those paths.
+**Prevention:** Always use securely generated random directories (e.g., `mktemp -d`) for downloading and processing temporary files during installation, especially when elevated privileges are involved. Pair `mktemp -d` with a `trap 'rm -rf "$TMP_DIR"' EXIT` to ensure automatic cleanup.
