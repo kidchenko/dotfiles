@@ -231,9 +231,13 @@ fi
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
     YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
+    YQ_TMP_DIR=$(mktemp -d)
+    # shellcheck disable=SC2064 # Trap will expand variable immediately, which is desired here
+    trap "rm -rf '$YQ_TMP_DIR'" EXIT
+    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$YQ_TMP_DIR/yq"
+    sudo mv "$YQ_TMP_DIR/yq" /usr/local/bin/yq
     sudo chmod +x /usr/local/bin/yq
+    # Trap will clean up YQ_TMP_DIR when the script exits
 fi
 
 # Install lsd (LSDeluxe)
