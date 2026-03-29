@@ -205,10 +205,13 @@ fi
 echo "Installing Go..."
 if ! command -v go &> /dev/null; then
     GO_VERSION="1.23.4"
-    wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
-    sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-    rm "go${GO_VERSION}.linux-amd64.tar.gz"
+    (
+        GO_TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$GO_TMP_DIR"' EXIT
+        wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "$GO_TMP_DIR/go.tar.gz"
+        sudo rm -rf /usr/local/go
+        sudo tar -C /usr/local -xzf "$GO_TMP_DIR/go.tar.gz"
+    )
     echo "NOTE: Add 'export PATH=\$PATH:/usr/local/go/bin' to your shell profile"
 fi
 
@@ -231,18 +234,25 @@ fi
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
     YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
-    sudo chmod +x /usr/local/bin/yq
+    (
+        YQ_TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$YQ_TMP_DIR"' EXIT
+        wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$YQ_TMP_DIR/yq"
+        sudo mv "$YQ_TMP_DIR/yq" /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+    )
 fi
 
 # Install lsd (LSDeluxe)
 echo "Installing lsd..."
 if ! command -v lsd &> /dev/null; then
     LSD_VERSION="1.1.5"
-    wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
-    sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
-    rm "lsd_${LSD_VERSION}_amd64.deb"
+    (
+        LSD_TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$LSD_TMP_DIR"' EXIT
+        wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb" -O "$LSD_TMP_DIR/lsd.deb"
+        sudo dpkg -i "$LSD_TMP_DIR/lsd.deb"
+    )
 fi
 
 # Install Tesseract OCR
@@ -252,17 +262,19 @@ sudo apt install -y tesseract-ocr
 # Install PHP Composer
 echo "Installing Composer..."
 if ! command -v composer &> /dev/null; then
-    EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    (
+        EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+        COMPOSER_TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$COMPOSER_TMP_DIR"' EXIT
+        php -r "copy('https://getcomposer.org/installer', '$COMPOSER_TMP_DIR/composer-setup.php');"
+        ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', '$COMPOSER_TMP_DIR/composer-setup.php');")"
 
-    if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
-        sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
-        rm composer-setup.php
-    else
-        >&2 echo 'ERROR: Invalid installer checksum for Composer'
-        rm composer-setup.php
-    fi
+        if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
+            sudo php "$COMPOSER_TMP_DIR/composer-setup.php" --quiet --install-dir=/usr/local/bin --filename=composer
+        else
+            >&2 echo 'ERROR: Invalid installer checksum for Composer'
+        fi
+    )
 fi
 
 # Clean up
