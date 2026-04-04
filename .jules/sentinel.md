@@ -1,0 +1,4 @@
+## 2025-04-04 - Predictable Temporary File Path Vulnerability in Package Download
+**Vulnerability:** A package install script (`tools/os_installers/apt.sh`) downloaded the `yq` binary to a hardcoded, predictable temporary file path (`/tmp/yq`) before moving it to its final destination with elevated privileges (`sudo mv`).
+**Learning:** Hardcoded temporary paths in shared directories (like `/tmp`) are vulnerable to Time-of-Check to Time-of-Use (TOCTOU) and symlink attacks, potentially allowing an attacker to overwrite arbitrary files or escalate privileges.
+**Prevention:** Always use securely generated random directories (e.g., `mktemp -d`) for temporary files. Wrap the temporary operations in a subshell `(...)` and use `trap 'rm -rf "$TMP_DIR"' EXIT` to ensure the directory is automatically and safely cleaned up, without overriding global script traps.
