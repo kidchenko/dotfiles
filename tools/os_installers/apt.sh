@@ -204,11 +204,15 @@ fi
 # Install Go
 echo "Installing Go..."
 if ! command -v go &> /dev/null; then
-    GO_VERSION="1.23.4"
-    wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
-    sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-    rm "go${GO_VERSION}.linux-amd64.tar.gz"
+    (
+        TMP_DIR="$(mktemp -d)"
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        cd "$TMP_DIR" || exit 1
+        GO_VERSION="1.23.4"
+        wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+        sudo rm -rf /usr/local/go
+        sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
+    )
     echo "NOTE: Add 'export PATH=\$PATH:/usr/local/go/bin' to your shell profile"
 fi
 
@@ -230,19 +234,28 @@ fi
 # Install yq
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
-    YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
-    sudo chmod +x /usr/local/bin/yq
+    (
+        TMP_DIR="$(mktemp -d)"
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        cd "$TMP_DIR" || exit 1
+        YQ_VERSION="v4.44.6"
+        wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "yq"
+        sudo mv "yq" /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+    )
 fi
 
 # Install lsd (LSDeluxe)
 echo "Installing lsd..."
 if ! command -v lsd &> /dev/null; then
-    LSD_VERSION="1.1.5"
-    wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
-    sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
-    rm "lsd_${LSD_VERSION}_amd64.deb"
+    (
+        TMP_DIR="$(mktemp -d)"
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        cd "$TMP_DIR" || exit 1
+        LSD_VERSION="1.1.5"
+        wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
+        sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
+    )
 fi
 
 # Install Tesseract OCR
@@ -252,17 +265,20 @@ sudo apt install -y tesseract-ocr
 # Install PHP Composer
 echo "Installing Composer..."
 if ! command -v composer &> /dev/null; then
-    EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    (
+        TMP_DIR="$(mktemp -d)"
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        cd "$TMP_DIR" || exit 1
+        EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+        php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+        ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
 
-    if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
-        sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
-        rm composer-setup.php
-    else
-        >&2 echo 'ERROR: Invalid installer checksum for Composer'
-        rm composer-setup.php
-    fi
+        if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
+            sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
+        else
+            >&2 echo 'ERROR: Invalid installer checksum for Composer'
+        fi
+    )
 fi
 
 # Clean up

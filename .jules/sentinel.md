@@ -1,0 +1,4 @@
+## 2024-04-06 - Unsafe File Downloads in Installation Scripts
+**Vulnerability:** Installation scripts (`apt.sh`) were downloading executable artifacts directly to predictable locations (`/tmp/yq`) and the current working directory, risking symlink attacks, local privilege escalation, and overwriting existing files.
+**Learning:** Shell scripts running with elevated privileges must never use hardcoded or predictable paths for temporary files, and downloading files to the current working directory is dangerous when executing as root or in unknown environments.
+**Prevention:** Always use secure, randomly generated temporary directories via `mktemp -d` for downloading and processing installation artifacts. Wrap the logic in a subshell `(...)` and pair it with a local trap (e.g., `trap 'rm -rf "$TMP_DIR"' EXIT`) to ensure automatic cleanup upon exit.
