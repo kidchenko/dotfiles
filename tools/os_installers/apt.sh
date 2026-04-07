@@ -204,12 +204,15 @@ fi
 # Install Go
 echo "Installing Go..."
 if ! command -v go &> /dev/null; then
-    GO_VERSION="1.23.4"
-    wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
-    sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-    rm "go${GO_VERSION}.linux-amd64.tar.gz"
-    echo "NOTE: Add 'export PATH=\$PATH:/usr/local/go/bin' to your shell profile"
+    (
+        GO_VERSION="1.23.4"
+        TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "$TMP_DIR/go.tar.gz"
+        sudo rm -rf /usr/local/go
+        sudo tar -C /usr/local -xzf "$TMP_DIR/go.tar.gz"
+        echo "NOTE: Add 'export PATH=\$PATH:/usr/local/go/bin' to your shell profile"
+    )
 fi
 
 # Install Terraform
@@ -230,19 +233,26 @@ fi
 # Install yq
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
-    YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
-    sudo chmod +x /usr/local/bin/yq
+    (
+        YQ_VERSION="v4.44.6"
+        TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$TMP_DIR/yq"
+        sudo mv "$TMP_DIR/yq" /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+    )
 fi
 
 # Install lsd (LSDeluxe)
 echo "Installing lsd..."
 if ! command -v lsd &> /dev/null; then
-    LSD_VERSION="1.1.5"
-    wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb"
-    sudo dpkg -i "lsd_${LSD_VERSION}_amd64.deb"
-    rm "lsd_${LSD_VERSION}_amd64.deb"
+    (
+        LSD_VERSION="1.1.5"
+        TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        wget "https://github.com/lsd-rs/lsd/releases/download/v${LSD_VERSION}/lsd_${LSD_VERSION}_amd64.deb" -O "$TMP_DIR/lsd.deb"
+        sudo dpkg -i "$TMP_DIR/lsd.deb"
+    )
 fi
 
 # Install Tesseract OCR

@@ -1,0 +1,4 @@
+## 2025-04-07 - [Predictable Temp File & CWD Download Vulnerability in Installers]
+**Vulnerability:** Installation scripts (`apt.sh`) downloaded executables to predictable temporary paths (`/tmp/yq`) and directly to the current working directory.
+**Learning:** Using predictable paths like `/tmp/yq` without `mktemp` makes the script vulnerable to symlink attacks or pre-creation attacks, allowing an attacker to overwrite system files or escalate privileges when the script later calls `sudo mv`. Downloading directly to the CWD can lead to overwriting existing files or executing attacker-controlled binaries.
+**Prevention:** Always create isolated, randomly named temporary directories using `mktemp -d` inside a subshell `(...)` and clean them up automatically using a trap (e.g., `trap 'rm -rf "$TMP_DIR"' EXIT`). Download files strictly into this temporary directory.
