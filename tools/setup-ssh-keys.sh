@@ -152,13 +152,17 @@ cmd_restore() {
     mkdir -p "$SSH_DIR"
     chmod 700 "$SSH_DIR"
 
-    # Read private key from 1Password and save locally
-    op read "op://$VAULT/$KEY_NAME/private_key" > "$PRIVATE_KEY_FILE"
-    chmod 600 "$PRIVATE_KEY_FILE"
+    # Read private key from 1Password and save locally (prevent TOCTOU)
+    (
+        umask 077
+        op read "op://$VAULT/$KEY_NAME/private_key" > "$PRIVATE_KEY_FILE"
+    )
 
     # Read public key from 1Password and save locally
-    op read "op://$VAULT/$KEY_NAME/public_key" > "$PUBLIC_KEY_FILE"
-    chmod 644 "$PUBLIC_KEY_FILE"
+    (
+        umask 022
+        op read "op://$VAULT/$KEY_NAME/public_key" > "$PUBLIC_KEY_FILE"
+    )
 
     say "SSH key restored to $SSH_DIR"
     echo ""
