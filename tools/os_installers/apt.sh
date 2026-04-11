@@ -231,9 +231,13 @@ fi
 echo "Installing yq..."
 if ! command -v yq &> /dev/null; then
     YQ_VERSION="v4.44.6"
-    wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /tmp/yq
-    sudo mv /tmp/yq /usr/local/bin/yq
-    sudo chmod +x /usr/local/bin/yq
+    (
+        TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O "$TMP_DIR/yq"
+        sudo mv "$TMP_DIR/yq" /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+    )
 fi
 
 # Install lsd (LSDeluxe)
