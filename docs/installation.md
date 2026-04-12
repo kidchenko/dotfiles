@@ -3,17 +3,21 @@
 ## Prerequisites
 
 ### Required
+
 - **Git** - For cloning the repository
 - **curl** or **wget** - For downloading installers
 
 ### Automatically Installed
+
 The bootstrap script will install these for you:
+
 - **Homebrew** (macOS) - Package manager
 - **Chezmoi** - Dotfiles manager
 - **Oh My Zsh** - Zsh framework
 - **1Password CLI** - For secrets management (optional but recommended)
 
 ### Optional
+
 - [Nerd Font](https://www.nerdfonts.com/) - For icons in terminal prompts
 
 ## Quick Install
@@ -120,6 +124,7 @@ dotfiles doctor
 ```
 
 This checks:
+
 - Core tools (chezmoi, git, zsh, homebrew)
 - 1Password CLI authentication
 - SSH keys

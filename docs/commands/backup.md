@@ -38,6 +38,7 @@ Default location: `~/Backups/tmp_project_backups/`
 ## Backup Retention
 
 When run via cron, only **2 backups** are kept:
+
 - Current week's backup
 - Previous week's backup
 
@@ -46,11 +47,13 @@ Older backups are automatically deleted.
 ## Scheduled Backups
 
 A cron job runs backups automatically:
+
 - **Schedule:** Sunday 2am
 - **Script:** `cron/backup.sh`
 - **Log:** `~/.local/log/backup-cron.log`
 
 Check scheduled backups:
+
 ```bash
 dotfiles cron
 ```
@@ -74,6 +77,7 @@ dotfiles logs backup
 ## Backup Location
 
 Backups are stored at:
+
 ```
 ~/Backups/tmp_project_backups/project-backup-YYYY-MM-DD.zip
 ```
@@ -81,6 +85,7 @@ Backups are stored at:
 ## Configuring Backups
 
 Edit `scripts/backup/backup-projects.sh` to customize:
+
 - Which directories to backup
 - Backup destination
 - Exclusion patterns

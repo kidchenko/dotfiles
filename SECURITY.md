@@ -27,16 +27,19 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/
 **Before running this command:**
 
 1. **Review the script first:**
+
    ```bash
    curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh | less
    ```
 
 2. **Use a specific release** (recommended for stability):
+
    ```bash
    bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/v1.0.0/tools/bootstrap.sh)"
    ```
 
 3. **Run in dry-run mode** to preview changes:
+
    ```bash
    bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)" -- --dry-run
    ```
@@ -50,6 +53,7 @@ This project uses **1Password CLI** for secrets management:
 - No secrets are stored in the repository
 
 **If you don't use 1Password:**
+
 - The bootstrap will skip 1Password integration
 - You'll need to manage SSH keys manually
 - Set `onepassword = false` in your Chezmoi config

@@ -104,6 +104,7 @@ The main CLI tool. Provides commands like `doctor`, `apply`, `update`, `ssh`, et
 ### `tools/bootstrap.sh`
 
 Fast bootstrap (~15-20 min) that installs essentials:
+
 1. Installs Homebrew
 2. Installs Chezmoi
 3. Applies dotfiles
@@ -116,6 +117,7 @@ After bootstrap, run `dotfiles setup` for complete setup (SSH, full software, ex
 ### `tools/doctor.sh`
 
 Health check script that verifies:
+
 - Core tools installation
 - 1Password CLI status
 - SSH key presence
@@ -133,6 +135,7 @@ Health check script that verifies:
 ### `tools/destroy.sh`
 
 Uninstaller with three levels:
+
 - **Default**: Remove managed dotfiles only
 - **`--all`**: Remove dotfiles + chezmoi state + brew packages
 - **`--deep`**: Factory reset (removes all dev tools, caches)
@@ -162,6 +165,7 @@ dotfiles destroy --all
 ```
 
 Also removes:
+
 - Chezmoi source directory
 - Chezmoi config and cache
 - Zsh data and cache
@@ -174,6 +178,7 @@ dotfiles destroy --deep
 ```
 
 Additionally removes:
+
 - Oh My Zsh
 - Shell histories (zsh, bash, python, node, etc.)
 - Package manager caches (npm, yarn, pip, cargo, etc.)

@@ -48,16 +48,19 @@ Git Status
 ## Workflow
 
 1. **Check status:**
+
    ```bash
    dotfiles status
    ```
 
 2. **Apply pending changes:**
+
    ```bash
    chezmoi apply
    ```
 
 3. **Commit to git:**
+
    ```bash
    cd ~/.local/share/chezmoi
    git add -A && git commit -m "Update config" && git push
@@ -68,6 +71,7 @@ Git Status
 ### Dotfiles Changes Section
 
 Shows what `chezmoi apply` would change in your home directory:
+
 - Lines with `-` will be removed
 - Lines with `+` will be added
 - "No pending dotfile changes" means source and target are in sync
@@ -75,6 +79,7 @@ Shows what `chezmoi apply` would change in your home directory:
 ### Git Status Section
 
 Shows uncommitted changes in `~/.local/share/chezmoi`:
+
 - `M` - Modified file
 - `??` - Untracked file
 - `A` - Added file

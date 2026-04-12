@@ -102,6 +102,7 @@ dotfiles ssh                 # Interactive menu for SSH key management
 ```
 
 Options:
+
 - **restore** - Restore existing key from 1Password to `~/.ssh/`
 - **generate** - Generate new Ed25519 key directly in 1Password
 - **show** - Display your public key (for adding to GitHub/GitLab)
@@ -124,6 +125,7 @@ Keys are stored at `op://development/SSH Key/` and restored automatically when y
 Six cron jobs are set up automatically:
 
 **Security & Updates**
+
 | Schedule | Task | Description |
 |----------|------|-------------|
 | Daily 8am | `outdated.sh` | Check for outdated packages |
@@ -131,12 +133,14 @@ Six cron jobs are set up automatically:
 | Sunday 10am | `cleanup.sh` | Cleanup brew cache & temp files |
 
 **Backups & Maintenance**
+
 | Schedule | Task | Description |
 |----------|------|-------------|
 | Sunday 2am | `backup.sh` | Backup projects (git sync + archive) |
 | Saturday 4am | `git-maintenance.sh` | Run git gc on repositories |
 
 **Health Monitoring**
+
 | Schedule | Task | Description |
 |----------|------|-------------|
 | Daily 7am | `health.sh` | System health check |

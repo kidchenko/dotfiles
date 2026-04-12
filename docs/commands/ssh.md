@@ -32,11 +32,13 @@ dotfiles ssh --name "GitHub SSH Key"
 ## Prerequisites
 
 1. **1Password CLI** must be installed:
+
    ```bash
    brew install 1password-cli
    ```
 
 2. **Sign in** to 1Password:
+
    ```bash
    op signin
    ```
@@ -53,6 +55,7 @@ dotfiles ssh --name "GitHub SSH Key"
 ## Key Storage
 
 The key is stored in 1Password at:
+
 ```
 op://development/SSH Key/
 ├── private key    # Ed25519 private key

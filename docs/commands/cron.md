@@ -52,6 +52,7 @@ dotfiles cron setup
 ```
 
 This will:
+
 1. Remove old dotfiles cron entries
 2. Add new entries for all defined jobs
 
@@ -60,12 +61,14 @@ This will:
 ### update.sh (Homebrew Updates)
 
 Located at `cron/update.sh`:
+
 - Runs `brew bundle install`
 - Logs to `~/.local/log/brew-bundle.log`
 
 ### backup.sh (Project Backups)
 
 Located at `cron/backup.sh`:
+
 - Runs the backup script
 - Keeps only 2 most recent backups
 - Logs to `~/.local/log/backup-cron.log`
@@ -84,6 +87,7 @@ dotfiles logs brew
 ## Adding New Cron Jobs
 
 1. Create script in `cron/`:
+
    ```bash
    #!/usr/bin/env bash
    # cron/my-task.sh
@@ -91,6 +95,7 @@ dotfiles logs brew
    ```
 
 2. Edit `cron/setup-cron.sh`:
+
    ```bash
    CRON_JOBS=(
        "update.sh|0 9 * * 1|Weekly brew bundle (Monday 9am)"
@@ -100,6 +105,7 @@ dotfiles logs brew
    ```
 
 3. Run setup:
+
    ```bash
    dotfiles cron setup
    ```
@@ -117,6 +123,7 @@ dotfiles logs brew
 ```
 
 Common patterns:
+
 - `0 9 * * 1` - Monday at 9am
 - `0 2 * * 0` - Sunday at 2am
 - `0 */4 * * *` - Every 4 hours
@@ -138,6 +145,7 @@ dotfiles cron setup
 ```
 
 Or manually:
+
 ```bash
 crontab -e
 # Remove the line

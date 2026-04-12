@@ -66,6 +66,7 @@ chezmoi add --template ~/.some-config
 ### Chezmoi Data
 
 During `chezmoi init`, you'll be prompted for:
+
 - **name** - Your git name
 - **email** - Your git email
 - **editor** - Preferred editor (vim/code/nvim)
@@ -338,7 +339,7 @@ dotfiles defaults
 echo "Running my task..."
 ```
 
-2. Edit `cron/setup-cron.sh`:
+1. Edit `cron/setup-cron.sh`:
 
 ```bash
 CRON_JOBS=(
@@ -348,7 +349,7 @@ CRON_JOBS=(
 )
 ```
 
-3. Re-run setup:
+1. Re-run setup:
 
 ```bash
 dotfiles cron setup
@@ -367,6 +368,7 @@ dotfiles cron setup
 ```
 
 Examples:
+
 - `0 9 * * 1` - Monday at 9am
 - `0 2 * * 0` - Sunday at 2am
 - `0 */4 * * *` - Every 4 hours

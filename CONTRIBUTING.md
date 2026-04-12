@@ -21,17 +21,20 @@ Thanks for your interest in contributing! This document provides guidelines for 
 ### Local Development
 
 1. **Fork and clone the repository:**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/dotfiles.git
    cd dotfiles
    ```
 
 2. **Run the build script to validate:**
+
    ```bash
    ./build.sh
    ```
 
 3. **Test specific components:**
+
    ```bash
    ./build.sh lint      # Lint shell scripts
    ./build.sh syntax    # Check bash syntax
@@ -44,16 +47,19 @@ Thanks for your interest in contributing! This document provides guidelines for 
 Before submitting a PR:
 
 1. **Run the full build:**
+
    ```bash
    ./build.sh all
    ```
 
 2. **Test bootstrap in dry-run mode:**
+
    ```bash
    ./tools/bootstrap.sh --dry-run
    ```
 
 3. **Test on a fresh environment** (optional but recommended):
+
    ```bash
    # Using a VM or container
    docker run -it ubuntu:latest bash
@@ -92,11 +98,13 @@ Before submitting a PR:
 ### Before Submitting
 
 1. **Create a branch** from `main`:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 2. **Make your changes** and commit with clear messages:
+
    ```bash
    git commit -m "feat: add new feature X"
    ```
@@ -106,6 +114,7 @@ Before submitting a PR:
 4. **Update CHANGELOG.md** under `[Unreleased]`
 
 5. **Run the build** to ensure everything passes:
+
    ```bash
    ./build.sh
    ```
@@ -123,6 +132,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore:` Maintenance tasks
 
 Examples:
+
 ```
 feat: add Brave browser extension sync
 fix: correct Homebrew path detection on Intel Macs
@@ -181,6 +191,7 @@ dotfiles/
    - `private_` prefix for sensitive files
 
 2. Use Go templating for machine-specific config:
+
    ```
    {{ if eq .chezmoi.os "darwin" }}
    # macOS specific

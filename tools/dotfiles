@@ -38,6 +38,7 @@ if [[ -t 1 ]]; then
     BOLD='\033[1m'
     NC='\033[0m'
 else
+    # shellcheck disable=SC2034
     RED='' GREEN='' YELLOW='' BLUE='' CYAN='' DIM='' BOLD='' NC=''
 fi
 
@@ -344,6 +345,7 @@ cmd_logs() {
 }
 
 cmd_cron() {
+    # shellcheck disable=SC2034
     local CRON_DIR="$DOTFILES_DIR/cron"
     local CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config.yaml"
 

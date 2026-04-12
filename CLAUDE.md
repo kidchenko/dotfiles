@@ -35,6 +35,7 @@ dotfiles packages extensions   # Install VS Code + browser extensions
 ## Architecture
 
 ### Chezmoi Template System
+
 - Source files live in `home/` directory with Chezmoi naming conventions
 - `dot_` prefix → `.` (e.g., `dot_gitconfig.tmpl` → `~/.gitconfig`)
 - `.tmpl` suffix indicates Go template processing
@@ -42,13 +43,16 @@ dotfiles packages extensions   # Install VS Code + browser extensions
 - Chezmoi stores source at `~/.local/share/chezmoi`, config at `~/.config/chezmoi/chezmoi.toml`
 
 ### XDG Directory Structure
+
 All configs follow XDG conventions:
+
 - `~/.config` (XDG_CONFIG_HOME) - App configurations
 - `~/.local/share` (XDG_DATA_HOME) - App data, Zsh history, NVM, SDKMAN
 - `~/.cache` (XDG_CACHE_HOME) - Cache files
 - `~/.local/bin` (XDG_BIN_HOME) - User binaries
 
 ### Key Directories
+
 - `home/` - Chezmoi-managed dotfile templates
 - `home/dot_config/` - XDG config files (zsh, nvim, tmux, git, etc.)
 - `tools/` - Bootstrap and management scripts
@@ -57,19 +61,24 @@ All configs follow XDG conventions:
 - `Brewfile` - Homebrew package manifest
 
 ### Bootstrap Flow
+
 `tools/bootstrap.sh` runs: Homebrew install → Chezmoi install → Apply dotfiles → Essential packages (Brewfile.essential) → Oh My Zsh → Zsh plugins → Cron setup
 
 After bootstrap, run `dotfiles setup` for complete installation (packages, extensions, ssh, defaults).
 
 ### Global Tools Config
+
 Edit `~/.config/dotfiles/config.yaml` to manage npm/pip/dotnet global tools, then run `dotfiles packages global`.
 
 ### Extensions
+
 Edit extension config files, then run `dotfiles packages extensions`:
+
 - `~/.config/dotfiles/vscode-extensions.txt` - VS Code extension IDs (one per line)
 - `~/.config/dotfiles/brave-extensions.txt` - Brave extension IDs (one per line)
 
 ### Windows Support
+
 - PowerShell profile at `~/Documents/PowerShell/` sources modular config from `~/.config/powershell/`
 - Windows bootstrap: `tools/os_installers/setup.ps1`
 - Chocolatey packages: `tools/os_installers/choco.ps1`

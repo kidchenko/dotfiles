@@ -39,6 +39,7 @@ dotfiles destroy --force
 ### Default (no flags)
 
 Removes only chezmoi-managed files:
+
 - `~/.zshrc`
 - `~/.gitconfig`
 - `~/.config/zsh/*`
@@ -48,6 +49,7 @@ Removes only chezmoi-managed files:
 ### --all
 
 Additionally removes:
+
 - `~/.local/share/chezmoi` (dotfiles source)
 - `~/.config/chezmoi` (chezmoi config)
 - `~/.cache/chezmoi` (chezmoi cache)
@@ -59,6 +61,7 @@ Additionally removes:
 ### --deep (Factory Reset)
 
 Additionally removes:
+
 - `~/.oh-my-zsh` (Oh My Zsh)
 - Shell histories: `.zsh_history`, `.bash_history`, `.python_history`, etc.
 - Node: `.npm`, `.yarn`, `.pnpm`, `.node_repl_history`
@@ -76,6 +79,7 @@ Additionally removes:
 ## What Gets Preserved
 
 Even with `--deep`, these are NOT removed:
+
 - `~/.ssh` (SSH keys)
 - `~/Documents`, `~/Downloads`, etc.
 - Applications in `/Applications`

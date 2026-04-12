@@ -2,12 +2,13 @@
 
 Currently uses git for installation. It clone the git repository in a folder called dotfiles in the current directory.
 Install
+
 - check for deps
-    - git win & mac
-    - choco? win
-    - brew? mac
-    - install deps or exit?
-        - nice exit
+  - git win & mac
+  - choco? win
+  - brew? mac
+  - install deps or exit?
+    - nice exit
 - git clone kidcheko/dotfiles
 - run or ask to run? tools/os_installers/setup.ps1 or setup.sh?
 
@@ -30,7 +31,6 @@ done
 # Offline work
 
 Need improvements
-
 
 # Poweshell
 

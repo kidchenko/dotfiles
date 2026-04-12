@@ -82,21 +82,25 @@ rm ~/.local/log/*.log
 If cron jobs aren't working:
 
 1. **Check logs exist:**
+
    ```bash
    ls ~/.local/log/
    ```
 
 2. **Check cron is running:**
+
    ```bash
    crontab -l
    ```
 
 3. **Check log directory permissions:**
+
    ```bash
    ls -la ~/.local/log/
    ```
 
 4. **Run job manually:**
+
    ```bash
    bash ~/.local/share/chezmoi/cron/backup.sh
    ```

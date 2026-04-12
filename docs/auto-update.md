@@ -345,7 +345,7 @@ echo "[$(date)] Running my task..." >> "$LOG_FILE"
 # Your task here
 ```
 
-2. Add entry to `cron/setup-cron.sh`:
+1. Add entry to `cron/setup-cron.sh`:
 
 ```bash
 CRON_JOBS=(
@@ -355,7 +355,7 @@ CRON_JOBS=(
 )
 ```
 
-3. Run setup:
+1. Run setup:
 
 ```bash
 dotfiles cron setup

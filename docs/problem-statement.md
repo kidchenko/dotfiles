@@ -13,6 +13,7 @@ Starting fresh on a new machine means manually installing dozens of tools, confi
 
 **The Solution:**
 A single command bootstraps everything:
+
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)"
 ```
