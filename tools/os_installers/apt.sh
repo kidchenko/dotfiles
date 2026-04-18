@@ -262,17 +262,19 @@ sudo apt install -y tesseract-ocr
 # Install PHP Composer
 echo "Installing Composer..."
 if ! command -v composer &> /dev/null; then
-    EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    (
+        TMP_DIR=$(mktemp -d)
+        trap 'rm -rf "$TMP_DIR"' EXIT
+        EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+        php -r "copy('https://getcomposer.org/installer', '$TMP_DIR/composer-setup.php');"
+        ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', '$TMP_DIR/composer-setup.php');")"
 
-    if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
-        sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
-        rm composer-setup.php
-    else
-        >&2 echo 'ERROR: Invalid installer checksum for Composer'
-        rm composer-setup.php
-    fi
+        if [ "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
+            sudo php "$TMP_DIR/composer-setup.php" --quiet --install-dir=/usr/local/bin --filename=composer
+        else
+            >&2 echo 'ERROR: Invalid installer checksum for Composer'
+        fi
+    )
 fi
 
 # Clean up

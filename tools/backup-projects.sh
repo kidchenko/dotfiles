@@ -269,6 +269,7 @@ sync_git_repos() {
             local repo_dir
             repo_dir=$(dirname "$git_dir")
             local repo_name
+            # shellcheck disable=SC2034
             repo_name=$(basename "$repo_dir")
             local relative_path="${repo_dir#$HOME/}"
 
@@ -292,7 +293,8 @@ sync_git_repos() {
                 # Commit local changes first (so pull --rebase doesn't fail)
                 if [[ -n $(git -C "$repo_dir" status --porcelain 2>/dev/null) ]]; then
                     git -C "$repo_dir" add -A 2>/dev/null
-                    local commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
+                    local commit_msg
+                    commit_msg="chore: auto-backup commit $(date '+%Y-%m-%d %H:%M')"
                     git -C "$repo_dir" commit -m "$commit_msg" &>/dev/null || true
                 fi
 
