@@ -13,7 +13,6 @@ second.
 **Prevention:** Wrap commands that create sensitive files in a subshell using
 `umask 077` to ensure the file is created with secure permissions (`600`)
 natively.
-# Sentinel Security Journal
 
 ## 2026-04-16 - Prevent TOCTOU and Symlink Attacks via Insecure Temporary Directories
 
@@ -29,3 +28,17 @@ or risks naming collisions.
 `TMP_DIR=$(mktemp -d)`) wrapped in a subshell `(...)` and paired with a local
 trap (`trap 'rm -rf "$TMP_DIR"' EXIT`) to ensure isolation and automatic
 cleanup upon exit.
+
+## 2026-04-20 - Insecure executable artifact download location
+
+**Vulnerability:** Downloaded executable script (`composer-setup.php`) directly
+to the current working directory in an installation script.
+
+**Learning:** Downloading files directly to the current directory is insecure
+because it might overwrite existing files or leave executable artifacts
+susceptible to modification before execution, especially in scripts that may run
+with elevated privileges.
+
+**Prevention:** Always use securely generated isolated temporary directories via
+`mktemp -d`, and wrap the setup in a subshell `(...)` with an automatic `trap`
+to ensure secure handling and cleanup.
