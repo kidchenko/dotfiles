@@ -81,7 +81,9 @@ installed=$(code --list-extensions | tr '[:upper:]' '[:lower:]')
 installed_count=0
 skipped_count=0
 failed_count=0
+to_install=()
 
+set +e
 while IFS= read -r ext_id; do
     [[ -z "$ext_id" ]] && continue
 
@@ -97,16 +99,28 @@ while IFS= read -r ext_id; do
     if [[ "$DRY_RUN" == true ]]; then
         echo "  → Would install: $ext_id"
     else
-        echo -n "  Installing $ext_id... "
-        if code --install-extension "$ext_id" --force &>/dev/null; then
-            echo "✓"
-            ((installed_count++))
-        else
-            echo "✗"
-            ((failed_count++))
-        fi
+        to_install+=("$ext_id")
     fi
-done <<< "$extensions"
+done < <(echo "$extensions")
+set -e
+
+# Install missing extensions in batch
+if [[ "${#to_install[@]}" -gt 0 ]]; then
+    echo -n "  Installing ${#to_install[@]} extensions... "
+
+    install_args=()
+    for ext in "${to_install[@]}"; do
+        install_args+=("--install-extension" "$ext")
+    done
+
+    if code "${install_args[@]}" --force &>/dev/null; then
+        echo "✓"
+        ((installed_count+=${#to_install[@]}))
+    else
+        echo "✗"
+        ((failed_count+=${#to_install[@]}))
+    fi
+fi
 
 echo ""
 if [[ "$DRY_RUN" == true ]]; then
