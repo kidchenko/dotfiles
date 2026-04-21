@@ -375,6 +375,10 @@ fi
 # This is generally not needed if `prepend_to_path` is used consistently.
 # export PATH=$(echo "$PATH" | awk -v RS=':' -v ORS=':' '!seen[$0]++{print $0}' | sed 's/:$//')
 
+# Added by get-aspire-cli.sh
+export PATH="$HOME/.aspire/bin:$PATH"
+
 # Ensure this script is sourced, not executed, so exports take effect in the current shell.
 # The #!/usr/bin/env bash shebang is for linters/editors but doesn't affect sourcing.
 true # Ensure script exits with 0 if sourced.
+
