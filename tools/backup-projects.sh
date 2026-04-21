@@ -431,6 +431,8 @@ cmd_backup() {
         exclude_args=$(build_exclude_args)
 
         (
+            # Restrict permissions for backup file (owner read/write only)
+            umask 0077
             cd "$HOME" || exit 1
             if [[ "$VERBOSE" == true ]]; then
                 # shellcheck disable=SC2086
