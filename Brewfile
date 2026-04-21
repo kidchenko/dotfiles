@@ -75,36 +75,44 @@ cask "1password-cli"      # 1Password CLI (op) for secrets in dotfiles
 
 # CLI apps
 # brew "chatgpt-cli"        # ChatGPT CLI - not available in Homebrew
-# brew "gemini-cli"         # Gemini CLI - not available in Homebrew
-brew "jira-cli"           # Jira CLI
-brew "stripe-cli"         # Stripe CLI
-brew "mas"                # Mac App Store CLI
-brew "dockutil"           # Dock management CLI
-brew "lazygit"            # Terminal UI for git
-brew "neovim"             # Modern vim
-brew "watch"              # Run commands periodically
+brew "gemini-cli"           # Gemini CLI - not available in Homebrew
+brew "jira-cli"             # Jira CLI
+brew "stripe-cli"           # Stripe CLI
+brew "mas"                  # Mac App Store CLI
+brew "dockutil"             # Dock management CLI
+brew "lazygit"              # Terminal UI for git
+brew "neovim"               # Modern vim
+brew "watch"                # Run commands periodically
+brew "powershell"           # PowerShell CLI
+
+# Media processing
+brew "ffmpeg"               # Video processing
+brew "imagemagick"          # Image processing
 
 # Casks - Development
 cask "visual-studio-code"  # VS Code
 cask "docker-desktop"      # Docker Desktop
-cask "jetbrains-toolbox"  # JetBrains tools
-cask "rider"              # .NET IDE
-cask "dotnet-sdk"         # .NET SDK - conflicts_with bug, install manually
+cask "jetbrains-toolbox"   # JetBrains tools
+cask "rider"               # .NET IDE
+cask "dotnet-sdk"          # .NET SDK
 
 # Casks - Terminals
 cask "iterm2"             # iTerm2
 cask "hyper"              # Hyper terminal
+cask "wezterm"            # WezTerm terminal
 cask "powershell"         # PowerShell
 
 # Casks - Browsers
 cask "brave-browser"      # Brave
 cask "google-chrome"      # Chrome
+cask "firefox"            # Firefox
 
 # Casks - AI Tools
 cask "chatgpt"            # ChatGPT desktop
 cask "claude"             # Claude desktop
 cask "cursor"             # Cursor IDE
 cask "claude-code"
+
 
 # Database
 brew "postgresql@16"      # PostgreSQL client
@@ -125,13 +133,15 @@ cask "rectangle"          # Window management
 cask "raycast"            # Spotlight replacement
 cask "alt-tab"            # Window switcher
 cask "discord"            # Chat
-cask "grammarly-desktop"   # Writing assistant
+cask "grammarly-desktop"  # Writing assistant
+cask "wakatime"           # Time tracking
 
 # Casks - Utilities
 cask "google-drive"       # Google Drive sync
 cask "flux-app"           # Screen color
 cask "rescuetime"         # Time tracking
 cask "spotify"            # Music
+
 
 # Fonts
 cask "font-hack-nerd-font"

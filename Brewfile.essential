@@ -19,6 +19,7 @@ brew "gh"         # GitHub CLI
 
 # Terminal
 cask "hyper"
+cask "wezterm"            # WezTerm terminal
 
 # Fonts for terminal
 cask "font-hack-nerd-font"
