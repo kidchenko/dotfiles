@@ -2,11 +2,44 @@
 # Located at ~/.config/dotfiles/config.yaml after chezmoi applies it.
 #
 # Sections:
+#   - hooks: Scripts to run around package installation
 #   - global_tools: npm/pip/dotnet packages to install globally
 #   - cron: Scheduled task definitions
 #   - backup: Backup folders, excludes, and settings
 #   - extensions: VS Code and browser extensions
 #   - ssh: 1Password SSH key settings
+
+# Package install hooks
+#
+# Two phases only, both around the WHOLE install - not per package:
+#   pre_package_install   runs once before anything is installed
+#   post_package_install  runs once after everything is installed
+#
+# Entries are script NAMES, never paths or inline commands. A name resolves
+# inside tools/hooks/ and nowhere else. The file extension picks the OS, so
+# the same name works everywhere:
+#
+#   check-disk-space.sh    -> runs on macOS/Linux
+#   check-disk-space.ps1   -> runs on Windows
+#   both present           -> each platform runs its own
+#
+# A name that resolves only for another OS is skipped. A name that resolves
+# nowhere is a typo and fails loudly.
+#
+# tools/hooks/packages.custom.{sh,ps1} runs post-install even when unlisted.
+# It is optional - if the file is absent, nothing happens.
+#
+# If a pre hook fails the install is aborted; a failing post hook only warns.
+# Hooks re-run on every `dotfiles packages`, including the weekly cron job,
+# so they must be idempotent.
+hooks:
+  enabled: true
+
+  pre_package_install: []
+    # - check-disk-space
+
+  post_package_install: []
+    # - rebuild-font-cache
 
 global_tools:
   npm:
@@ -21,6 +54,7 @@ global_tools:
   dotnet:
     - dotnet-ef             # Entity Framework Core tools
     - dotnet-outdated-tool  # Check for outdated NuGet packages
+    - csharprepl            # C# REPL - the `csrepl` alias in aliases.ps1
 
 # Cron jobs configuration
 # Each job has: script name, cron schedule, and description

@@ -9,21 +9,31 @@ $Hour = (Get-Date).Hour
 $Name = "Jose"
 $Theme = "robbyrussel.omp.json"
 
-# Auto-update dotfiles (similar to Zsh .zlogin)
-if (Test-Path "$DOTFILES_DIR/.git") {
-    Push-Location $DOTFILES_DIR
-    $fetch = git fetch --dry-run 2>&1
-    if ($fetch) {
-        Write-Host "[dotfiles] New version available."
-        # Automatically apply updates
-        $updateOutput = chezmoi update --verbose 2>&1 | Out-String
-        if ($updateOutput -match "error") {
-            Write-Host "[dotfiles] Update failed. Run 'chezmoi update' manually to see details."
-        } else {
-            Write-Host "[dotfiles] Updated and applied successfully."
+# Check for dotfiles updates - mirrors tools/update.sh on the Zsh side.
+#
+# Two rules this must not break:
+#   1. Never block the prompt on the network. The fetch is fired in the
+#      background; the comparison below reads only local refs, which is fast.
+#   2. Never apply changes unasked. This used to run `chezmoi update` inline
+#      on every shell start, rewriting files mid-session without consent.
+#      It now only reports, exactly like update.sh does.
+if ((Test-Path "$DOTFILES_DIR/.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
+    try {
+        # Fire-and-forget refresh of the remote refs
+        Start-Process -FilePath 'git' `
+            -ArgumentList @('-C', $DOTFILES_DIR, 'fetch', '--quiet') `
+            -NoNewWindow -ErrorAction SilentlyContinue | Out-Null
+
+        # Compare against whatever the last fetch left behind (local, instant)
+        $local  = git -C $DOTFILES_DIR rev-parse '@' 2>$null
+        $remote = git -C $DOTFILES_DIR rev-parse '@{u}' 2>$null
+
+        if ($remote -and ($local -ne $remote)) {
+            Write-Host "[dotfiles] New version available. Run 'chezmoi update' to apply."
         }
+    } catch {
+        # A dotfiles check must never break the shell
     }
-    Pop-Location
 }
 
 If ($Hour -lt 12) {"Good Morning $Name!"}

@@ -20,6 +20,8 @@ See [Problem Statement](docs/problem-statement.md) for the full rationale.
 
 ## Quick Start
 
+### macOS / Linux
+
 ```bash
 # One-line bootstrap on a new machine
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)"
@@ -28,12 +30,33 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)" -- --dry-run
 ```
 
-Bootstrap installs essential dev tools only. After bootstrap, run the full setup:
+### Windows
+
+Run in PowerShell. Nothing needs to be installed first — Chocolatey and git are
+installed for you, and the script prompts for elevation via UAC:
+
+```powershell
+# One-line bootstrap on a new machine
+irm https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.ps1 | iex
+
+# Preview what will be installed (dry-run, no elevation needed)
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.ps1))) -DryRun
+```
+
+Works on the stock Windows PowerShell 5.1 that ships with Windows — you do not
+need to install PowerShell 7 first.
+
+### After bootstrap
+
+Bootstrap installs essential dev tools only. Then run the full setup:
 
 ```bash
 # Complete setup (packages, extensions, ssh, defaults)
 dotfiles setup
 ```
+
+On Windows, refresh your session first so newly installed tools are on `PATH`
+(`refreshenv`, or just open a new PowerShell window).
 
 ## What's Included
 
@@ -153,14 +176,18 @@ dotfiles/
 │   └── private_dot_ssh/     # SSH config templates
 ├── tools/                   # Management scripts
 │   ├── dotfiles             # CLI tool
-│   ├── bootstrap.sh         # One-line installer
+│   ├── bootstrap.sh         # One-line installer (macOS/Linux)
+│   ├── bootstrap.ps1        # One-line installer (Windows)
 │   ├── doctor.sh            # Health checks
 │   ├── destroy.sh           # Uninstaller
 │   ├── backup-projects.sh   # Backup utility
 │   ├── setup-ssh-keys.sh    # SSH key generation
+│   ├── os_installers/       # Per-OS package installers
 │   └── os_setup/            # OS-specific configs
 ├── cron/                    # Scheduled tasks
-└── Brewfile                 # Homebrew packages
+├── Brewfile                 # Homebrew packages (macOS)
+├── Brewfile.essential       # Homebrew bootstrap subset
+└── packages.essential.config # Chocolatey bootstrap subset (Windows)
 ```
 
 ## Customization
@@ -201,16 +228,25 @@ The `dotfiles defaults` command applies developer-friendly settings (keyboard, D
 
 ## Bootstrap Flow
 
-When you run `bootstrap.sh`, it executes in this order:
+`bootstrap.sh` (macOS/Linux) and `bootstrap.ps1` (Windows) run the same steps
+against each platform's package manager:
 
-1. **Homebrew** - Install package manager (macOS)
-2. **Chezmoi** - Install dotfiles manager
-3. **Dotfiles** - Apply all configurations
-4. **Essential Packages** - Install from `Brewfile.essential` (git, fzf, ripgrep, bat, Hyper, fonts)
-5. **Oh My Zsh** - Install shell framework
-6. **Plugins** - Install zsh-autosuggestions, zsh-syntax-highlighting, zsh-nvm
-7. **Directories** - Create project folders (~/kidchenko, ~/lambda3, etc.)
-8. **CLI** - Install `dotfiles` command
+| # | Step | macOS / Linux (`bootstrap.sh`) | Windows (`bootstrap.ps1`) |
+|---|------|-------------------------------|---------------------------|
+| 1 | Package manager | Homebrew | Chocolatey |
+| 2 | Git | Homebrew, apt/dnf/pacman, or Xcode CLT | Chocolatey |
+| 3 | Refresh env | `hash -r` / `eval "$(brew shellenv)"` | `Update-SessionEnvironment` |
+| 4 | Dotfiles manager | Chezmoi | Chezmoi |
+| 5 | Apply configs | `chezmoi init --apply` | `chezmoi init --apply` |
+| 6 | Essential packages | `Brewfile.essential` | `packages.essential.config` |
+| 7 | Shell framework | Oh My Zsh + zsh plugins | PowerShell modules (posh-git, Terminal-Icons, PSReadLine, PSFzf) |
+| 8 | Directories | `~/kidchenko`, `~/lambda3`, … | same |
+| 9 | CLI | Symlink `dotfiles` | `dotfiles.ps1` shim + `~/.local/bin` on PATH |
+
+Both platforms bootstrap from a machine that has **nothing but a shell and a
+downloader** — git is installed for you, not required up front. The only
+remaining asymmetry is that Windows **elevates via UAC**, because Chocolatey
+requires administrator rights while Homebrew explicitly refuses them.
 
 After bootstrap, run `dotfiles setup` for complete installation (full packages, SSH keys, extensions, system defaults, cron jobs).
 

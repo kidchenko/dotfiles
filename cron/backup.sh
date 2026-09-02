@@ -10,7 +10,9 @@ set -e
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
-BACKUP_SCRIPT="$DOTFILES_DIR/scripts/backup/backup-projects.sh"
+# tools/, not scripts/backup/ - the latter has never existed, so this job
+# logged "ERROR: Backup failed" and exited 1 every week without ever running.
+BACKUP_SCRIPT="$DOTFILES_DIR/tools/backup-projects.sh"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 LOG_FILE="$LOG_DIR/backup-cron.log"
 BACKUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/backups"
@@ -24,6 +26,14 @@ log() {
 }
 
 log "=== Starting weekly backup ==="
+
+# Distinguish "script is missing" from "backup ran and failed". Without this
+# both produced the same generic "Backup failed" line, which is how a wrong
+# BACKUP_SCRIPT path went unnoticed for so long.
+if [[ ! -f "$BACKUP_SCRIPT" ]]; then
+    log "ERROR: Backup script not found at $BACKUP_SCRIPT"
+    exit 1
+fi
 
 # Run backup
 if "$BACKUP_SCRIPT" backup >> "$LOG_FILE" 2>&1; then

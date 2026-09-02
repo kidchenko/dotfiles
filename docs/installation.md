@@ -2,38 +2,88 @@
 
 ## Prerequisites
 
-### Required
-- **Git** - For cloning the repository
-- **curl** or **wget** - For downloading installers
+### macOS / Linux
 
-### Automatically Installed
-The bootstrap script will install these for you:
-- **Homebrew** (macOS) - Package manager
+**Required:**
+- **curl** or **wget** - For downloading installers (`curl` ships with macOS)
+
+**Automatically installed:**
+- **Homebrew** - Package manager
+- **Git** - Via Homebrew, the system package manager (apt/dnf/yum/pacman/zypper/apk),
+  or the Xcode Command Line Tools as a last resort
 - **Chezmoi** - Dotfiles manager
 - **Oh My Zsh** - Zsh framework
 - **1Password CLI** - For secrets management (optional but recommended)
 
+### Windows
+
+**Required:** nothing. Windows PowerShell 5.1 ships with every supported
+version of Windows, and that is all `bootstrap.ps1` needs to start.
+
+**Automatically installed:**
+- **Chocolatey** - Package manager (requires administrator; the script elevates via UAC)
+- **Git** - Installed via Chocolatey
+- **Chezmoi** - Dotfiles manager
+- **PowerShell modules** - posh-git, Terminal-Icons, PSReadLine, PSFzf
+- **PowerShell 7** - Installed as an essential package
+
 ### Optional
 - [Nerd Font](https://www.nerdfonts.com/) - For icons in terminal prompts
+  (installed automatically as part of the essential packages)
 
 ## Quick Install
 
-Run this single command on a fresh machine:
+Run this single command on a fresh machine.
+
+**macOS / Linux:**
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.sh)"
+```
+
+**Windows** (PowerShell — no prerequisites):
+
+```powershell
+irm https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.ps1 | iex
+```
+
+To pass options such as `-DryRun`, use a script block — `iex` cannot forward
+arguments to a piped script:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/kidchenko/dotfiles/main/tools/bootstrap.ps1))) -DryRun
 ```
 
 ## What Gets Installed
 
 The bootstrap process installs essential tools only:
 
-1. Install Homebrew (macOS only)
-2. Install Chezmoi dotfiles manager
-3. Apply all dotfile configurations
-4. Install essential packages from `Brewfile.essential`
-5. Install Oh My Zsh and plugins
-6. Setup the `dotfiles` CLI command
+**macOS / Linux:**
+
+1. Install Homebrew
+2. Install git, then refresh the shell's command lookup
+3. Install Chezmoi dotfiles manager
+4. Apply all dotfile configurations
+5. Install essential packages from `Brewfile.essential`
+6. Install Oh My Zsh and plugins
+7. Create project directories
+8. Setup the `dotfiles` CLI command
+
+**Windows:**
+
+1. Elevate via UAC (Chocolatey requires administrator)
+2. Install Chocolatey, then refresh the session environment
+3. Install git, then refresh again
+4. Install Chezmoi dotfiles manager
+5. Apply all dotfile configurations
+6. Install essential packages from `packages.essential.config`
+7. Install PowerShell modules
+8. Create project directories
+9. Setup the `dotfiles` CLI shim in `~/.local/bin`
+
+Steps 2 and 3 refresh `PATH` in-process with `Update-SessionEnvironment`, so the
+run can use tools it just installed without restarting the shell. This is the
+Windows equivalent of `eval "$(brew shellenv)"` on macOS.
 
 After bootstrap, run `dotfiles setup` for complete installation (full packages, extensions, SSH keys, system defaults).
 
@@ -92,8 +142,16 @@ ln -sf ~/.local/share/chezmoi/tools/dotfiles ~/.local/bin/dotfiles
 
 ### 1. Restart Your Shell
 
+macOS / Linux:
+
 ```bash
 exec zsh
+```
+
+Windows — refresh the current session, or open a new PowerShell window:
+
+```powershell
+refreshenv
 ```
 
 ### 2. Complete Setup

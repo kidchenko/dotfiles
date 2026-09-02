@@ -71,5 +71,6 @@ Edit extension config files, then run `dotfiles packages extensions`:
 
 ### Windows Support
 - PowerShell profile at `~/Documents/PowerShell/` sources modular config from `~/.config/powershell/`
-- Windows bootstrap: `tools/os_installers/setup.ps1`
+- Windows bootstrap: `tools/bootstrap.ps1` (one-line installer)
+- Windows system config: `tools/os_setup/windows-config.ps1` (via `dotfiles defaults`)
 - Chocolatey packages: `tools/os_installers/choco.ps1`

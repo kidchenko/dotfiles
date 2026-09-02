@@ -1,0 +1,33 @@
+# PowerShell Profile for Windows
+# This file is the actual PowerShell profile that Windows/PowerShell loads
+# Location: ~/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1
+#
+# Windows PowerShell 5.1 reads Documents/WindowsPowerShell, while pwsh 7 reads
+# Documents/PowerShell. Both shims load the same ~/.config/powershell config.
+#
+# It sources the modular configuration from ~/.config/powershell/
+
+# Determine config directory (XDG-aware, works on Windows and Unix)
+$ConfigDir = if ($env:XDG_CONFIG_HOME) {
+    Join-Path $env:XDG_CONFIG_HOME "powershell"
+} elseif ($IsWindows -or $env:OS -eq "Windows_NT") {
+    # Windows: Use standard .config location
+    Join-Path $env:USERPROFILE ".config\powershell"
+} else {
+    # Unix (macOS/Linux)
+    Join-Path $HOME ".config/powershell"
+}
+
+# Source the main profile from .config/powershell/
+#
+# The filename must stay Microsoft.PowerShell_profile.ps1: on macOS/Linux that
+# same path IS the profile pwsh loads natively, so this shim and Unix share one
+# file. (This previously pointed at "profile.ps1", which ships nowhere - the
+# chain was severed and Windows loaded no config at all.)
+$MainProfile = Join-Path $ConfigDir "Microsoft.PowerShell_profile.ps1"
+if (Test-Path $MainProfile) {
+    . $MainProfile
+} else {
+    Write-Warning "PowerShell config not found at: $MainProfile"
+    Write-Host "Run 'chezmoi apply' to set up your dotfiles."
+}

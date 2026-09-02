@@ -59,7 +59,8 @@ if [[ ! -f "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "environment" ]];
 fi
 
 # Check dependencies
-command -v git >/dev/null 2>&1 || error "git is required but not installed"
+# git is NOT required up front - install_git() below installs it, mirroring
+# bootstrap.ps1 on Windows. Only a downloader is a hard prerequisite.
 command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1 || error "curl or wget is required"
 
 # Install Homebrew if not present (macOS only)
@@ -91,6 +92,65 @@ install_homebrew() {
 
     command -v brew >/dev/null 2>&1 || error "Failed to install Homebrew"
     say "Homebrew installed successfully"
+}
+
+# Refresh the shell's command lookup after installing tools.
+# POSIX counterpart of Update-SessionEnvironment in bootstrap.ps1.
+refresh_env() {
+    hash -r 2>/dev/null || true
+}
+
+# Is there a git we can actually run?
+# On macOS `command -v git` finds /usr/bin/git even with no Xcode CLT installed
+# - it is a stub that only pops the CLT installer. So test that it really runs.
+has_working_git() {
+    git --version >/dev/null 2>&1
+}
+
+# Install git if not present.
+# Windows always had to do this; macOS/Linux now do too, so both platforms
+# bootstrap from a machine with nothing but a shell and a downloader.
+install_git() {
+    if has_working_git; then
+        say "git already installed: $(command -v git) ($(git --version))"
+        return 0
+    fi
+
+    say "Installing git..."
+    if [[ "$DRY_RUN" == true ]]; then
+        say "DRY-RUN: Would install git"
+        return 0
+    fi
+
+    if command -v brew >/dev/null 2>&1; then
+        brew install git
+    elif [[ "$(uname -s)" == "Darwin" ]]; then
+        # No Homebrew (its install failed or was skipped): fall back to the
+        # Xcode Command Line Tools, which is where macOS git comes from.
+        say "Requesting Xcode Command Line Tools (a GUI dialog will open)..."
+        xcode-select --install 2>/dev/null || true
+        say "Complete the Command Line Tools install, then re-run bootstrap."
+        error "git unavailable until Xcode Command Line Tools finish installing"
+    elif command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update && sudo apt-get install -y git
+    elif command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y git
+    elif command -v yum >/dev/null 2>&1; then
+        sudo yum install -y git
+    elif command -v pacman >/dev/null 2>&1; then
+        sudo pacman -S --noconfirm git
+    elif command -v zypper >/dev/null 2>&1; then
+        sudo zypper install -y git
+    elif command -v apk >/dev/null 2>&1; then
+        sudo apk add git
+    else
+        error "No supported package manager found to install git. Install it manually and re-run."
+    fi
+
+    refresh_env
+
+    has_working_git || error "Failed to install git"
+    say "git installed successfully ($(git --version))"
 }
 
 # Install essential Homebrew packages from Brewfile.essential
@@ -151,6 +211,8 @@ install_chezmoi() {
         sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
         export PATH="$HOME/.local/bin:$PATH"
     fi
+
+    refresh_env
 
     command -v chezmoi >/dev/null 2>&1 || error "Failed to install chezmoi"
     say "chezmoi installed successfully"
@@ -308,6 +370,7 @@ main() {
     echo
 
     install_homebrew
+    install_git
     install_chezmoi
     apply_dotfiles
     install_brew_packages

@@ -38,10 +38,6 @@ function _Thoughtworks {
     cd ~/thoughtworks
 }
 
-function _Thoughtworks {
-    cd ~/thoughtworks
-}
-
 function _isho {
     cd ~/isho
 }
@@ -178,8 +174,13 @@ Set-Alias l ls
 # List all files
 Set-Alias la List-All
 
-# List only directories
-Set-Alias lsd List-Directory
+# List only directories.
+# Guarded: both Brewfile and choco.ps1 install the `lsd` binary, and a
+# PowerShell alias takes precedence over an external command - so defining
+# this unconditionally silently shadowed the tool we just installed.
+if (-not (Get-Command lsd -CommandType Application -ErrorAction SilentlyContinue)) {
+    Set-Alias lsd List-Directory
+}
 
 # List only hidden files
 Set-Alias lsh List-Hidden

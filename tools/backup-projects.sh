@@ -176,7 +176,10 @@ load_config() {
     val=$(yq -r '.backup.local.retention_days // ""' "$CONFIG_FILE" 2>/dev/null)
     [[ -n "$val" && "$val" != "null" ]] && LOCAL_RETENTION_DAYS="$val"
 
-    val=$(yq -r '.backup.remote.enabled // ""' "$CONFIG_FILE" 2>/dev/null)
+    # No `// ""` here: yq's alternative operator treats `false` as empty, so
+    # `.enabled // ""` returns "" for `enabled: false` and the check below
+    # never fires. Read the raw value for booleans.
+    val=$(yq -r '.backup.remote.enabled' "$CONFIG_FILE" 2>/dev/null)
     [[ "$val" == "false" ]] && REMOTE_ENABLED=false
 
     val=$(yq -r '.backup.remote.rclone_remote // ""' "$CONFIG_FILE" 2>/dev/null)
@@ -185,7 +188,8 @@ load_config() {
     val=$(yq -r '.backup.remote.rclone_path // ""' "$CONFIG_FILE" 2>/dev/null)
     [[ -n "$val" && "$val" != "null" ]] && RCLONE_REMOTE_PATH="$val"
 
-    val=$(yq -r '.backup.logging.enabled // ""' "$CONFIG_FILE" 2>/dev/null)
+    # Raw read, not `// ""` - see the note on remote.enabled above.
+    val=$(yq -r '.backup.logging.enabled' "$CONFIG_FILE" 2>/dev/null)
     [[ "$val" == "false" ]] && LOGGING_ENABLED=false
 
     val=$(yq -r '.backup.logging.dir // ""' "$CONFIG_FILE" 2>/dev/null)

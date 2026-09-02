@@ -1,6 +1,14 @@
 # Chezmoi ignore file
 # Files listed here will not be managed by chezmoi
+# This file is itself a template, so it can vary per machine.
 
 # SSH keys are managed via `dotfiles ssh` command, not chezmoi
 .ssh/id_ed25519
 .ssh/id_ed25519.pub
+
+# Windows PowerShell profile shims live under ~/Documents. On macOS and Linux
+# pwsh reads ~/.config/powershell directly, so these would just be dead files
+# cluttering the home directory.
+{{ if ne .chezmoi.os "windows" }}
+Documents/**
+{{ end }}

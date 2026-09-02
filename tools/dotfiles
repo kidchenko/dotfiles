@@ -161,12 +161,29 @@ cmd_backup() {
     fi
 }
 
+# Run declarative hooks around the package-install phase.
+# Phase-level, not per-package: pre runs once before anything installs,
+# post runs once after everything has. A failing pre hook aborts.
+run_hooks() {
+    local phase="$1"
+    local hook_runner="$TOOLS_DIR/run-hooks.sh"
+
+    [[ -f "$hook_runner" ]] || return 0
+
+    if ! bash "$hook_runner" "$phase"; then
+        if [[ "$phase" == "pre_package_install" ]]; then
+            error "Pre-install hooks failed - aborting"
+        fi
+    fi
+}
+
 cmd_packages() {
     local BREWFILE="$DOTFILES_DIR/Brewfile"
 
     case "${1:-install}" in
         install)
             shift 2>/dev/null || true
+            run_hooks pre_package_install
             if [[ "$(uname -s)" == "Darwin" ]] || command -v brew &>/dev/null; then
                 if [[ ! -f "$BREWFILE" ]]; then
                     error "Brewfile not found at $BREWFILE"
@@ -177,17 +194,10 @@ cmd_packages() {
                 brew bundle install --file="$BREWFILE" --verbose "$@"
                 echo ""
                 say "Done! Run 'dotfiles packages cleanup' to remove unlisted packages."
-            elif [[ "$(uname -s)" == *"MINGW"* ]] || [[ "$(uname -s)" == *"MSYS"* ]] || command -v choco &>/dev/null; then
-                local choco_script="$TOOLS_DIR/os_installers/choco.ps1"
-                if [[ -f "$choco_script" ]]; then
-                    say "Installing packages via Chocolatey..."
-                    powershell -ExecutionPolicy Bypass -File "$choco_script"
-                else
-                    error "choco.ps1 not found at $choco_script"
-                fi
             else
-                error "No supported package manager found (brew or choco)"
+                error "Homebrew not found. On Windows use the PowerShell CLI: dotfiles packages"
             fi
+            run_hooks post_package_install
             ;;
         cleanup)
             shift 2>/dev/null || true
@@ -210,10 +220,8 @@ cmd_packages() {
                 echo ""
                 echo -e "${CYAN}Casks:${NC}"
                 brew list --cask
-            elif command -v choco &>/dev/null; then
-                choco list --local-only
             else
-                error "No supported package manager found"
+                error "Homebrew not found. On Windows use the PowerShell CLI: dotfiles packages list"
             fi
             ;;
         outdated)
@@ -229,10 +237,8 @@ cmd_packages() {
                 else
                     echo -e "${GREEN}All packages are up to date${NC}"
                 fi
-            elif command -v choco &>/dev/null; then
-                choco outdated
             else
-                error "No supported package manager found"
+                error "Homebrew not found. On Windows use the PowerShell CLI: dotfiles packages outdated"
             fi
             ;;
         global)
@@ -410,11 +416,14 @@ cmd_cron() {
     esac
 }
 
+# macOS only. Windows system defaults are applied by the PowerShell CLI
+# (tools/dotfiles.ps1 -> os_setup/windows-config.ps1); this file never crosses
+# the language boundary.
 cmd_defaults() {
     local defaults_script="$TOOLS_DIR/os_setup/macos-config.sh"
 
     if [[ ! "$(uname -s)" == "Darwin" ]]; then
-        error "This command is only available on macOS"
+        error "This command is only available on macOS. On Windows run: dotfiles defaults (PowerShell)"
     fi
 
     if [[ -f "$defaults_script" ]]; then
@@ -439,14 +448,15 @@ cmd_setup() {
     say "Running complete setup..."
     echo ""
 
-    echo ""
-
-    say "Step 1/6: Setting up SSH keys..."
-    cmd_ssh sync
-    echo ""
-
-    say "Step 2/6: Installing system packages..."
+    # Packages come first: SSH sync needs the 1Password CLI (op), which is
+    # installed here. With the old order (ssh first) step 1 always failed on a
+    # fresh machine because op did not exist yet.
+    say "Step 1/6: Installing system packages..."
     cmd_packages install
+    echo ""
+
+    say "Step 2/6: Setting up SSH keys..."
+    cmd_ssh sync
     echo ""
 
     say "Step 3/6: Installing global tools & extensions..."

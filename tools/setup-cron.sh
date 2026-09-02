@@ -38,6 +38,20 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check dependencies
+#
+# Windows has no crontab. Without this guard `set -e` killed the script at the
+# first `| crontab -` with a bare "command not found", which surfaced during
+# `dotfiles setup` as an unexplained failed step. Exit 0, not 1: having no cron
+# on a platform that has no cron is not an error.
+if ! command -v crontab &>/dev/null; then
+    # No crontab means this is not a platform this script handles. Windows
+    # scheduling lives in tools/setup-cron.ps1, invoked by the PowerShell CLI -
+    # this script never crosses the language boundary to reach it.
+    warn "crontab not available on this platform - skipping cron setup."
+    warn "On Windows use the PowerShell CLI: dotfiles cron setup"
+    exit 0
+fi
+
 if ! command -v yq &>/dev/null; then
     warn "yq not installed. Install with: brew install yq"
     exit 1

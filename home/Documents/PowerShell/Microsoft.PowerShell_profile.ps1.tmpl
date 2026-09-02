@@ -16,7 +16,12 @@ $ConfigDir = if ($env:XDG_CONFIG_HOME) {
 }
 
 # Source the main profile from .config/powershell/
-$MainProfile = Join-Path $ConfigDir "profile.ps1"
+#
+# The filename must stay Microsoft.PowerShell_profile.ps1: on macOS/Linux that
+# same path IS the profile pwsh loads natively, so this shim and Unix share one
+# file. (This previously pointed at "profile.ps1", which ships nowhere - the
+# chain was severed and Windows loaded no config at all.)
+$MainProfile = Join-Path $ConfigDir "Microsoft.PowerShell_profile.ps1"
 if (Test-Path $MainProfile) {
     . $MainProfile
 } else {
