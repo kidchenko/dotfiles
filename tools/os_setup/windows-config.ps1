@@ -37,7 +37,30 @@
 [CmdletBinding()]
 param(
     [switch]$DryRun,
-    [switch]$SkipRestart
+    [switch]$SkipRestart,
+
+    # English interface. The home location (Thailand, etc.) is deliberately
+    # NOT changed - that is what keeps weather, news and currency local.
+    [string]$UiLanguage = 'en-US',
+
+    # Power. AC values are generous because the machine is docked and plugged
+    # in; DC values stay conservative because a laptop on battery that never
+    # sleeps is a flat laptop.
+    [int]$SleepMinutesAC   = 60,
+    [int]$SleepMinutesDC   = 30,
+    [int]$DisplayMinutesAC = 15,
+    [int]$DisplayMinutesDC = 5,
+
+    # 0 = do nothing, 1 = sleep, 2 = hibernate, 3 = shut down
+    #
+    # Both default to "do nothing" so closing the lid keeps music, downloads
+    # and builds running. On battery this is safe because the idle sleep
+    # timeout above still applies: audio playback holds a power request that
+    # blocks idle sleep, so nothing is interrupted mid-track, and once
+    # playback stops the machine sleeps $SleepMinutesDC minutes later. A
+    # laptop closed and forgotten still goes to sleep on its own.
+    [int]$LidClosedAC = 0,
+    [int]$LidClosedDC = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -106,6 +129,8 @@ function Set-RegValue {
     }
 }
 
+$CONFIG_HOME_DIR = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { Join-Path $HOME '.config' }
+
 $Explorer  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 $Search    = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search'
 $ContentD  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
@@ -150,7 +175,13 @@ Say "Taskbar and Start"
 Set-RegValue -Path $Explorer -Name 'ShowTaskViewButton' -Value 0 `
     -Because 'hide Task View button (Win+Tab still works)'
 
-Set-RegValue -Path $Explorer -Name 'TaskbarDa' -Value 0 `
+# Widgets. On Windows 11 25H2 the old HKCU 'TaskbarDa' value is ACL-protected -
+# the key is writable but that value name specifically is denied, even
+# elevated. The Group Policy value below is the supported route on Pro and
+# removes both the taskbar button and the Win+W board (which is where the MSN
+# feed lives, in whatever language MSN feels like using).
+Set-RegValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' `
+    -Name 'AllowNewsAndInterests' -Value 0 `
     -Because 'remove Widgets / news and interests'
 
 Set-RegValue -Path $Explorer -Name 'TaskbarMn' -Value 0 `
@@ -164,6 +195,52 @@ Set-RegValue -Path $Search -Name 'BingSearchEnabled' -Value 0 `
 
 Set-RegValue -Path $Search -Name 'CortanaConsent' -Value 0 `
     -Because 'no Cortana in search'
+
+###############################################################################
+# Language & Region                                                           #
+#                                                                             #
+# English interface, local content. A fresh Windows install bought or set up  #
+# in Thailand defaults the display language to Thai, which is what this        #
+# section corrects - while deliberately leaving the home location alone so     #
+# weather, news and currency stay local.                                       #
+#                                                                             #
+# Note: the Widgets board (Win+W) does NOT follow these settings. It renders   #
+# the MSN feed via Edge WebView2, which carries its own content-language       #
+# preference set from the Widgets gear icon. There is no supported registry    #
+# key for it, so it cannot be scripted here.                                   #
+###############################################################################
+Say "Language and region"
+
+if (Get-Command Get-WinUserLanguageList -ErrorAction SilentlyContinue) {
+    $uiLangs = (Get-WinUserLanguageList | ForEach-Object { $_.LanguageTag })
+    if ($uiLangs -contains $UiLanguage) {
+        Note "UI language already includes $UiLanguage"
+    } else {
+        if ($DryRun) {
+            Note "would set the display language to $UiLanguage (currently: $($uiLangs -join ', '))"
+            $script:Applied++
+        } else {
+            try {
+                $list = New-WinUserLanguageList $UiLanguage
+                # Keep the existing languages after the preferred one so
+                # installed keyboards are not silently removed.
+                foreach ($tag in $uiLangs) {
+                    if ($tag -ne $UiLanguage) { $list.Add($tag) }
+                }
+                Set-WinUserLanguageList $list -Force
+                Set-WinUILanguageOverride -Language $UiLanguage
+                Note "display language set to $UiLanguage (sign out to apply)"
+                $script:Applied++
+            } catch {
+                Warn "could not set the display language: $($_.Exception.Message)"
+                $script:Skipped++
+            }
+        }
+    }
+
+    $geo = (Get-WinHomeLocation).HomeLocation
+    Note "home location left as '$geo' - local weather, news and currency"
+}
 
 ###############################################################################
 # Privacy - stop the suggestion and ad machinery                              #
@@ -212,9 +289,38 @@ Set-RegValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Ser
     -Name 'StartupDelayInMSec' -Value 0 `
     -Because 'no artificial delay before startup apps run'
 
-Set-RegValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' `
-    -Name 'RotatingLockScreenOverlayEnabled' -Value 0 `
-    -Because 'no Spotlight overlay on the lock screen'
+# Win+V clipboard history: scrollback of everything copied, plus pinning.
+# Off by default, and one of the highest-value switches on Windows.
+Set-RegValue -Path 'HKCU:\SOFTWARE\Microsoft\Clipboard' -Name 'EnableClipboardHistory' -Value 1 `
+    -Because 'Win+V clipboard history'
+
+###############################################################################
+# Lock screen - keep the photos, drop the advertising                         #
+#                                                                             #
+# Windows Spotlight mixes two things: the rotating background photos (nice)   #
+# and "fun facts, tips, tricks and more" plus promoted app/game links (ads).  #
+# These keep the photos and remove everything else.                           #
+###############################################################################
+Say "Lock screen"
+
+Set-RegValue -Path $ContentD -Name 'RotatingLockScreenOverlayEnabled' -Value 0 `
+    -Because 'no tips/facts overlay on the lock screen'
+
+Set-RegValue -Path $ContentD -Name 'SubscribedContent-338387Enabled' -Value 0 `
+    -Because 'no promoted content on the lock screen'
+
+Set-RegValue -Path $ContentD -Name 'SoftLandingEnabled' -Value 0 `
+    -Because 'no Windows tips popups'
+
+Set-RegValue -Path $ContentD -Name 'SubscribedContent-310093Enabled' -Value 0 `
+    -Because 'no Windows welcome experience after updates'
+
+Set-RegValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\UserProfileEngagement' `
+    -Name 'ScoobeSystemSettingEnabled' -Value 0 `
+    -Because 'no "finish setting up your device" nag'
+
+# RotatingLockScreenEnabled is left ON deliberately: that is the photo
+# rotation itself, which is the part worth keeping.
 
 ###############################################################################
 # Developer                                                                   #
@@ -230,6 +336,136 @@ Set-RegValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' `
 Set-RegValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' `
     -Name 'AllowDevelopmentWithoutDevLicense' -Value 1 `
     -Because 'Developer Mode - lets chezmoi create symlinks without elevation'
+
+###############################################################################
+# Power                                                                       #
+#                                                                             #
+# Windows ships very aggressive defaults (5 min to sleep on AC), which is     #
+# wrong for a docked development machine that runs builds, syncs and remote   #
+# sessions.                                                                   #
+#                                                                             #
+# AC and DC are set separately on purpose:                                    #
+#   * Lid closed does nothing on AC (docked, external monitor) but still      #
+#     sleeps on battery - a laptop that stays awake in a bag overheats and    #
+#     arrives flat.                                                           #
+#   * Display-off is much shorter than sleep. Blanking the screen is cheap    #
+#     and instantly reversible; sleeping is the disruptive step.              #
+###############################################################################
+Say "Power"
+
+# The lid-close action is hidden from the Settings UI by default.
+$SUB_BUTTONS = '4f971e89-eebd-4455-a8de-9e59040e7347'
+$LID_ACTION  = '5ca83367-6e45-459f-a27b-476b1d01c936'
+
+function Set-Power {
+    param([string]$Description, [scriptblock]$Action)
+    if (-not $IsElevated) {
+        Note "skip (needs admin): $Description"
+        $script:Skipped++
+        return
+    }
+    if ($DryRun) {
+        Note "would set $Description"
+        $script:Applied++
+        return
+    }
+    try {
+        & $Action
+        if ($LASTEXITCODE -eq 0 -or $null -eq $LASTEXITCODE) {
+            Note $Description
+            $script:Applied++
+        } else {
+            Warn "powercfg failed for '$Description' (exit $LASTEXITCODE)"
+            $script:Skipped++
+        }
+    } catch {
+        Warn "could not set '$Description': $($_.Exception.Message)"
+        $script:Skipped++
+    }
+}
+
+$lidNames = @{ 0 = 'do nothing'; 1 = 'sleep'; 2 = 'hibernate'; 3 = 'shut down' }
+
+Set-Power "sleep after $SleepMinutesAC min on AC" {
+    powercfg /change standby-timeout-ac $SleepMinutesAC
+}
+Set-Power "sleep after $SleepMinutesDC min on battery" {
+    powercfg /change standby-timeout-dc $SleepMinutesDC
+}
+Set-Power "display off after $DisplayMinutesAC min on AC" {
+    powercfg /change monitor-timeout-ac $DisplayMinutesAC
+}
+Set-Power "display off after $DisplayMinutesDC min on battery" {
+    powercfg /change monitor-timeout-dc $DisplayMinutesDC
+}
+# Windows hides the lid-close action from the Settings UI by default - it is
+# absent from `powercfg /q SCHEME_CURRENT SUB_BUTTONS` until unhidden. Setting
+# it by GUID works either way, but unhiding means the value is also visible
+# and editable under Power Options rather than being invisibly overridden.
+Set-Power "unhide the lid-close action in Power Options" {
+    powercfg /attributes $SUB_BUTTONS $LID_ACTION -ATTRIB_HIDE
+}
+
+Set-Power "lid closed on AC: $($lidNames[$LidClosedAC])" {
+    powercfg /setacvalueindex SCHEME_CURRENT $SUB_BUTTONS $LID_ACTION $LidClosedAC
+}
+Set-Power "lid closed on battery: $($lidNames[$LidClosedDC])" {
+    powercfg /setdcvalueindex SCHEME_CURRENT $SUB_BUTTONS $LID_ACTION $LidClosedDC
+}
+# setacvalueindex/setdcvalueindex only write the scheme - it has to be
+# re-activated for the change to take effect.
+Set-Power "activate the updated power scheme" {
+    powercfg /setactive SCHEME_CURRENT
+}
+
+###############################################################################
+# Hot corners                                                                 #
+#                                                                             #
+# Windows has no native hot-corner feature - there is no registry key and no  #
+# Settings page for it. The behaviour comes from an AutoHotkey script that    #
+# chezmoi installs to ~/.config/dotfiles/hot-corners.ahk; this only wires it  #
+# up to run at logon via a Startup shortcut.                                  #
+###############################################################################
+Say "Hot corners"
+
+$ahkScript = Join-Path $CONFIG_HOME_DIR 'dotfiles\hot-corners.ahk'
+$startupDir = [System.Environment]::GetFolderPath('Startup')
+$shortcut  = Join-Path $startupDir 'dotfiles-hot-corners.lnk'
+
+if (-not (Test-Path $ahkScript)) {
+    Note "skip: hot-corners.ahk not found (run 'chezmoi apply' first)"
+    $script:Skipped++
+} elseif (Test-Path $shortcut) {
+    Note "hot corners already run at logon"
+} else {
+    $ahkExe = $null
+    foreach ($c in @(
+        (Join-Path $env:ProgramFiles 'AutoHotkey\v2\AutoHotkey.exe'),
+        (Join-Path $env:ProgramFiles 'AutoHotkey\AutoHotkey.exe')
+    )) { if (Test-Path $c) { $ahkExe = $c; break } }
+
+    if (-not $ahkExe) {
+        Note "skip: AutoHotkey not installed (choco install autohotkey)"
+        $script:Skipped++
+    } elseif ($DryRun) {
+        Note "would create a Startup shortcut running hot-corners.ahk at logon"
+        $script:Applied++
+    } else {
+        try {
+            $wsh = New-Object -ComObject WScript.Shell
+            $lnk = $wsh.CreateShortcut($shortcut)
+            $lnk.TargetPath = $ahkExe
+            $lnk.Arguments  = "`"$ahkScript`""
+            $lnk.Description = 'macOS-style hot corners (dotfiles)'
+            $lnk.Save()
+            Note "hot corners will start at logon (Win+Alt+H pauses them)"
+            $script:Applied++
+        } catch {
+            Warn "could not create the Startup shortcut: $($_.Exception.Message)"
+            $script:Skipped++
+        }
+    }
+}
 
 ###############################################################################
 # Security - hardening only. Nothing here weakens a protection.               #

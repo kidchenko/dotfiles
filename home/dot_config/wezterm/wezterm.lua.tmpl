@@ -1,0 +1,44 @@
+-- WezTerm configuration.
+--
+-- Lives at ~/.config/wezterm/wezterm.lua. WezTerm checks that path before
+-- ~/.wezterm.lua on every platform, including Windows, so one file serves
+-- both the Brewfile and the Chocolatey install.
+--
+-- Platform differences are detected at runtime rather than templated, so the
+-- file stays valid Lua and can be read or copied without chezmoi.
+
+local wezterm = require 'wezterm'
+local config = wezterm.config_builder()
+
+local is_windows = wezterm.target_triple:find 'windows' ~= nil
+
+-- On Windows WezTerm defaults to cmd.exe. Everything these dotfiles set up -
+-- the oh-my-posh prompt, the aliases, Terminal-Icons - lives in the PowerShell
+-- 7 profile, so cmd yields a shell with none of it. On macOS and Linux the
+-- login shell is already zsh, so default_prog is deliberately left unset.
+if is_windows then
+  config.default_prog = { 'pwsh.exe', '-NoLogo' }
+end
+
+-- A Nerd Font is not cosmetic here: oh-my-posh's powerline separators and
+-- Terminal-Icons' file glyphs both render as tofu boxes without one. Installed
+-- by tools/os_installers/choco.ps1 on Windows and the Brewfile on macOS; the
+-- fallback chain covers whichever of them a given machine actually has.
+config.font = wezterm.font_with_fallback {
+  'MesloLGM Nerd Font',
+  'Hack Nerd Font',
+  'FiraCode Nerd Font',
+  'FiraMono Nerd Font',
+}
+config.font_size = is_windows and 11.0 or 13.0
+
+config.hide_tab_bar_if_only_one_tab = true
+config.use_fancy_tab_bar = false
+config.scrollback_lines = 10000
+config.window_padding = { left = 8, right = 8, top = 8, bottom = 4 }
+
+-- Closing a terminal should not need confirming; the shell is the thing that
+-- decides whether there is unsaved work, not WezTerm.
+config.window_close_confirmation = 'NeverPrompt'
+
+return config

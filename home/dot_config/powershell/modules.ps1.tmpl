@@ -1,24 +1,35 @@
 #Import-Module posh-git
-# Import-Module PSColor
 # PSColor was replaced by Terminal-Icons
-Import-Module Terminal-Icons
-try {
-    Import-Module PSReadLine -Force
-}
-catch {
+
+# An optional module that isn't installed should quietly degrade the shell, not
+# paint the top of every new terminal red. Import-Module has no "only if present"
+# switch, and -ErrorAction SilentlyContinue still leaves the failure in $Error.
+function Import-IfAvailable {
+    param([Parameter(Mandatory)][string]$Name)
+
+    if (Get-Module -Name $Name) { return }
+    if (Get-Module -ListAvailable -Name $Name) {
+        Import-Module $Name -ErrorAction SilentlyContinue
+    }
 }
 
-if (Get-Module -ListAvailable -Name PSReadLine) {
-}
-else {
-    Import-Module PSReadLine
-}
+Import-IfAvailable Terminal-Icons
+Import-IfAvailable PSReadLine
 
-if (!($IsMacOS)) {
-    Import-Module Pscx
-}
+# Pscx is deliberately NOT imported. It costs ~350ms per shell, and nothing in
+# this profile calls any of its 115 commands. PowerShell's module auto-loading
+# imports it on the first Pscx command actually typed, so dropping the eager
+# import loses no functionality - it just stops every shell paying for it.
+# (The old guard was `if (!$IsMacOS)`, which also wrongly let Pscx through on
+# Linux, where it isn't published at all.)
 
-Set-PSReadLineOption -PredictionSource History
-# Not Working
-# Set-PSReadLineOption -PredictionViewStyle ListView
-Set-PSReadLineOption -EditMode Windows
+if (Get-Module -Name PSReadLine) {
+    # Predictions need a real terminal. Under redirected output (scripts, CI,
+    # `pwsh -Command ... | Out-String`) this throws instead of no-opping.
+    # SupportsVirtualTerminal alone is not enough - it stays true when stdout
+    # is piped, so test redirection directly.
+    if ($Host.UI.SupportsVirtualTerminal -and -not [Console]::IsOutputRedirected) {
+        Set-PSReadLineOption -PredictionSource History
+    }
+    Set-PSReadLineOption -EditMode Windows
+}

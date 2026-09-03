@@ -76,15 +76,26 @@ function Install-Pkg {
         [Parameter(Mandatory)][string]$Name,
         [string]$Because = '',
         [string]$Winget  = '',   # use winget instead (stale/absent on choco)
+        [ValidateSet('winget', 'msstore')]
+        [string]$Source  = 'winget',
         [string]$Params  = ''
     )
 
-    if ($script:Present.ContainsKey($Name.ToLower())) {
+    # Presence has to be checked against whichever store owns the package.
+    # `choco list` knows nothing about winget/Store installs, so checking it
+    # for a Store app would reinstall it on every run.
+    if ($Winget) {
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            winget list --id $Winget --exact --source $Source 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { $script:Skipped++; return }
+        }
+    }
+    elseif ($script:Present.ContainsKey($Name.ToLower())) {
         $script:Skipped++
         return
     }
 
-    $via = if ($Winget) { "winget:$Winget" } else { "choco:$Name" }
+    $via = if ($Winget) { "${Source}:$Winget" } else { "choco:$Name" }
 
     if ($DryRun) {
         Write-Host ("    would install {0,-28} {1}" -f $Name, $via) -ForegroundColor DarkGray
@@ -100,8 +111,8 @@ function Install-Pkg {
             $script:Failed += "$Name (winget unavailable)"
             return
         }
-        winget install --id $Winget --exact --silent --accept-package-agreements `
-            --accept-source-agreements 2>&1 | Out-Null
+        winget install --id $Winget --exact --source $Source --silent `
+            --accept-package-agreements --accept-source-agreements 2>&1 | Out-Null
     } else {
         $args = @('install', $Name, '-y', '--no-progress', '--limit-output')
         if ($Params) { $args += @('--params', $Params) }
@@ -141,8 +152,11 @@ try {
         Install-Pkg git;   Install-Pkg git-lfs
         Install-Pkg gpg4win -Because 'brew "gnupg"'
         Install-Pkg openssh
+        # sudo for Windows. Elevates a single command in place instead of
+        # spawning a separate elevated window and losing shell context.
+        Install-Pkg gsudo -Because 'no macOS equivalent needed - sudo is built in there'
         # bash, zsh, coreutils, findutils, moreutils, gnu-sed: provided by Git for Windows
-        # tmux, watch, htop: no meaningful Windows equivalent
+        # tmux, watch: no meaningful Windows equivalent
     }
 
     if (Want 'Modern') {
@@ -151,6 +165,14 @@ try {
         Install-Pkg ripgrep; Install-Pkg fd
         Install-Pkg tldr    -Because 'brew "tldr"'
         Install-Pkg delta   -Because 'brew "delta"'
+        # bottom is the htop equivalent - Windows does have one after all.
+        Install-Pkg bottom    -Because 'brew "htop"'
+        Install-Pkg zoxide    -Because 'brew "z" - smarter cd, same idea'
+        Install-Pkg dust      -Because 'disk usage, du replacement'
+        Install-Pkg procs     -Because 'ps replacement'
+        Install-Pkg sd        -Because 'sed replacement for find/replace'
+        Install-Pkg hyperfine -Because 'command benchmarking'
+        Install-Pkg glow      -Because 'markdown rendering in the terminal'
     }
 
     if (Want 'Development') {
@@ -164,14 +186,17 @@ try {
         Install-Pkg act-cli    -Because 'brew "act"'
         Install-Pkg dotnet-sdk; Install-Pkg python; Install-Pkg openjdk
         Install-Pkg make; Install-Pkg cmake
-        Note-Missing 'pre-commit' 'pip install pre-commit'
+        # uv is a fast pip/pipx replacement and the easiest route to the two
+        # Python tools below, which have no Chocolatey package of their own.
+        Install-Pkg uv -Because 'fast Python package/tool manager'
+        Note-Missing 'pre-commit' 'uv tool install pre-commit'
     }
 
     if (Want 'Languages') {
         Head "Languages & runtimes"
         Install-Pkg ruby
         Install-Pkg pyenv-win -Because 'brew "pyenv"'
-        Note-Missing 'poetry' 'pipx install poetry'
+        Note-Missing 'poetry' 'uv tool install poetry'
     }
 
     if (Want 'Cloud') {
@@ -261,7 +286,7 @@ try {
         Install-Pkg postman; Install-Pkg discord
         Install-Pkg grammarly-for-windows -Because 'cask "grammarly-desktop"'
         Install-Pkg powertoys -Because 'covers cask "rectangle" (FancyZones) and cask "raycast" (Run)'
-        Note-Missing 'whatsapp' 'winget install WhatsApp.WhatsApp'
+        Install-Pkg whatsapp -Winget '9NKSQGP7F2NH' -Source msstore -Because 'cask "whatsapp"'
         Note-Missing 'wakatime' 'editor extension, not a standalone package'
         # alt-tab: macOS-only
     }
@@ -270,9 +295,15 @@ try {
         Head "Utilities"
         Install-Pkg googledrive -Because 'cask "google-drive"'
         Install-Pkg flux        -Because 'cask "flux-app"'
-        Install-Pkg rescuetime; Install-Pkg spotify
+        Install-Pkg rescuetime
+        # Store build, not choco: `choco install spotify` lays down the
+        # standalone installer, which coexists with (rather than replaces) a
+        # Store copy and leaves two Spotifys on the machine.
+        Install-Pkg spotify -Winget '9NCBCSZSJRSB' -Source msstore -Because 'cask "spotify"'
         Install-Pkg 7zip; Install-Pkg everything; Install-Pkg windirstat
         Install-Pkg autohotkey; Install-Pkg vlc; Install-Pkg screentogif
+        # Process Explorer, Autoruns, TCPView, ZoomIt
+        Install-Pkg sysinternals -Because 'no single macOS equivalent'
     }
 
     if (Want 'Fonts') {

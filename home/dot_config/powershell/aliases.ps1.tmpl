@@ -221,7 +221,7 @@ else {
 Set-Alias csrepl csharprepl
 
 # Alias to generate md5 from string input
-if (!(Get-Command md5 -ErrorAction SilentlyContinue)) {
+if (!(Get-Command md5 -ErrorAction Ignore)) {
     function Get-Md5($value) {
         ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-", "").ToLower()
     }
@@ -229,7 +229,7 @@ if (!(Get-Command md5 -ErrorAction SilentlyContinue)) {
 }
 
 # Alias to generate sha1 from string input
-if (!(Get-Command sha1 -ErrorAction SilentlyContinue)) {
+if (!(Get-Command sha1 -ErrorAction Ignore)) {
     function Get-Sha1($value) {
         ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA1CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-", "")
     }
@@ -237,7 +237,7 @@ if (!(Get-Command sha1 -ErrorAction SilentlyContinue)) {
 }
 
 # Alias to generate sha256 from string input
-if (!(Get-Command sha256 -ErrorAction SilentlyContinue)) {
+if (!(Get-Command sha256 -ErrorAction Ignore)) {
     function Get-Sha256($value) {
         ([System.BitConverter]::ToString((New-Object -TypeName System.Security.Cryptography.SHA256CryptoServiceProvider).ComputeHash((New-Object -TypeName System.Text.UTF8Encoding).GetBytes($value)))).Replace("-", "")
     }

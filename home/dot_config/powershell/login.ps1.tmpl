@@ -7,18 +7,36 @@ $DOTFILES_DIR = if ($env:XDG_DATA_HOME) {
 
 $Hour = (Get-Date).Hour
 $Name = "Jose"
-$Theme = "robbyrussel.omp.json"
+$Theme = "robbyrussell"
 
 # Check for dotfiles updates - mirrors tools/update.sh on the Zsh side.
 #
-# Two rules this must not break:
+# Three rules this must not break:
 #   1. Never block the prompt on the network. The fetch is fired in the
 #      background; the comparison below reads only local refs, which is fast.
 #   2. Never apply changes unasked. This used to run `chezmoi update` inline
 #      on every shell start, rewriting files mid-session without consent.
 #      It now only reports, exactly like update.sh does.
-if ((Test-Path "$DOTFILES_DIR/.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
+#   3. Never pay the cost on every shell. update.sh is driven by .zlogin, which
+#      zsh runs once per *login* shell. A PowerShell profile has no such
+#      distinction - it runs on every pwsh start, including every script and
+#      subshell - so identical code costs far more here. Throttling takes it
+#      off the critical path of nearly every shell, rather than merely making
+#      the check itself faster.
+$UpdateCheckEvery = New-TimeSpan -Hours 4
+$CacheHome   = if ($env:XDG_CACHE_HOME) { $env:XDG_CACHE_HOME } else { Join-Path $HOME ".cache" }
+$UpdateStamp = Join-Path $CacheHome "dotfiles/update-check"
+
+$DueForCheck = (-not (Test-Path $UpdateStamp)) -or
+               (((Get-Date) - (Get-Item $UpdateStamp).LastWriteTime) -gt $UpdateCheckEvery)
+
+if ($DueForCheck -and (Test-Path "$DOTFILES_DIR/.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
     try {
+        # Stamped before the check, not after: a check that fails (offline,
+        # detached HEAD, no upstream) must not retry on every shell start.
+        New-Item -ItemType Directory -Force -Path (Split-Path $UpdateStamp) -ErrorAction SilentlyContinue | Out-Null
+        Set-Content -Path $UpdateStamp -Value "" -ErrorAction SilentlyContinue
+
         # Fire-and-forget refresh of the remote refs
         Start-Process -FilePath 'git' `
             -ArgumentList @('-C', $DOTFILES_DIR, 'fetch', '--quiet') `
@@ -42,15 +60,27 @@ ElseIf ($Hour -gt 16) {"Good Evening $Name!"}
 
 Else {"Good Afternoon $Name!"; }
 
-# Allow remote execution
-if (!($IsMacOS)) {
+# Allow remote execution. Only written when it actually differs - this is a
+# registry write, and doing it unconditionally costs time on every shell start.
+if (!($IsMacOS) -and (Get-ExecutionPolicy -Scope CurrentUser) -ne 'Bypass') {
     Set-ExecutionPolicy Bypass -Scope CurrentUser -Force -ErrorAction SilentlyContinue;
 }
 
 # use tls 1.2
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
 
-oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH/$Theme" | Invoke-Expression
+# oh-my-posh resolves a bare theme name against its built-in themes. Prefer that
+# over $env:POSH_THEMES_PATH: the Chocolatey/MSIX install never sets that
+# variable, so the old interpolation produced "/robbyrussel.omp.json" and the
+# prompt rendered CONFIG NOT FOUND.
+if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+    $ThemeArg = $Theme
+    if ($env:POSH_THEMES_PATH) {
+        $ThemeFile = Join-Path $env:POSH_THEMES_PATH "$Theme.omp.json"
+        if (Test-Path $ThemeFile) { $ThemeArg = $ThemeFile }
+    }
+    oh-my-posh init pwsh --config $ThemeArg | Invoke-Expression
+}
 
 # enable AWS command completion
 # https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-completion.html

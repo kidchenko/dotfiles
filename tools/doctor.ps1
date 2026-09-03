@@ -209,9 +209,15 @@ else { Warn "Developer Mode off - chezmoi symlinks need elevation" }
 Header "Modern CLI Tools"
 ###############################################################################
 
-foreach ($t in @('bat', 'fzf', 'jq', 'lsd', 'rg', 'fd', 'delta', 'lazygit', 'nvim')) {
+foreach ($t in @('bat', 'fzf', 'jq', 'yq', 'lsd', 'rg', 'fd', 'delta', 'lazygit', 'nvim',
+                 'btm', 'zoxide', 'dust', 'procs', 'sd', 'hyperfine', 'glow', 'tldr')) {
     if (Find-Cmd $t) { Pass "$t installed" } else { Warn "$t not installed" }
 }
+
+# gsudo is what makes elevation bearable - `gsudo choco upgrade all` instead of
+# spawning a separate elevated window.
+if (Find-Cmd 'gsudo') { Pass "gsudo installed (inline elevation)" }
+else { Warn "gsudo not installed - elevation needs a separate window" }
 
 ###############################################################################
 Header "Development Tools"

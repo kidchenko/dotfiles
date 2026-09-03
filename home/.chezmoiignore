@@ -12,3 +12,13 @@
 {{ if ne .chezmoi.os "windows" }}
 Documents/**
 {{ end }}
+
+# Zsh config on Windows. There is no zsh here (Git Bash ships bash only, and a
+# WSL distro has its own $HOME), so these apply as dead files in the home dir.
+#
+# .profile is deliberately NOT in this list: Git Bash sources it on Windows,
+# and it only sets XDG vars and PATH, which are useful there.
+{{ if eq .chezmoi.os "windows" }}
+.zshrc
+.zlogin
+{{ end }}
