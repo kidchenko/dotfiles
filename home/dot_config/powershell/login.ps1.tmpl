@@ -9,51 +9,6 @@ $Hour = (Get-Date).Hour
 $Name = "Jose"
 $Theme = "robbyrussell"
 
-# Check for dotfiles updates - mirrors tools/update.sh on the Zsh side.
-#
-# Three rules this must not break:
-#   1. Never block the prompt on the network. The fetch is fired in the
-#      background; the comparison below reads only local refs, which is fast.
-#   2. Never apply changes unasked. This used to run `chezmoi update` inline
-#      on every shell start, rewriting files mid-session without consent.
-#      It now only reports, exactly like update.sh does.
-#   3. Never pay the cost on every shell. update.sh is driven by .zlogin, which
-#      zsh runs once per *login* shell. A PowerShell profile has no such
-#      distinction - it runs on every pwsh start, including every script and
-#      subshell - so identical code costs far more here. Throttling takes it
-#      off the critical path of nearly every shell, rather than merely making
-#      the check itself faster.
-$UpdateCheckEvery = New-TimeSpan -Hours 4
-$CacheHome   = if ($env:XDG_CACHE_HOME) { $env:XDG_CACHE_HOME } else { Join-Path $HOME ".cache" }
-$UpdateStamp = Join-Path $CacheHome "dotfiles/update-check"
-
-$DueForCheck = (-not (Test-Path $UpdateStamp)) -or
-               (((Get-Date) - (Get-Item $UpdateStamp).LastWriteTime) -gt $UpdateCheckEvery)
-
-if ($DueForCheck -and (Test-Path "$DOTFILES_DIR/.git") -and (Get-Command git -ErrorAction SilentlyContinue)) {
-    try {
-        # Stamped before the check, not after: a check that fails (offline,
-        # detached HEAD, no upstream) must not retry on every shell start.
-        New-Item -ItemType Directory -Force -Path (Split-Path $UpdateStamp) -ErrorAction SilentlyContinue | Out-Null
-        Set-Content -Path $UpdateStamp -Value "" -ErrorAction SilentlyContinue
-
-        # Fire-and-forget refresh of the remote refs
-        Start-Process -FilePath 'git' `
-            -ArgumentList @('-C', $DOTFILES_DIR, 'fetch', '--quiet') `
-            -NoNewWindow -ErrorAction SilentlyContinue | Out-Null
-
-        # Compare against whatever the last fetch left behind (local, instant)
-        $local  = git -C $DOTFILES_DIR rev-parse '@' 2>$null
-        $remote = git -C $DOTFILES_DIR rev-parse '@{u}' 2>$null
-
-        if ($remote -and ($local -ne $remote)) {
-            Write-Host "[dotfiles] New version available. Run 'chezmoi update' to apply."
-        }
-    } catch {
-        # A dotfiles check must never break the shell
-    }
-}
-
 If ($Hour -lt 12) {"Good Morning $Name!"}
 
 ElseIf ($Hour -gt 16) {"Good Evening $Name!"}
@@ -96,4 +51,17 @@ Register-ArgumentCompleter -Native -CommandName aws -ScriptBlock {
         }
         Remove-Item Env:\COMP_LINE
         Remove-Item Env:\COMP_POINT
+}
+
+# Check for dotfiles updates - mirrors tools/update.sh on the Zsh side: it asks
+# before applying anything, and it asks every time the branch is behind. Never
+# applies unasked; this used to run `chezmoi update` inline on every shell start,
+# rewriting files mid-session without consent.
+#
+# Must stay last. -Watch wraps whatever prompt is in effect, and oh-my-posh
+# installs its own above. The costly half of the check (the network fetch) is
+# deferred to the first prompt render rather than paid here - see update.ps1.
+$DotfilesUpdateScript = Join-Path $DOTFILES_DIR "tools/update.ps1"
+if (Test-Path $DotfilesUpdateScript) {
+    & $DotfilesUpdateScript -Watch
 }

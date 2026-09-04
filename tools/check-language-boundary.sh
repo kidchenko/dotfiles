@@ -53,8 +53,23 @@ strip_ps_comments()   { sed -E '/^[[:space:]]*<#/,/#>/d' "$1" | sed -E 's/[[:spa
 # `Test-Path "$name.sh"` and `Join-Path $dir 'x.sh'` are legitimate - a runner
 # has to detect that a hook is implemented for the other platform in order to
 # skip it. Only actually running the other interpreter is a violation.
-PS_CALLS_BASH='Invoke-BashScript|&[[:space:]]*[$"'"'"']*[^[:space:]]*bash|bash\.exe|(^|[^[:alnum:]_-])sh\.exe|Start-Process[^|]*bash|Get-Command[[:space:]]+bash'
-BASH_CALLS_PS='(^|[^[:alnum:]_-])(pwsh|powershell(\.exe)?)([^[:alnum:]_-]|$)|-File[[:space:]]+[^[:space:]]*\.ps1'
+SQ=$'\047'
+Q="[\"${SQ}]"
+INTERP='(bash|sh|zsh|dash|wsl|busybox)'
+
+# A file crosses the boundary only when it RUNS the other interpreter:
+#   A) command position - start of a statement, or after & | ; ( { or a quote.
+#      A bare `bash x.sh` is the normal PowerShell spelling and must be caught;
+#      requiring the & call operator (as this check once did) missed it entirely.
+#   B) an explicit .exe anywhere, which covers quoted paths containing spaces
+#      such as & "C:\Program Files\Git\bin\bash.exe".
+#   C) Start-Process / Get-Command naming the interpreter.
+# Boundaries matter: "powershell.exe", "pwsh.exe" and "sha256" all contain the
+# literal "sh" and must not be mistaken for the shell.
+BOUND_L='(^|[^[:alnum:]_.-])'
+BOUND_R='([^[:alnum:]_-]|$)'
+PS_CALLS_BASH="(^|[&|;({\"${SQ}])[[:space:]]*${Q}?([^[:space:]\"${SQ}]*[/\\])?${INTERP}(\.exe)?${Q}?([[:space:]]|\$)|${BOUND_L}${INTERP}\.exe|Start-Process[^|]*${BOUND_L}${INTERP}${BOUND_R}|Get-Command[[:space:]]+${INTERP}${BOUND_R}|Invoke-BashScript"
+BASH_CALLS_PS='(^|[^[:alnum:]_-])(pwsh|powershell(\.exe)?)([^[:alnum:]_-]|$)|-File[[:space:]]+[^[:space:]]*\.ps1|-ExecutionPolicy'
 
 echo ""
 echo "Language boundary check"
@@ -73,7 +88,9 @@ while IFS= read -r f; do
     elif [[ "$VERBOSE" == true ]]; then
         echo -e "    ${DIM}ok${NC} ${f#$REPO_DIR/}"
     fi
-done < <(find "$REPO_DIR/tools" "$REPO_DIR/cron" -name '*.sh' -o -name 'dotfiles' -type f 2>/dev/null | sort)
+done < <(find "$REPO_DIR" -type f \( -name '*.sh' -o -name '*.sh.tmpl' -o -name '*.bash' \
+    -o -name 'dotfiles' -o -name 'dot_z*' -o -name 'dot_profile*' \) \
+    -not -path '*/.git/*' 2>/dev/null | sort)
 
 # --- PowerShell must not invoke bash --------------------------------------
 
@@ -88,7 +105,8 @@ while IFS= read -r f; do
     elif [[ "$VERBOSE" == true ]]; then
         echo -e "    ${DIM}ok${NC} ${f#$REPO_DIR/}"
     fi
-done < <(find "$REPO_DIR/tools" "$REPO_DIR/cron" -name '*.ps1' -type f 2>/dev/null | sort)
+done < <(find "$REPO_DIR" -type f \( -name '*.ps1' -o -name '*.ps1.tmpl' \) \
+    -not -path '*/.git/*' 2>/dev/null | sort)
 
 echo ""
 if [[ $violations -eq 0 ]]; then

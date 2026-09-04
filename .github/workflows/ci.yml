@@ -23,6 +23,9 @@ jobs:
           find . -name "*.sh" -type f | xargs shellcheck --severity=warning || true
           shellcheck --severity=warning tools/dotfiles || true
 
+      - name: Enforce bash/PowerShell language boundary
+        run: bash tools/check-language-boundary.sh --verbose
+
   validate-templates:
     name: Validate Chezmoi Templates
     runs-on: ubuntu-latest
