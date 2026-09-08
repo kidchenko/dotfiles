@@ -180,28 +180,29 @@ function Invoke-DotfilesCheck {
         return $true
     }
 
-    Say "New version available ($behind commit(s) behind)."
+    $noun = if ($behind -eq 1) { 'commit' } else { 'commits' }
 
     if (-not (Get-Command chezmoi -ErrorAction SilentlyContinue)) {
-        Say 'chezmoi is not installed, so it cannot be applied.'
+        Say "New version available ($behind $noun behind), but it cannot be applied - the dotfiles installation is incomplete."
         return $true
     }
 
     # Answering needs a keyboard. Under redirected input there is nobody there,
-    # and Read-Host would take EOF as a silent "no".
-    if ([Console]::IsInputRedirected) {
-        Say "Run 'chezmoi update' to apply."
-        return $true
-    }
+    # and Read-Host would take EOF as a silent "no". Nothing is printed either:
+    # a script, subshell or CI run cannot act on the news, and a stray line on
+    # their stdout is worse than silence. The next interactive shell asks.
+    if ([Console]::IsInputRedirected) { return $false }
 
-    $reply = Read-Host '[dotfiles] Would you like to update? [y/n]'
+    # The announcement is the question. Printing the news on its own line first
+    # and then asking reads as two events for one piece of information.
+    $reply = Read-Host "[dotfiles] New version available ($behind $noun behind). Update now? [y/n]"
     if ($reply -match '^\s*[Yy]') {
         chezmoi update
         if ($LASTEXITCODE -eq 0) {
             Say 'Updated successfully!'
             Say 'Open a new shell to pick up profile changes.'
         } else {
-            Say "Update failed. Run 'chezmoi update' manually."
+            Say "Update failed. Run 'dotfiles update' to retry."
         }
     } else {
         Say 'Update skipped.'
@@ -264,5 +265,8 @@ if ($Start) {
 } elseif ($Watch) {
     Install-DotfilesPromptWatcher -AlreadyAsked ([bool](Invoke-DotfilesCheck))
 } else {
-    Invoke-DotfilesCheck
+    # Out-Null, not a bare call: Invoke-DotfilesCheck returns whether it put
+    # anything on screen, which is for -Watch to consume. Emitted here it just
+    # prints "True" under the message it is reporting on.
+    Invoke-DotfilesCheck | Out-Null
 }

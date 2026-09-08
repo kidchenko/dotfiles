@@ -309,6 +309,18 @@ Set-RegValue -Path $ContentD -Name 'RotatingLockScreenOverlayEnabled' -Value 0 `
 Set-RegValue -Path $ContentD -Name 'SubscribedContent-338387Enabled' -Value 0 `
     -Because 'no promoted content on the lock screen'
 
+# The card row across the bottom of the lock screen (weather, sports, stocks,
+# MSN quizzes) is Widgets, not Spotlight - the values above do not touch it.
+# This is the documented policy for it on Windows 11 24H2 and later.
+Set-RegValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' `
+    -Name 'DisableWidgetsOnLockScreen' -Value 1 `
+    -Because 'no widget cards on the lock screen'
+
+# The same thing without admin: stops Windows picking widgets for you.
+Set-RegValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Lock Screen' `
+    -Name 'AutoSelectWidgetsOnLockScreen' -Value 0 `
+    -Because 'do not auto-populate lock screen widgets'
+
 Set-RegValue -Path $ContentD -Name 'SoftLandingEnabled' -Value 0 `
     -Because 'no Windows tips popups'
 
